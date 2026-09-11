@@ -14,6 +14,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://arblessings.com'),
   title: 'AR Blessings — Uniquely Designed Gems & Sacred Spiritual Essentials',
   description: 'Shop authentic consecrated prosperity essentials including Karodon Ka Wallet, Karodon Ka Dollar, divine fragrances, and spiritual gems.',
   icons: {

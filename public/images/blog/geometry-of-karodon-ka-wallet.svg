@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="100%" height="100%">
+  <defs>
+    <linearGradient id="blog2Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#180e05"/>
+      <stop offset="50%" stop-color="#3d240d"/>
+      <stop offset="100%" stop-color="#0e0702"/>
+    </linearGradient>
+    <linearGradient id="goldLeather" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#92400e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#blog2Grad)"/>
+
+  <!-- Geometric grid lines -->
+  <g opacity="0.12" stroke="#fef08a" stroke-width="1.5">
+    <line x1="850" y1="0" x2="850" y2="630"/>
+    <line x1="1050" y1="0" x2="1050" y2="630"/>
+    <line x1="750" y1="150" x2="1200" y2="150"/>
+    <line x1="750" y1="450" x2="1200" y2="450"/>
+    <circle cx="950" cy="300" r="180" fill="none"/>
+    <polygon points="950,150 1080,380 820,380" fill="none"/>
+  </g>
+
+  <!-- Content Pill -->
+  <rect x="80" y="80" width="220" height="36" rx="18" fill="#451a03" stroke="#d97706" stroke-width="1.5"/>
+  <text x="190" y="103" fill="#fde68a" font-family="'Helvetica Neue', sans-serif" font-size="13" font-weight="bold" letter-spacing="1.5" text-anchor="middle">SACRED GEOMETRY</text>
+
+  <!-- Headline -->
+  <text x="80" y="210" fill="#ffffff" font-family="'Georgia', serif" font-size="42" font-weight="bold">How Sacred Geometry in</text>
+  <text x="80" y="270" fill="url(#goldLeather)" font-family="'Georgia', serif" font-size="42" font-weight="bold">Karodon Ka Wallet Multiplies Wealth</text>
+
+  <!-- Subtitle -->
+  <text x="80" y="340" fill="#fed7aa" font-family="'Helvetica Neue', sans-serif" font-size="20">Understanding Frequency Resonance and Monetary Storage Principles</text>
+
+  <!-- Bottom Details -->
+  <line x1="80" y1="480" x2="750" y2="480" stroke="#78350f" stroke-width="1.5"/>
+  <text x="80" y="525" fill="#f8fafc" font-family="'Helvetica Neue', sans-serif" font-size="16" font-weight="600">Acharya Shanker &amp; Design Guild</text>
+  <text x="80" y="555" fill="#fde68a" font-family="'Helvetica Neue', sans-serif" font-size="14">8 Min Read • Wealth Science</text>
+</svg>

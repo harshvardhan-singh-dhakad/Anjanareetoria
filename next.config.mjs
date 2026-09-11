@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Standalone server mode for persistent Node.js deployment on Hostinger VPS
+  output: 'standalone',
   images: {
     unoptimized: true,
   },

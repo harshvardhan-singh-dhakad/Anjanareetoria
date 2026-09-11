@@ -1,6 +1,8 @@
 import React from 'react';
 import { HeroBanner } from '@/components/HeroBanner';
 import { ProductCard } from '@/components/ProductCard';
+import { BooksHomeSection } from '@/components/BooksHomeSection';
+import { BlogHomeSection } from '@/components/BlogHomeSection';
 import { VideoSection } from '@/components/VideoSection';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
 import { products } from '@/data/products';
@@ -33,11 +35,17 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Sacred Books & E-Books Showcase */}
+      <BooksHomeSection />
+
       {/* Video Insights Section */}
       <VideoSection />
 
       {/* Accomplishment Sagas / Reviews */}
       <TestimonialCarousel />
+
+      {/* Spiritual Journal & Blog Section */}
+      <BlogHomeSection />
     </div>
   );
 }

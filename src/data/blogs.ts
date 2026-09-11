@@ -1,0 +1,225 @@
+export interface BlogSection {
+  heading: string;
+  body: string[];
+  tip?: string;
+}
+
+export interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: {
+    introduction: string;
+    sections: BlogSection[];
+    conclusion: string;
+  };
+  coverImage: string;
+  category: string;
+  tags: string[];
+  author: {
+    name: string;
+    role: string;
+    avatar?: string;
+  };
+  publishedDate: string;
+  readTimeMinutes: number;
+  featured?: boolean;
+  relatedProductSlugs?: string[];
+  relatedBookSlugs?: string[];
+}
+
+export const blogs: BlogPost[] = [
+  {
+    id: "post-1",
+    slug: "sacred-morning-rituals-for-wealth",
+    title: "5 Sacred Morning Rituals to Attract Wealth & Financial Harmony",
+    excerpt: "Discover how tuning your energy during Brahma Muhurta and cultivating sacred daily habits creates an unstoppable frequency of abundance.",
+    coverImage: "/images/blog/sacred-morning-rituals.svg",
+    category: "Manifestation & Wealth",
+    tags: ["Morning Routine", "Brahma Muhurta", "Vedic Wisdom", "Lakshmi Mantra"],
+    author: {
+      name: "AR Blessings Spiritual Council",
+      role: "Vedic Guidance Masters",
+    },
+    publishedDate: "September 8, 2024",
+    readTimeMinutes: 6,
+    featured: true,
+    relatedProductSlugs: ["karodon-ka-dollar", "safalta-ka-tilak", "karodon-ka-cup"],
+    relatedBookSlugs: ["karodon-ka-rahasya", "daily-vedic-mantras"],
+    content: {
+      introduction: "How you greet the first ninety minutes of daylight determines the energetic magnetic field you project into the world for the remaining twenty-two hours. In the ancient Indian tradition, the period before sunrise—known as Brahma Muhurta—is considered the time when cosmic prana (vital life energy) is purest and unobstructed by modern digital noise.",
+      sections: [
+        {
+          heading: "1. Kara Darshana: Recognizing Divine Abundance in Your Own Palms",
+          body: [
+            "Before jumping out of bed to check notifications or social media feeds, take 60 seconds to practice Kara Darshana. Join both palms together, gaze into them with an open heart, and recite the traditional chant: 'Karagre Vasate Lakshmi, Karamadhye Saraswati, Karamule Tu Govinda, Prabhate Karadarshanam.'",
+            "This ancient affirmation acknowledges that the tip of your fingers holds the blessing of Lakshmi (wealth & resources), the center holds Saraswati (wisdom & discernment), and the base holds Vishnu (protection & steadfast sustenance). It aligns your subconscious mind to view your hands as instruments of prosperity."
+          ],
+          tip: "Never touch your mobile screen before looking at your open palms and offering gratitude for another day of life."
+        },
+        {
+          heading: "2. The Sacred Water Cleansing & Hydration",
+          body: [
+            "Water is the supreme carrier of energetic frequency. Drinking energized, clean water first thing in the morning flushes out physical toxins and revitalizes your solar plexus chakra—the seat of willpower and ambition.",
+            "If possible, sprinkle a few drops of consecrated water or sacred jal around your living space or meditation altar. This clears stagnant nighttime geopathic energies and invites vibrant fresh prana into your home."
+          ],
+          tip: "Speak 3 positive affirmations into your drinking glass before consuming: 'I am open to unexpected blessings', 'Divine fortune flows easily to me', 'I multiply value wherever I go'."
+        },
+        {
+          heading: "3. Applying Sacred Tilak to Awaken The Ajna Chakra",
+          body: [
+            "The point between your eyebrows—the Third Eye or Ajna Chakra—is the command center of focus, intuition, and divine guidance. Throughout history, kings, scholars, and victorious merchants applied sacred herbal tilak before entering trade or negotiation.",
+            "A consecrated tilak formulated with sacred sandalwood, herbs, and divine scents keeps the forehead cool, reduces stress hormone surges, and radiates an aura of quiet authority and charm."
+          ]
+        },
+        {
+          heading: "4. Organizing Your Financial Vessel with Reverence",
+          body: [
+            "Take 2 minutes to inspect your wallet or purse. Remove old crumpled receipts, expired cards, or torn wrappers. When currency is squeezed between discarded garbage, it signals disrespect for wealth.",
+            "Stack paper currency neatly, in increasing denomination order, all facing the same direction. Keeping an energized token—such as a consecrated Karodon Ka Dollar or auspicious silver coin—inside a dedicated compartment acts as an anchor for wealth vibration."
+          ],
+          tip: "Receipts represent spent money (outflow); your wallet should only house current resources and assets (inflow)."
+        },
+        {
+          heading: "5. Five Minutes of High-Frequency Chanting or Journaling",
+          body: [
+            "Conclude your morning ritual with at least 5 minutes of focused sound resonance. Chanting the Lakshmi Beej Mantra ('Om Shreem Mahalakshmiyei Namaha') 108 times resets your auditory neural pathways to calm certainty.",
+            "Write down 3 specific financial or life goals in the present tense in your daily manifestation journal, signing off with unconditional gratitude."
+          ]
+        }
+      ],
+      conclusion: "Prosperity is not an accidental lottery; it is a resonant state of consciousness. By implementing these five simple sacred rituals each morning, you anchor your spirit in unwavering confidence, drawing auspicious opportunities, supportive people, and financial breakthroughs directly toward you."
+    }
+  },
+  {
+    id: "post-2",
+    slug: "sacred-geometry-of-karodon-ka-wallet",
+    title: "How Sacred Geometry in Karodon Ka Wallet Influences Abundance Vibrations",
+    excerpt: "Explore the deep spiritual and energetic science of sacred dimensions, consecrated leather, and frequency alignment in modern prosperity wallets.",
+    coverImage: "/images/blog/geometry-of-karodon-ka-wallet.svg",
+    category: "Spiritual Science",
+    tags: ["Sacred Geometry", "Karodon Ka Wallet", "Wealth Magnet", "Vedic Science"],
+    author: {
+      name: "Acharya Shanker & Design Guild",
+      role: "Sacred Formats Researcher",
+    },
+    publishedDate: "September 5, 2024",
+    readTimeMinutes: 8,
+    featured: false,
+    relatedProductSlugs: ["karodon-ka-wallet", "karodon-ka-dollar", "karodon-ka-hamper"],
+    relatedBookSlugs: ["karodon-ka-rahasya", "the-cosmic-vault"],
+    content: {
+      introduction: "In traditional sacred architecture, temples and treasury vaults were never constructed with random measurements. Every dimension was carefully derived from sacred mathematical proportions—the Golden Ratio (Phi), the Sri Yantra angles, and Vastu Purusha alignments.",
+      sections: [
+        {
+          heading: "1. The Concept of the Energy Container",
+          body: [
+            "In physics, an electrical accumulator requires specific insulation and conductive plates to store charge without leakage. In metaphysical science, money operates under identical rules. The wallet you carry in your pocket or handbag is the primary personal container for your daily financial current.",
+            "When a wallet is worn out, broken, stained, or haphazardly thrown into dusty corners, subtle energy leaks outward. A consecrated wallet, designed with proportionate golden geometry, acts as a sealed resonance chamber."
+          ]
+        },
+        {
+          heading: "2. The Golden Ratio & Sacred Proportions",
+          body: [
+            "Karodon Ka Wallet is engineered using precise dimensional ratios that harmonize with the Fibonacci sequence. The internal card sleeves and note compartments are angled to prevent chaotic electromagnetic interference, ensuring that paper currency rests flat without tension.",
+            "When currency is kept straight and unbent, it retains dignity. In Vedic philosophy, Goddess Lakshmi dwells wherever order, purity, and beauty are meticulously honored."
+          ],
+          tip: "Always keep your highest denomination currency notes in the innermost pocket, facing inwards toward you."
+        },
+        {
+          heading: "3. Consecration and Energetic Shielding",
+          body: [
+            "Unlike mass-produced consumer goods created purely for utility, each Karodon Ka Wallet undergoes specialized consecration rituals. These rituals infuse the leather with protective and magnetic spiritual frequencies, repelling negative nazar (evil eye) and mitigating unexpected impulse spending."
+          ]
+        }
+      ],
+      conclusion: "Your wallet is more than an accessory—it is your portable wealth altar. By honoring it with consecrated geometry and respectful stewardship, you signal to the universe that you are ready to be entrusted with ever-greater abundance."
+    }
+  },
+  {
+    id: "post-3",
+    slug: "vastu-shastra-energy-guide-sacred-spaces",
+    title: "Vastu Energy Architecture: Where to Place Sacred Water & Consecrated Fragrances",
+    excerpt: "Step-by-step guidance on balancing spatial elemental energies in your home or office to clear financial blockages and enhance peace.",
+    coverImage: "/images/blog/vastu-shastra-energy-guide.svg",
+    category: "Vastu & Sacred Spaces",
+    tags: ["Vastu Shastra", "Sacred Jal", "Ittar", "Home Cleansing", "Kuber Direction"],
+    author: {
+      name: "Acharya Rajesh Shastri",
+      role: "Vastu Architect & Master Astrologer",
+    },
+    publishedDate: "August 30, 2024",
+    readTimeMinutes: 7,
+    featured: false,
+    relatedProductSlugs: ["karodon-ka-pani", "karodon-ki-khusboo", "karodon-ka-perfume"],
+    relatedBookSlugs: ["vastu-for-miracles"],
+    content: {
+      introduction: "Many individuals work tirelessly, yet find that money dissipates as quickly as it arrives. Very often, the root cause is not lack of effort or talent, but subtle geopathic disharmony within their living space.",
+      sections: [
+        {
+          heading: "1. The North Zone: The Domain of Lord Kuber",
+          body: [
+            "The North direction represents liquid cash, client inquiries, career promotions, and fresh opportunities. It is governed by Lord Kuber and the Water element (Jala Tattva).",
+            "To activate this zone, keep it clutter-free and well-illuminated. Never store heavy broken machinery or dustbins in the North. Placing energized water (Karodon Ka Pani) or clean metallic vessels here acts as an instant energetic activator."
+          ],
+          tip: "Sprinkle a few drops of consecrated jal in the Northern quadrant every Friday morning to stimulate overdue business payments."
+        },
+        {
+          heading: "2. The Northeast (Ishanya): Spiritual Purity & Clarity",
+          body: [
+            "The Northeast is the supreme sacred corner of any building. It is the conduit through which pure divine grace enters. If the Northeast is cluttered or blocked, the inhabitants suffer from brain fog, anxiety, and erroneous business choices.",
+            "Keep this zone spotless, light, and serene. Placing spiritual literature, meditation cushions, or a gentle water fountain here yields extraordinary mental peace."
+          ]
+        },
+        {
+          heading: "3. The Science of High-Vibration Aroma (Khushboo)",
+          body: [
+            "Smell is the only sense directly wired into the limbic system of the human brain—the seat of memory, emotions, and subconscious programming. Low vibration spaces carry dense, musty odors that foster lethargy and discord.",
+            "Spritzing authentic, alcohol-free consecrated Ittar or natural fragrances like Karodon Ki Khushboo instantly elevates the molecular vibration of a room, creating an atmosphere reminiscent of royal temple sanctuaries."
+          ]
+        }
+      ],
+      conclusion: "You do not need radical renovations to enjoy Vastu harmony. Small, deliberate shifts—honoring the North, purifying the Northeast, and filling your home with divine fragrance—open the floodgates for peace and wealth."
+    }
+  },
+  {
+    id: "post-4",
+    slug: "the-power-of-focused-intent-and-astrology",
+    title: "The Power of Focused Intent: Manifesting Career & Financial Breakthroughs",
+    excerpt: "How aligning your daily willpower, auspicious astrological timings, and blessed physical anchors creates quantum leaps in your profession.",
+    coverImage: "/images/blog/power-of-intent-astrology.svg",
+    category: "Astrology & Mindset",
+    tags: ["Mindset", "Astrology", "Career Growth", "Manifestation", "Karma"],
+    author: {
+      name: "Devi Ananya & Vedic Council",
+      role: "Spiritual Counselor",
+    },
+    publishedDate: "August 22, 2024",
+    readTimeMinutes: 5,
+    featured: false,
+    relatedProductSlugs: ["safalta-ka-tilak", "karodon-ki-yatra-passport-cover", "karodon-ka-dollar"],
+    relatedBookSlugs: ["daily-vedic-mantras", "karodon-ka-rahasya"],
+    content: {
+      introduction: "Have you ever observed how two individuals in the exact same business, with identical qualifications, achieve vastly different outcomes? One struggles for every lead, while the other effortlessly attracts lucrative contracts. The difference lies in intentional alignment.",
+      sections: [
+        {
+          heading: "1. Sankalpa Shakti: The Power of Unwavering Will",
+          body: [
+            "In Vedic philosophy, Sankalpa is a solemn vow made with pure consciousness. When a goal is merely a fleeting wish ('I hope I make more money'), the mind scatters energy in twenty conflicting directions. When it becomes a consecrated Sankalpa, the universe reconfigures circumstances to support it.",
+            "Write your Sankalpa on paper. Read it aloud every morning while holding your consecrated prosperity token. This provides a tactile anchor that prevents doubts from entering."
+          ]
+        },
+        {
+          heading: "2. Astrological Windows of Opportunity (Muhurta)",
+          body: [
+            "Timing is everything in nature. Farmers sow seeds according to seasonal rains, and ocean tides rise with lunar cycles. Similarly, planetary transits create specific windows where efforts are magnified tenfold.",
+            "Signing contracts, launching new business websites, or purchasing property during auspicious planetary hours (Shubh Muhurta) ensures durability, peace of mind, and lasting profits."
+          ],
+          tip: "Thursdays (Brihaspati) and Fridays (Shukra) are exceptionally auspicious for financial investments and wealth rituals."
+        }
+      ],
+      conclusion: "When your inner determination (Sankalpa), cosmic timing (Muhurta), and consecrated blessings unite, barriers dissolve. Trust the divine process and take decisive action."
+    }
+  }
+];

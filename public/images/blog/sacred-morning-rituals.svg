@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="100%" height="100%">
+  <defs>
+    <linearGradient id="blog1Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#051336"/>
+      <stop offset="50%" stop-color="#0d2e70"/>
+      <stop offset="100%" stop-color="#140628"/>
+    </linearGradient>
+    <linearGradient id="accentGold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#eab308"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#blog1Grad)"/>
+  
+  <!-- Subtle spiritual circles -->
+  <g opacity="0.15" stroke="#ffffff" stroke-width="2" fill="none">
+    <circle cx="1000" cy="315" r="280"/>
+    <circle cx="1000" cy="315" r="210"/>
+    <circle cx="1000" cy="315" r="140"/>
+    <circle cx="1000" cy="315" r="70"/>
+  </g>
+
+  <!-- Glowing Sunburst representing Morning Rituals -->
+  <g transform="translate(1000, 315)">
+    <circle r="45" fill="url(#accentGold)"/>
+    <g stroke="url(#accentGold)" stroke-width="3" opacity="0.6">
+      <line x1="0" y1="-80" x2="0" y2="-55"/>
+      <line x1="0" y1="80" x2="0" y2="55"/>
+      <line x1="-80" y1="0" x2="-55" y2="0"/>
+      <line x1="80" y1="0" x2="55" y2="0"/>
+      <line x1="-56" y1="-56" x2="-38" y2="-38"/>
+      <line x1="56" y1="56" x2="38" y2="38"/>
+      <line x1="-56" y1="56" x2="-38" y2="38"/>
+      <line x1="56" y1="-56" x2="38" y2="-38"/>
+    </g>
+  </g>
+
+  <!-- Content Pill -->
+  <rect x="80" y="80" width="180" height="36" rx="18" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="170" y="103" fill="#93c5fd" font-family="'Helvetica Neue', sans-serif" font-size="13" font-weight="bold" letter-spacing="1.5" text-anchor="middle">SACRED RITUALS</text>
+
+  <!-- Main Headline -->
+  <text x="80" y="210" fill="#ffffff" font-family="'Georgia', serif" font-size="44" font-weight="bold">5 Sacred Morning Rituals</text>
+  <text x="80" y="270" fill="url(#accentGold)" font-family="'Georgia', serif" font-size="44" font-weight="bold">to Attract Wealth &amp; Harmony</text>
+
+  <!-- Subtitle -->
+  <text x="80" y="340" fill="#cbd5e1" font-family="'Helvetica Neue', sans-serif" font-size="20">Aligning Brahma Muhurta Energy with Consecrated Abundance</text>
+
+  <!-- Bottom Details -->
+  <line x1="80" y1="480" x2="750" y2="480" stroke="#334155" stroke-width="1.5"/>
+  <text x="80" y="525" fill="#f8fafc" font-family="'Helvetica Neue', sans-serif" font-size="16" font-weight="600">AR Blessings Spiritual Wisdom</text>
+  <text x="80" y="555" fill="#94a3b8" font-family="'Helvetica Neue', sans-serif" font-size="14">6 Min Read • Vedic Prosperity Science</text>
+</svg>
