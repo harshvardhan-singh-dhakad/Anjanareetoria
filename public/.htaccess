@@ -2,22 +2,38 @@ Options -MultiViews
 RewriteEngine On
 RewriteBase /
 
-# Force HTTPS
+# ------------------------------------------------------------------------------
+# 1. PREVENT INFINITE REDIRECT LOOPS ON HOSTINGER / CLOUDFLARE
+# ------------------------------------------------------------------------------
 RewriteCond %{HTTPS} off
-RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteCond %{HTTP:CF-Visitor} !https
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# If exact file or folder exists, serve it directly
+# ------------------------------------------------------------------------------
+# 2. SERVE EXISTING FILES & ASSETS DIRECTLY
+# ------------------------------------------------------------------------------
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Route clean URLs without .html extension (e.g., /books -> /books.html)
-RewriteCond %{DOCUMENT_ROOT}/$1.html -f
-RewriteRule ^(.+?)/?$ $1.html [L]
+# ------------------------------------------------------------------------------
+# 3. CLEAN EXTENSIONLESS URL ROUTING (Fixes 404 on Refresh)
+# ------------------------------------------------------------------------------
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.*)$ $1.html [L]
 
-# Route directory index if exists (e.g., /books/ -> /books/index.html)
-RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
-RewriteRule ^(.+?)/?$ $1/index.html [L]
+# If /books/ or directory is requested, check for index.html
+RewriteCond %{REQUEST_FILENAME}/index.html -f
+RewriteRule ^(.*)$ $1/index.html [L]
 
-# Custom 404 Error Page
+# If URL has trailing slash but matching .html file exists, serve it
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} ^/(.+)/$
+RewriteCond %{DOCUMENT_ROOT}/%1.html -f
+RewriteRule ^ %1.html [L]
+
+# ------------------------------------------------------------------------------
+# 4. CUSTOM 404 ERROR PAGE
+# ------------------------------------------------------------------------------
 ErrorDocument 404 /404.html
