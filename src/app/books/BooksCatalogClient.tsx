@@ -4,10 +4,11 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, BookOpen, Download, Package, Star, ShoppingCart, Eye, Sparkles } from 'lucide-react';
-import { books, Book } from '@/data/books';
+import { books as defaultBooks, Book } from '@/data/books';
 import { useCart } from '@/context/CartContext';
 
-export const BooksCatalogClient: React.FC = () => {
+export const BooksCatalogClient: React.FC<{ initialBooks?: Book[] }> = ({ initialBooks }) => {
+  const books = initialBooks && initialBooks.length > 0 ? initialBooks : defaultBooks;
   const { addToCart } = useCart();
   const [selectedTab, setSelectedTab] = useState<'all' | 'ebook' | 'physical'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,7 +32,7 @@ export const BooksCatalogClient: React.FC = () => {
 
       return matchesFormat && matchesSearch;
     });
-  }, [selectedTab, searchQuery]);
+  }, [selectedTab, searchQuery, books]);
 
   return (
     <div className="w-full bg-[#fafbfc] min-h-screen pb-16">

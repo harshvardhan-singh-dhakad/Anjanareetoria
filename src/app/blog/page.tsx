@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { BlogCatalogClient } from './BlogCatalogClient';
+import { getBlogs } from '@/lib/db/cmsStore';
 
 export const metadata: Metadata = {
   title: 'Blog & Spiritual Insights | AR Blessings',
@@ -8,5 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default function BlogPage() {
-  return <BlogCatalogClient />;
+  const blogs = getBlogs();
+  return <BlogCatalogClient initialBlogs={blogs} />;
 }

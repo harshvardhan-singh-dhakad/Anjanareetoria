@@ -14,12 +14,27 @@ import {
   Share2,
   Plus,
   Minus,
-  Sparkles
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { Book } from '@/data/books';
+import { ExtendedBook, Webinar } from '@/lib/db/cmsStore';
+import { Product } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 
-export const BookDetailClient: React.FC<{ book: Book }> = ({ book }) => {
+interface BookDetailClientProps {
+  book: Book;
+  relatedBooks?: ExtendedBook[];
+  relatedProducts?: Product[];
+  relatedWebinars?: Webinar[];
+}
+
+export const BookDetailClient: React.FC<BookDetailClientProps> = ({
+  book,
+  relatedBooks = [],
+  relatedProducts = [],
+  relatedWebinars = [],
+}) => {
   const { addToCart } = useCart();
   const [selectedFormat, setSelectedFormat] = useState<'ebook' | 'physical'>(
     book.formatType === 'physical' ? 'physical' : 'ebook'
@@ -423,6 +438,159 @@ export const BookDetailClient: React.FC<{ book: Book }> = ({ book }) => {
           </div>
         </div>
       </div>
+
+      {/* Other Sacred Books Section */}
+      {relatedBooks.length > 0 && (
+        <section className="mt-16 pt-10 border-t border-gray-100 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-[#0008c1] block mb-1">
+                Sacred Literature
+              </span>
+              <h3 className="text-xl sm:text-2xl font-serif font-bold text-gray-900">
+                Other Books &amp; Workbooks You May Love
+              </h3>
+            </div>
+            <Link href="/books" className="text-xs font-bold text-[#0008c1] hover:underline flex items-center space-x-1">
+              <span>View All Books</span>
+              <span>&rarr;</span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {relatedBooks.map((b) => (
+              <div
+                key={b.id}
+                className="bg-white rounded-2xl p-4 border border-gray-200/80 hover:border-amber-400/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group"
+              >
+                <div className="space-y-3">
+                  <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-slate-900">
+                    <Image src={b.image} alt={b.name} fill className="object-cover group-hover:scale-105 transition duration-300" />
+                    {b.badge && (
+                      <span className="absolute top-2 left-2 bg-amber-400 text-slate-950 font-bold text-[10px] px-2 py-0.5 rounded shadow">
+                        {b.badge}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-slate-900 text-sm line-clamp-1 group-hover:text-amber-700 transition">
+                      {b.name}
+                    </h4>
+                    <p className="text-[11px] text-slate-500 line-clamp-1">By {b.author}</p>
+                    <div className="mt-1.5 font-bold text-slate-900 text-xs">
+                      ₹{b.ebookPrice || b.price}
+                      <span className="text-[10px] font-normal text-emerald-700 ml-1">
+                        (Instant E-Book PDF)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  href={`/books/${b.slug}`}
+                  className="mt-3 w-full py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl text-center transition shadow-sm"
+                >
+                  View Book Details
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Consecrated Physical Essentials Section */}
+      {relatedProducts.length > 0 && (
+        <section className="mt-16 bg-gradient-to-br from-blue-50/60 to-indigo-50/40 rounded-3xl p-6 sm:p-10 border border-blue-100 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-[#0008c1] block mb-1">
+                Consecrated Conduits
+              </span>
+              <h3 className="text-xl sm:text-2xl font-serif font-bold text-slate-900">
+                Recommended Sacred Essentials
+              </h3>
+            </div>
+            <Link href="/#products" className="text-xs font-bold text-[#0008c1] hover:underline flex items-center space-x-1">
+              <span>View Store</span>
+              <span>&rarr;</span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {relatedProducts.map((p) => (
+              <div
+                key={p.id}
+                className="bg-white rounded-2xl p-4 border border-blue-100 shadow-sm hover:shadow-md transition flex flex-col justify-between group"
+              >
+                <div className="space-y-3">
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-gray-50">
+                    <Image src={p.image} alt={p.name} fill className="object-cover group-hover:scale-105 transition duration-300" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-[#0008c1] uppercase tracking-wider block">
+                      {p.category}
+                    </span>
+                    <h4 className="font-serif font-bold text-slate-900 text-sm line-clamp-1 group-hover:text-[#0008c1] transition">
+                      {p.name}
+                    </h4>
+                    <div className="mt-1 font-bold text-slate-900 text-xs">
+                      ₹{p.price.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  href={`/product/${p.slug}`}
+                  className="mt-3 w-full py-2 bg-[#0008c1] hover:bg-[#0a187a] text-white font-bold text-xs rounded-xl text-center transition shadow-sm"
+                >
+                  View Product
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Upcoming Live Masterclasses */}
+      {relatedWebinars.length > 0 && (
+        <section className="mt-16 bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950 text-white rounded-3xl p-6 sm:p-10 border border-slate-800 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block mb-1">
+                Live Interactive Guidance
+              </span>
+              <h3 className="text-xl sm:text-2xl font-serif font-bold text-white">
+                Upcoming Live Spiritual Masterclasses
+              </h3>
+            </div>
+            <Link href="/webinars" className="text-xs font-bold text-amber-300 hover:underline flex items-center space-x-1">
+              <span>View All Masterclasses</span>
+              <span>&rarr;</span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {relatedWebinars.map((w) => (
+              <Link
+                key={w.id}
+                href={`/webinars/${w.slug}`}
+                className="bg-white/5 border border-white/10 hover:border-amber-400/50 p-5 rounded-2xl transition flex items-center justify-between group"
+              >
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">
+                    {w.dateTime}
+                  </span>
+                  <h4 className="font-serif font-bold text-white text-sm group-hover:text-amber-300 transition line-clamp-1">
+                    {w.title}
+                  </h4>
+                  <p className="text-xs text-slate-400 line-clamp-1">With {w.speaker?.name}</p>
+                </div>
+                <ArrowRight size={16} className="text-amber-400 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Free Sample Excerpt Reader Modal */}
       {isSampleOpen && (

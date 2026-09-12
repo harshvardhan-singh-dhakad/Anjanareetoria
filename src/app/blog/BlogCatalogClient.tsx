@@ -4,16 +4,17 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, Clock, Calendar, ArrowRight, Sparkles, BookOpen } from 'lucide-react';
-import { blogs } from '@/data/blogs';
+import { blogs as defaultBlogs, BlogPost } from '@/data/blogs';
 
-export const BlogCatalogClient: React.FC = () => {
+export const BlogCatalogClient: React.FC<{ initialBlogs?: BlogPost[] }> = ({ initialBlogs }) => {
+  const blogs = initialBlogs && initialBlogs.length > 0 ? initialBlogs : defaultBlogs;
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(blogs.map((b) => b.category)));
     return ['All', ...cats];
-  }, []);
+  }, [blogs]);
 
   const filteredBlogs = useMemo(() => {
     return blogs.filter((post) => {
@@ -29,11 +30,11 @@ export const BlogCatalogClient: React.FC = () => {
 
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, blogs]);
 
   const featuredPost = useMemo(() => {
     return blogs.find((b) => b.featured) || blogs[0];
-  }, []);
+  }, [blogs]);
 
   return (
     <div className="w-full bg-[#fafbfc] min-h-screen pb-16">

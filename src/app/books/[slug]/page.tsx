@@ -1,11 +1,12 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { books } from '@/data/books';
+import { getBooks } from '@/lib/db/cmsStore';
 import { BookDetailClient } from './BookDetailClient';
 
 export function generateStaticParams() {
-  return books.map((book) => ({
+  const allBooks = getBooks();
+  return allBooks.map((book) => ({
     slug: book.slug,
   }));
 }
@@ -15,7 +16,8 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const book = books.find((b) => b.slug === params.slug);
+  const allBooks = getBooks();
+  const book = allBooks.find((b) => b.slug === params.slug);
   if (!book) {
     return {
       title: 'Book Not Found | AR Blessings',
@@ -33,12 +35,31 @@ export async function generateMetadata({
   };
 }
 
+import { getCrossRecommendations } from '@/lib/recommendations';
+
 export default function BookDetailPage({ params }: { params: { slug: string } }) {
-  const book = books.find((b) => b.slug === params.slug);
+  const allBooks = getBooks();
+  const book = allBooks.find((b) => b.slug === params.slug);
 
   if (!book) {
     notFound();
   }
 
-  return <BookDetailClient book={book} />;
+  const recommendations = getCrossRecommendations({
+    currentType: 'book',
+    currentSlug: book.slug,
+    category: book.category,
+    limitBooks: 3,
+    limitProducts: 3,
+    limitWebinars: 2,
+  });
+
+  return (
+    <BookDetailClient
+      book={book}
+      relatedBooks={recommendations.relatedBooks}
+      relatedProducts={recommendations.relatedProducts}
+      relatedWebinars={recommendations.relatedWebinars}
+    />
+  );
 }

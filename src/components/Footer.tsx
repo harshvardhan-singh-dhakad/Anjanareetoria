@@ -59,6 +59,11 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
+                <Link href="/webinars" className="hover:text-white transition">
+                  Live Webinars &amp; Masterclasses
+                </Link>
+              </li>
+              <li>
                 <Link href="/blog" className="hover:text-white transition">
                   Spiritual Blog
                 </Link>
@@ -66,6 +71,11 @@ export const Footer: React.FC = () => {
               <li>
                 <Link href="/#products" className="hover:text-white transition">
                   Shop Products
+                </Link>
+              </li>
+              <li>
+                <Link href="/admin/login" className="hover:text-white transition text-blue-200">
+                  Staff / Admin Login
                 </Link>
               </li>
             </ul>

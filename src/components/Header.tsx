@@ -69,6 +69,12 @@ export const Header: React.FC = () => {
             Blog
           </Link>
           <Link
+            href="/webinars"
+            className="text-sm font-semibold tracking-wide text-[#2b2b2b] hover:text-[#0008c1] transition-colors"
+          >
+            Webinars
+          </Link>
+          <Link
             href="/#videos"
             className="text-sm font-semibold tracking-wide text-[#2b2b2b] hover:text-[#0008c1] transition-colors"
           >
@@ -175,6 +181,13 @@ export const Header: React.FC = () => {
             className="block text-sm font-medium text-gray-800 hover:text-[#0008c1] py-2 border-b border-gray-50"
           >
             Blog
+          </Link>
+          <Link
+            href="/webinars"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm font-medium text-gray-800 hover:text-[#0008c1] py-2 border-b border-gray-50"
+          >
+            Webinars &amp; Masterclasses
           </Link>
           <Link
             href="/#videos"

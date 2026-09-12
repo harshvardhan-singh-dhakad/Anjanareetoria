@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { BooksCatalogClient } from './BooksCatalogClient';
+import { getBooks } from '@/lib/db/cmsStore';
 
 export const metadata: Metadata = {
   title: 'Spiritual Books & Instant E-Books | AR Blessings',
@@ -8,5 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default function BooksPage() {
-  return <BooksCatalogClient />;
+  const books = getBooks();
+  return <BooksCatalogClient initialBooks={books} />;
 }

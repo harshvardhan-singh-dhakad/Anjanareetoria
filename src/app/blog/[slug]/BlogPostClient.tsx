@@ -15,19 +15,35 @@ import {
   ShoppingBag,
   BookOpen
 } from 'lucide-react';
-import { BlogPost, blogs } from '@/data/blogs';
-import { products } from '@/data/products';
+import { Product } from '@/data/products';
+import { ExtendedBook, Webinar, ExtendedBlogPost } from '@/lib/db/cmsStore';
+import { blogs } from '@/data/blogs';
 import { books } from '@/data/books';
 
-export const BlogPostClient: React.FC<{ post: BlogPost }> = ({ post }) => {
+
+interface BlogPostClientProps {
+  post: ExtendedBlogPost;
+  relatedBlogs?: ExtendedBlogPost[];
+  relatedProducts?: Product[];
+  relatedBooks?: ExtendedBook[];
+  relatedWebinars?: Webinar[];
+}
+
+export const BlogPostClient: React.FC<BlogPostClientProps> = ({
+  post,
+  relatedBlogs = [],
+  relatedProducts: dynamicProducts = [],
+  relatedBooks: dynamicBooks = [],
+  relatedWebinars = [],
+}) => {
   const [copied, setCopied] = useState(false);
 
-  // Find related products and books
-  const relatedProducts = (post.relatedProductSlugs || [])
-    .map((slug) => products.find((p) => p.slug === slug))
+  // Combine explicitly tagged products and dynamically suggested products
+  const relatedProducts = dynamicProducts.length > 0 ? dynamicProducts : (post.relatedProductSlugs || [])
+    .map((slug) => dynamicProducts.find((p) => p.slug === slug))
     .filter(Boolean);
 
-  const relatedBooks = (post.relatedBookSlugs || [])
+  const relatedBooks = dynamicBooks.length > 0 ? dynamicBooks : (post.relatedBookSlugs || [])
     .map((slug) => books.find((b) => b.slug === slug))
     .filter(Boolean);
 
@@ -127,48 +143,62 @@ export const BlogPostClient: React.FC<{ post: BlogPost }> = ({ post }) => {
 
         {/* Article Body */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-10 space-y-8 text-gray-800 leading-relaxed font-sans">
-          {/* Introduction Excerpt */}
-          <div className="text-base sm:text-lg text-gray-700 font-serif leading-relaxed border-l-4 border-[#0008c1] pl-5 italic bg-blue-50/30 py-3 rounded-r-xl">
-            {post.content.introduction}
-          </div>
-
-          {/* Sections */}
-          {post.content.sections.map((section, idx) => (
-            <div key={idx} className="space-y-4 pt-2">
-              <h2 className="text-xl sm:text-2xl font-bold font-serif text-[#0008c1]">
-                {section.heading}
-              </h2>
-
-              {section.body.map((para, pIdx) => (
-                <p key={pIdx} className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                  {para}
-                </p>
-              ))}
-
-              {/* Tip Callout if available */}
-              {section.tip && (
-                <div className="p-4 sm:p-5 bg-amber-50/80 border border-amber-200 rounded-xl flex items-start space-x-3 text-xs sm:text-sm text-amber-950 my-4 shadow-sm">
-                  <Lightbulb size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="block font-bold text-amber-900 mb-0.5">
-                      Sacred Abundance Insight:
-                    </strong>
-                    <span>{section.tip}</span>
-                  </div>
+          {/* Custom HTML/CSS Content if provided by Admin */}
+          {post.htmlContent ? (
+            <div
+              className="prose prose-slate max-w-none overflow-hidden"
+              dangerouslySetInnerHTML={{ __html: post.htmlContent }}
+            />
+          ) : (
+            <>
+              {/* Introduction Excerpt */}
+              {post.content?.introduction && (
+                <div className="text-base sm:text-lg text-gray-700 font-serif leading-relaxed border-l-4 border-[#0008c1] pl-5 italic bg-blue-50/30 py-3 rounded-r-xl">
+                  {post.content.introduction}
                 </div>
               )}
-            </div>
-          ))}
 
-          {/* Conclusion */}
-          <div className="pt-6 border-t border-gray-100 space-y-3">
-            <h3 className="text-lg font-bold font-serif text-gray-900">
-              Harmonizing Your Journey
-            </h3>
-            <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-              {post.content.conclusion}
-            </p>
-          </div>
+              {/* Sections */}
+              {post.content?.sections?.map((section, idx) => (
+                <div key={idx} className="space-y-4 pt-2">
+                  <h2 className="text-xl sm:text-2xl font-bold font-serif text-[#0008c1]">
+                    {section.heading}
+                  </h2>
+
+                  {section.body.map((para, pIdx) => (
+                    <p key={pIdx} className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                      {para}
+                    </p>
+                  ))}
+
+                  {/* Tip Callout if available */}
+                  {section.tip && (
+                    <div className="p-4 sm:p-5 bg-amber-50/80 border border-amber-200 rounded-xl flex items-start space-x-3 text-xs sm:text-sm text-amber-950 my-4 shadow-sm">
+                      <Lightbulb size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="block font-bold text-amber-900 mb-0.5">
+                          Sacred Abundance Insight:
+                        </strong>
+                        <span>{section.tip}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Conclusion */}
+              {post.content?.conclusion && (
+                <div className="pt-6 border-t border-gray-100 space-y-3">
+                  <h3 className="text-lg font-bold font-serif text-gray-900">
+                    Harmonizing Your Journey
+                  </h3>
+                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                    {post.content.conclusion}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
 
           {/* Tags */}
           <div className="pt-6 border-t border-gray-100 flex flex-wrap items-center gap-2">
@@ -307,6 +337,85 @@ export const BlogPostClient: React.FC<{ post: BlogPost }> = ({ post }) => {
             </Link>
           ) : <div />}
         </div>
+
+        {/* Related Spiritual Articles & Insights */}
+        {relatedBlogs.length > 0 && (
+          <section className="pt-8 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-serif font-bold text-gray-900">
+                Related Articles You May Find Enlightening
+              </h3>
+              <Link href="/blog" className="text-xs font-bold text-[#0008c1] hover:underline flex items-center space-x-1">
+                <span>View All Articles</span>
+                <span>&rarr;</span>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {relatedBlogs.map((b) => (
+                <Link
+                  key={b.id}
+                  href={`/blog/${b.slug}`}
+                  className="bg-white rounded-xl p-4 border border-gray-200 hover:border-[#0008c1] shadow-sm hover:shadow-md transition flex flex-col justify-between group"
+                >
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 block">
+                      {b.category}
+                    </span>
+                    <h4 className="text-xs sm:text-sm font-bold font-serif text-gray-900 line-clamp-2 group-hover:text-[#0008c1] transition">
+                      {b.title}
+                    </h4>
+                  </div>
+                  <div className="mt-3 text-[11px] text-gray-400 flex items-center justify-between">
+                    <span>{b.readTimeMinutes} min read</span>
+                    <span className="text-[#0008c1] font-semibold group-hover:translate-x-1 transition-transform">&rarr;</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Upcoming Live Spiritual Masterclasses */}
+        {relatedWebinars.length > 0 && (
+          <section className="bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950 text-white rounded-2xl p-6 sm:p-8 border border-slate-800 space-y-4 shadow-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">
+                  Live Guidance Masterclasses
+                </span>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-white">
+                  Join Our Live Spiritual Masterclasses
+                </h3>
+              </div>
+              <Link href="/webinars" className="text-xs font-bold text-amber-300 hover:underline flex items-center space-x-1">
+                <span>Browse Schedule</span>
+                <span>&rarr;</span>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              {relatedWebinars.map((w) => (
+                <Link
+                  key={w.id}
+                  href={`/webinars/${w.slug}`}
+                  className="bg-white/5 border border-white/10 hover:border-amber-400/50 p-4 rounded-xl transition flex items-center justify-between group"
+                >
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">
+                      {w.dateTime}
+                    </span>
+                    <h4 className="font-serif font-bold text-white text-xs sm:text-sm group-hover:text-amber-300 transition line-clamp-1">
+                      {w.title}
+                    </h4>
+                    <p className="text-[11px] text-slate-400">With {w.speaker?.name}</p>
+                  </div>
+                  <ArrowRight size={15} className="text-amber-400 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-2" />
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </article>
   );

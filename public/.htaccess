@@ -1,9 +1,10 @@
-Options -MultiViews
+DirectoryIndex index.html index.php
+Options -Indexes -MultiViews
 RewriteEngine On
 RewriteBase /
 
 # ------------------------------------------------------------------------------
-# 1. PREVENT INFINITE REDIRECT LOOPS ON HOSTINGER / CLOUDFLARE
+# 1. PREVENT INFINITE HTTPS REDIRECT LOOP ON HOSTINGER / CLOUDFLARE
 # ------------------------------------------------------------------------------
 RewriteCond %{HTTPS} off
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
@@ -11,29 +12,35 @@ RewriteCond %{HTTP:CF-Visitor} !https
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # ------------------------------------------------------------------------------
-# 2. SERVE EXISTING FILES & ASSETS DIRECTLY
+# 2. EXPLICIT ROOT ROUTE
 # ------------------------------------------------------------------------------
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^$ index.html [L]
+
+# ------------------------------------------------------------------------------
+# 3. EXISTING STATIC ASSETS (css, js, images, videos, fonts)
+# ------------------------------------------------------------------------------
+RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
 
 # ------------------------------------------------------------------------------
-# 3. CLEAN EXTENSIONLESS URL ROUTING (Fixes 404 on Refresh)
+# 4. EXTENSIONLESS URL ROUTING (Fixes 403 Forbidden on /books, /blog, /webinars)
+#    When /books or /blog is requested, serve books.html or blog.html directly
+#    even if a directory named "books" or "blog" exists.
 # ------------------------------------------------------------------------------
 RewriteCond %{REQUEST_FILENAME}.html -f
-RewriteRule ^(.*)$ $1.html [L]
+RewriteRule ^(.+?)/?$ $1.html [L]
 
-# If /books/ or directory is requested, check for index.html
-RewriteCond %{REQUEST_FILENAME}/index.html -f
-RewriteRule ^(.*)$ $1/index.html [L]
-
-# If URL has trailing slash but matching .html file exists, serve it
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} ^/(.+)/$
-RewriteCond %{DOCUMENT_ROOT}/%1.html -f
-RewriteRule ^ %1.html [L]
+RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+RewriteRule ^(.+?)/?$ $1.html [L]
 
 # ------------------------------------------------------------------------------
-# 4. CUSTOM 404 ERROR PAGE
+# 5. IF DIRECTORY CONTAINS AN INDEX.HTML FILE, SERVE IT
+# ------------------------------------------------------------------------------
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteCond %{REQUEST_FILENAME}/index.html -f
+RewriteRule ^(.+?)/?$ $1/index.html [L]
+
+# ------------------------------------------------------------------------------
+# 6. CUSTOM 404 ERROR PAGE
 # ------------------------------------------------------------------------------
 ErrorDocument 404 /404.html
