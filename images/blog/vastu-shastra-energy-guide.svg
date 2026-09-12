@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="100%" height="100%">
+  <defs>
+    <linearGradient id="blog3Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#042f2e"/>
+      <stop offset="50%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#021d1d"/>
+    </linearGradient>
+    <linearGradient id="mintGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a7f3d0"/>
+      <stop offset="100%" stop-color="#fde047"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#blog3Grad)"/>
+
+  <!-- Sacred Directions graphics -->
+  <g opacity="0.15" stroke="#ccfbf1" stroke-width="2" fill="none">
+    <circle cx="980" cy="315" r="220"/>
+    <circle cx="980" cy="315" r="150"/>
+    <rect x="880" y="215" width="200" height="200"/>
+    <line x1="980" y1="50" x2="980" y2="580"/>
+    <line x1="715" y1="315" x2="1245" y2="315"/>
+  </g>
+
+  <!-- Content Pill -->
+  <rect x="80" y="80" width="210" height="36" rx="18" fill="#134e4a" stroke="#2dd4bf" stroke-width="1.5"/>
+  <text x="185" y="103" fill="#5eead4" font-family="'Helvetica Neue', sans-serif" font-size="13" font-weight="bold" letter-spacing="1.5" text-anchor="middle">VASTU &amp; SACRED SPACE</text>
+
+  <!-- Headline -->
+  <text x="80" y="210" fill="#ffffff" font-family="'Georgia', serif" font-size="42" font-weight="bold">Vastu Energy Architecture:</text>
+  <text x="80" y="270" fill="url(#mintGold)" font-family="'Georgia', serif" font-size="42" font-weight="bold">Where to Place Sacred Water &amp; Fragrances</text>
+
+  <!-- Subtitle -->
+  <text x="80" y="340" fill="#ccfbf1" font-family="'Helvetica Neue', sans-serif" font-size="20">Clearing Negative Geopathic Stresses &amp; Unlocking the Ishanya Corner</text>
+
+  <!-- Bottom Details -->
+  <line x1="80" y1="480" x2="750" y2="480" stroke="#115e59" stroke-width="1.5"/>
+  <text x="80" y="525" fill="#f8fafc" font-family="'Helvetica Neue', sans-serif" font-size="16" font-weight="600">Acharya Rajesh Shastri</text>
+  <text x="80" y="555" fill="#99f6e4" font-family="'Helvetica Neue', sans-serif" font-size="14">7 Min Read • Home &amp; Office Vastu</text>
+</svg>

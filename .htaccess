@@ -1,4 +1,4 @@
-﻿Options -MultiViews
+Options -MultiViews
 RewriteEngine On
 RewriteBase /
 
@@ -6,14 +6,18 @@ RewriteBase /
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# If exact file or folder exists, serve it
+# If exact file or folder exists, serve it directly
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Route html pages without .html extension
-RewriteCond %{DOCUMENT_ROOT}/.html -f
-RewriteRule ^(.*)$ .html [L]
+# Route clean URLs without .html extension (e.g., /books -> /books.html)
+RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+RewriteRule ^(.+?)/?$ $1.html [L]
 
-# Custom 404
+# Route directory index if exists (e.g., /books/ -> /books/index.html)
+RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
+RewriteRule ^(.+?)/?$ $1/index.html [L]
+
+# Custom 404 Error Page
 ErrorDocument 404 /404.html

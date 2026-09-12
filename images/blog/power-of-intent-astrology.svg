@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="100%" height="100%">
+  <defs>
+    <linearGradient id="blog4Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="50%" stop-color="#312e81"/>
+      <stop offset="100%" stop-color="#0f0e26"/>
+    </linearGradient>
+    <linearGradient id="astroViolet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbcfe8"/>
+      <stop offset="50%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#e879f9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#blog4Grad)"/>
+
+  <!-- Celestial Constellation graphics -->
+  <g opacity="0.2" stroke="#c084fc" stroke-width="1.5" fill="none">
+    <circle cx="950" cy="315" r="230"/>
+    <circle cx="950" cy="315" r="170"/>
+    <polygon points="950,115 1090,240 1040,410 860,410 810,240"/>
+    <circle cx="950" cy="115" r="5" fill="#fbcfe8"/>
+    <circle cx="1090" cy="240" r="5" fill="#fbcfe8"/>
+    <circle cx="1040" cy="410" r="5" fill="#fbcfe8"/>
+    <circle cx="860" cy="410" r="5" fill="#fbcfe8"/>
+    <circle cx="810" cy="240" r="5" fill="#fbcfe8"/>
+  </g>
+
+  <!-- Content Pill -->
+  <rect x="80" y="80" width="220" height="36" rx="18" fill="#3730a3" stroke="#818cf8" stroke-width="1.5"/>
+  <text x="190" y="103" fill="#c7d2fe" font-family="'Helvetica Neue', sans-serif" font-size="13" font-weight="bold" letter-spacing="1.5" text-anchor="middle">ASTROLOGY &amp; MANIFESTATION</text>
+
+  <!-- Headline -->
+  <text x="80" y="210" fill="#ffffff" font-family="'Georgia', serif" font-size="42" font-weight="bold">The Power of Focused Intent:</text>
+  <text x="80" y="270" fill="url(#astroViolet)" font-family="'Georgia', serif" font-size="42" font-weight="bold">Manifesting Career &amp; Financial Breakthroughs</text>
+
+  <!-- Subtitle -->
+  <text x="80" y="340" fill="#e0e7ff" font-family="'Helvetica Neue', sans-serif" font-size="20">How Aligning Karma, Astrological Windows &amp; Blessed Tokens Accelerates Success</text>
+
+  <!-- Bottom Details -->
+  <line x1="80" y1="480" x2="750" y2="480" stroke="#4338ca" stroke-width="1.5"/>
+  <text x="80" y="525" fill="#f8fafc" font-family="'Helvetica Neue', sans-serif" font-size="16" font-weight="600">Devi Ananya &amp; Vedic Council</text>
+  <text x="80" y="555" fill="#c7d2fe" font-family="'Helvetica Neue', sans-serif" font-size="14">5 Min Read • Cosmic Guidance</text>
+</svg>
