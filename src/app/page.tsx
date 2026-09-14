@@ -6,10 +6,12 @@ import { BlogHomeSection } from '@/components/BlogHomeSection';
 import { VideoSection } from '@/components/VideoSection';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
 import { products } from '@/data/products';
+import { ProductListSchema } from '@/components/SchemaMarkup';
 
 export default function HomePage() {
   return (
     <div className="w-full">
+      <ProductListSchema products={products} />
       {/* Hero Banner Section */}
       <HeroBanner />
 

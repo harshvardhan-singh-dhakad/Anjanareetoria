@@ -1,13 +1,41 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { getProducts } from '@/lib/db/cmsStore';
 import { ProductDetailClient } from './ProductDetailClient';
+import { ProductSchema, BreadcrumbSchema } from '@/components/SchemaMarkup';
 
 export function generateStaticParams() {
   const allProducts = getProducts();
   return allProducts.map((product) => ({
     slug: product.slug,
   }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const allProducts = getProducts();
+  const product = allProducts.find((p) => p.slug === params.slug);
+  if (!product) {
+    return { title: 'Product Not Found | AR Blessings' };
+  }
+
+  return {
+    title: `${product.name} — AR Blessings`,
+    description: product.shortDescription,
+    alternates: {
+      canonical: `/product/${product.slug}`,
+    },
+    openGraph: {
+      title: product.name,
+      description: product.shortDescription,
+      images: [{ url: product.image }],
+      type: 'website',
+    },
+  };
 }
 
 import { getCrossRecommendations } from '@/lib/recommendations';
@@ -30,11 +58,22 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   });
 
   return (
-    <ProductDetailClient
-      product={product}
-      relatedProducts={recommendations.relatedProducts}
-      relatedBooks={recommendations.relatedBooks}
-      relatedWebinars={recommendations.relatedWebinars}
-    />
+    <>
+      <ProductSchema product={product} />
+      <BreadcrumbSchema
+        items={[
+          { name: 'Home', url: 'https://arblessings.com' },
+          { name: 'Products', url: 'https://arblessings.com/#products' },
+          { name: product.name, url: `https://arblessings.com/product/${product.slug}` },
+        ]}
+      />
+      <ProductDetailClient
+        product={product}
+        relatedProducts={recommendations.relatedProducts}
+        relatedBooks={recommendations.relatedBooks}
+        relatedWebinars={recommendations.relatedWebinars}
+      />
+    </>
   );
 }
+

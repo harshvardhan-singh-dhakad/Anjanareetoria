@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getBlogs } from '@/lib/db/cmsStore';
 import { BlogPostClient } from './BlogPostClient';
+import { BlogArticleSchema, BreadcrumbSchema } from '@/components/SchemaMarkup';
 
 export function generateStaticParams() {
   const allBlogs = getBlogs();
@@ -27,10 +28,16 @@ export async function generateMetadata({
   return {
     title: `${post.title} | AR Blessings Journal`,
     description: post.excerpt,
+    alternates: {
+      canonical: `/blog/${post.slug}`,
+    },
     openGraph: {
       title: post.title,
       description: post.excerpt,
       images: [{ url: post.coverImage }],
+      type: 'article',
+      publishedTime: new Date(post.publishedDate).toISOString(),
+      authors: [post.author.name],
     },
   };
 }
@@ -56,12 +63,23 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   });
 
   return (
-    <BlogPostClient
-      post={post}
-      relatedBlogs={recommendations.relatedBlogs}
-      relatedProducts={recommendations.relatedProducts}
-      relatedBooks={recommendations.relatedBooks}
-      relatedWebinars={recommendations.relatedWebinars}
-    />
+    <>
+      <BlogArticleSchema post={post} />
+      <BreadcrumbSchema
+        items={[
+          { name: 'Home', url: 'https://arblessings.com' },
+          { name: 'Spiritual Journal', url: 'https://arblessings.com/blog' },
+          { name: post.title, url: `https://arblessings.com/blog/${post.slug}` },
+        ]}
+      />
+      <BlogPostClient
+        post={post}
+        relatedBlogs={recommendations.relatedBlogs}
+        relatedProducts={recommendations.relatedProducts}
+        relatedBooks={recommendations.relatedBooks}
+        relatedWebinars={recommendations.relatedWebinars}
+      />
+    </>
   );
 }
+
