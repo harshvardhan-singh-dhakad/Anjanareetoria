@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
 import { WATERMARKED_DIR, ensureStorageDirs, getOrGenerateSourcePdf } from './storage';
-import { findOrderById } from './orderStore';
+import { findOrderById, findOrderByIdAsync } from './orderStore';
 
 /**
  * Generates a per-buyer watermarked PDF and caches it on disk under
@@ -22,7 +22,7 @@ export async function watermarkAndCache(orderId: string): Promise<string> {
   }
 
   // 2. Fetch order details
-  const order = findOrderById(orderId);
+  const order = await findOrderByIdAsync(orderId) || findOrderById(orderId);
   if (!order) {
     throw new Error(`Order not found for ID: ${orderId}`);
   }

@@ -12,6 +12,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.44.0",
+    "mysql2": "^3.24.4",
     "next": "14.2.35",
     "pdf-lib": "^1.17.1",
     "react": "^18",

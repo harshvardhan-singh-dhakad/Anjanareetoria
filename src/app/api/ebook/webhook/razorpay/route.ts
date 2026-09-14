@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { saveOrder } from '@/lib/ebook/orderStore';
+import { saveOrderAsync } from '@/lib/ebook/orderStore';
 import { watermarkAndCache } from '@/lib/ebook/watermark';
 
 export const runtime = 'nodejs';
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       status: 'paid' as const,
     };
 
-    saveOrder(newOrder);
+    await saveOrderAsync(newOrder);
 
     // 2. Pre-generate and cache the watermarked PDF in background
     try {

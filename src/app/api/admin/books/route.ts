@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthorizedAdmin } from '@/lib/admin/adminAuth';
-import { getBooks, saveBook, deleteBook, ExtendedBook } from '@/lib/db/cmsStore';
+import { getBooksAsync, saveBookAsync, deleteBookAsync, ExtendedBook } from '@/lib/db/cmsStore';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const books = getBooks();
+  const books = await getBooksAsync();
   return NextResponse.json({ success: true, books });
 }
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       pdfSourceFile: body.pdfSourceFile || 'karodon-ka-rahasya.pdf',
     };
 
-    saveBook(book);
+    await saveBookAsync(book);
     return NextResponse.json({ success: true, message: 'Book saved successfully.', book });
   } catch (err: unknown) {
     console.error('[admin/books] Error:', err);
@@ -75,6 +75,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Book ID required.' }, { status: 400 });
   }
 
-  deleteBook(id);
+  await deleteBookAsync(id);
   return NextResponse.json({ success: true, message: 'Book deleted.' });
 }

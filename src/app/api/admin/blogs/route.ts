@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthorizedAdmin } from '@/lib/admin/adminAuth';
-import { getBlogs, saveBlog, deleteBlog, ExtendedBlogPost } from '@/lib/db/cmsStore';
+import { getBlogsAsync, saveBlogAsync, deleteBlogAsync, ExtendedBlogPost } from '@/lib/db/cmsStore';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const blogs = getBlogs();
+  const blogs = await getBlogsAsync();
   return NextResponse.json({ success: true, blogs });
 }
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       relatedBookSlugs: Array.isArray(body.relatedBookSlugs) ? body.relatedBookSlugs : [],
     };
 
-    saveBlog(blog);
+    await saveBlogAsync(blog);
     return NextResponse.json({ success: true, message: 'Article saved successfully.', blog });
   } catch (err: unknown) {
     console.error('[admin/blogs] Error:', err);
@@ -74,6 +74,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Article ID required.' }, { status: 400 });
   }
 
-  deleteBlog(id);
+  await deleteBlogAsync(id);
   return NextResponse.json({ success: true, message: 'Article deleted.' });
 }

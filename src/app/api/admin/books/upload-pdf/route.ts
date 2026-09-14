@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { isAuthorizedAdmin } from '@/lib/admin/adminAuth';
 import { SOURCE_DIR, ensureStorageDirs } from '@/lib/ebook/storage';
-import { getBooks, saveBook } from '@/lib/db/cmsStore';
+import { getBooksAsync, saveBookAsync } from '@/lib/db/cmsStore';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,11 +35,11 @@ export async function POST(req: NextRequest) {
 
     // If a bookId was passed, link this source file directly to the book record
     if (bookId) {
-      const books = getBooks();
+      const books = await getBooksAsync();
       const targetBook = books.find((b) => b.id === bookId || b.slug === bookId);
       if (targetBook) {
         targetBook.pdfSourceFile = cleanFilename;
-        saveBook(targetBook);
+        await saveBookAsync(targetBook);
       }
     }
 

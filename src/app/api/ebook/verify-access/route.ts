@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findOrderByPhoneAndOrderId } from '@/lib/ebook/orderStore';
+import { findOrderByPhoneAndOrderIdAsync } from '@/lib/ebook/orderStore';
 import { createSessionToken } from '@/lib/ebook/token';
 
 export const runtime = 'nodejs';
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const order = findOrderByPhoneAndOrderId(String(phone), String(orderId));
+    const order = await findOrderByPhoneAndOrderIdAsync(String(phone), String(orderId));
 
     if (!order) {
       return NextResponse.json(

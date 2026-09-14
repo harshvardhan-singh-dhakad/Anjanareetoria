@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthorizedAdmin } from '@/lib/admin/adminAuth';
-import { getWebinars, saveWebinar, deleteWebinar, Webinar } from '@/lib/db/cmsStore';
+import { getWebinarsAsync, saveWebinarAsync, deleteWebinarAsync, Webinar } from '@/lib/db/cmsStore';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const webinars = getWebinars();
+  const webinars = await getWebinarsAsync();
   return NextResponse.json({ success: true, webinars });
 }
 
@@ -40,9 +40,11 @@ export async function POST(req: NextRequest) {
       status: body.status || 'upcoming',
       bannerImage: body.bannerImage || '/images/blog/sacred-morning-rituals.svg',
       agenda: Array.isArray(body.agenda) ? body.agenda : [],
+      reviews: Array.isArray(body.reviews) ? body.reviews : [],
+      whoShouldAttend: Array.isArray(body.whoShouldAttend) ? body.whoShouldAttend : [],
     };
 
-    saveWebinar(webinar);
+    await saveWebinarAsync(webinar);
     return NextResponse.json({ success: true, message: 'Webinar saved successfully.', webinar });
   } catch (err: unknown) {
     console.error('[admin/webinars] Error:', err);
@@ -62,6 +64,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Webinar ID required.' }, { status: 400 });
   }
 
-  deleteWebinar(id);
+  await deleteWebinarAsync(id);
   return NextResponse.json({ success: true, message: 'Webinar deleted.' });
 }

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthorizedAdmin } from '@/lib/admin/adminAuth';
-import { getProducts, saveProduct, deleteProduct } from '@/lib/db/cmsStore';
+import { getProductsAsync, saveProductAsync, deleteProductAsync } from '@/lib/db/cmsStore';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const products = getProducts();
+  const products = await getProductsAsync();
   return NextResponse.json({ success: true, products });
 }
 
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       features: Array.isArray(body.features) ? body.features : [],
     };
 
-    saveProduct(product);
+    await saveProductAsync(product as any);
     return NextResponse.json({ success: true, message: 'Product saved successfully.', product });
   } catch (err: unknown) {
     console.error('[admin/products] Error:', err);
@@ -60,6 +60,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Product ID required for deletion.' }, { status: 400 });
   }
 
-  deleteProduct(id);
+  await deleteProductAsync(id);
   return NextResponse.json({ success: true, message: 'Product deleted.' });
 }

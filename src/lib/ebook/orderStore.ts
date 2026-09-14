@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { DATA_DIR, ensureStorageDirs } from './storage';
+import { getMySQLPool, initializeDatabaseTables } from '../db/database';
 
 export interface EbookOrder {
   orderId: string;
@@ -11,6 +12,9 @@ export interface EbookOrder {
   purchaseTimestamp: number;
   amount: number;
   status: 'paid' | 'pending' | 'refunded';
+  viewToken?: string;
+  accessCount?: number;
+  firstAccessedAt?: string;
 }
 
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
@@ -22,7 +26,7 @@ const SEED_ORDERS: EbookOrder[] = [
     buyerEmail: 'rajesh.sharma@example.com',
     productId: 'bk-101',
     paymentId: 'pay_demo_88991',
-    purchaseTimestamp: Date.now() - 2 * 24 * 60 * 60 * 1000, // 2 days ago
+    purchaseTimestamp: Date.now() - 2 * 24 * 60 * 60 * 1000,
     amount: 500,
     status: 'paid',
   },
@@ -32,7 +36,7 @@ const SEED_ORDERS: EbookOrder[] = [
     buyerEmail: 'priya.verma@example.com',
     productId: 'bk-101',
     paymentId: 'pay_demo_50021',
-    purchaseTimestamp: Date.now() - 5 * 60 * 60 * 1000, // 5 hours ago
+    purchaseTimestamp: Date.now() - 5 * 60 * 60 * 1000,
     amount: 500,
     status: 'paid',
   }
@@ -58,17 +62,13 @@ function writeOrdersToDisk(orders: EbookOrder[]): void {
   fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
 }
 
-/**
- * Finds an order by buyer phone and order ID.
- * Normalizes phone numbers (removes spaces, dashes, +91 prefixes).
- */
 export function findOrderByPhoneAndOrderId(phone: string, orderId: string): EbookOrder | null {
   const orders = readOrdersFromDisk();
-  const cleanInputPhone = phone.replace(/\D/g, '').slice(-10);
+  const cleanInputPhone = phone.replace(/\D/g, '');
   const cleanInputOrderId = orderId.trim().toUpperCase();
 
   const found = orders.find((o) => {
-    const cleanDbPhone = o.buyerPhone.replace(/\D/g, '').slice(-10);
+    const cleanDbPhone = o.buyerPhone.replace(/\D/g, '');
     const cleanDbOrderId = o.orderId.trim().toUpperCase();
     return cleanDbPhone === cleanInputPhone && cleanDbOrderId === cleanInputOrderId;
   });
@@ -76,18 +76,77 @@ export function findOrderByPhoneAndOrderId(phone: string, orderId: string): Eboo
   return found || null;
 }
 
-/**
- * Finds an order by its order ID.
- */
+export async function findOrderByPhoneAndOrderIdAsync(phone: string, orderId: string): Promise<EbookOrder | null> {
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      const cleanPhone = phone.replace(/\D/g, '');
+      const cleanId = orderId.trim().toUpperCase();
+      const [rows] = await pool.query(
+        'SELECT * FROM orders WHERE buyer_phone = ? AND order_id = ? LIMIT 1',
+        [cleanPhone, cleanId]
+      ) as [any[], any];
+
+      if (rows && rows.length > 0) {
+        const r = rows[0];
+        return {
+          orderId: r.order_id,
+          paymentId: r.payment_id,
+          buyerEmail: r.buyer_email,
+          buyerPhone: r.buyer_phone,
+          productId: r.product_id,
+          amount: r.amount,
+          status: r.status.toLowerCase() as any,
+          viewToken: r.view_token || undefined,
+          accessCount: r.access_count || 0,
+          firstAccessedAt: r.first_accessed_at || undefined,
+          purchaseTimestamp: new Date(r.created_at).getTime(),
+        };
+      }
+    } catch (err) {
+      console.error('[orderStore] MySQL query error, falling back to disk:', err);
+    }
+  }
+  return findOrderByPhoneAndOrderId(phone, orderId);
+}
+
 export function findOrderById(orderId: string): EbookOrder | null {
   const orders = readOrdersFromDisk();
   const cleanId = orderId.trim().toUpperCase();
   return orders.find((o) => o.orderId.trim().toUpperCase() === cleanId) || null;
 }
 
-/**
- * Creates or updates an order in the store.
- */
+export async function findOrderByIdAsync(orderId: string): Promise<EbookOrder | null> {
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      const cleanId = orderId.trim().toUpperCase();
+      const [rows] = await pool.query('SELECT * FROM orders WHERE order_id = ? LIMIT 1', [cleanId]) as [any[], any];
+      if (rows && rows.length > 0) {
+        const r = rows[0];
+        return {
+          orderId: r.order_id,
+          paymentId: r.payment_id,
+          buyerEmail: r.buyer_email,
+          buyerPhone: r.buyer_phone,
+          productId: r.product_id,
+          amount: r.amount,
+          status: r.status.toLowerCase() as any,
+          viewToken: r.view_token || undefined,
+          accessCount: r.access_count || 0,
+          firstAccessedAt: r.first_accessed_at || undefined,
+          purchaseTimestamp: new Date(r.created_at).getTime(),
+        };
+      }
+    } catch (err) {
+      console.error('[orderStore] MySQL query error, falling back to disk:', err);
+    }
+  }
+  return findOrderById(orderId);
+}
+
 export function saveOrder(order: EbookOrder): void {
   const orders = readOrdersFromDisk();
   const existingIdx = orders.findIndex((o) => o.orderId.toUpperCase() === order.orderId.toUpperCase());
@@ -99,9 +158,72 @@ export function saveOrder(order: EbookOrder): void {
   writeOrdersToDisk(orders);
 }
 
-/**
- * Returns all orders.
- */
+export async function saveOrderAsync(order: EbookOrder): Promise<void> {
+  saveOrder(order);
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      const query = `
+        INSERT INTO orders (order_id, payment_id, buyer_email, buyer_phone, product_id, amount, status, view_token, access_count, first_accessed_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          payment_id = VALUES(payment_id),
+          buyer_email = VALUES(buyer_email),
+          buyer_phone = VALUES(buyer_phone),
+          product_id = VALUES(product_id),
+          amount = VALUES(amount),
+          status = VALUES(status),
+          view_token = VALUES(view_token),
+          access_count = VALUES(access_count),
+          first_accessed_at = VALUES(first_accessed_at);
+      `;
+      await pool.query(query, [
+        order.orderId.toUpperCase(),
+        order.paymentId,
+        order.buyerEmail,
+        order.buyerPhone.replace(/\D/g, ''),
+        order.productId,
+        order.amount,
+        order.status.toUpperCase(),
+        order.viewToken || null,
+        order.accessCount || 0,
+        order.firstAccessedAt || null,
+      ]);
+    } catch (err) {
+      console.error('[orderStore] MySQL saveOrder error:', err);
+    }
+  }
+}
+
 export function getAllOrders(): EbookOrder[] {
   return readOrdersFromDisk();
+}
+
+export async function getAllOrdersAsync(): Promise<EbookOrder[]> {
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      const [rows] = await pool.query('SELECT * FROM orders ORDER BY created_at DESC') as [any[], any];
+      if (rows && rows.length > 0) {
+        return rows.map((r) => ({
+          orderId: r.order_id,
+          paymentId: r.payment_id,
+          buyerEmail: r.buyer_email,
+          buyerPhone: r.buyer_phone,
+          productId: r.product_id,
+          amount: r.amount,
+          status: r.status.toLowerCase() as any,
+          viewToken: r.view_token || undefined,
+          accessCount: r.access_count || 0,
+          firstAccessedAt: r.first_accessed_at || undefined,
+          purchaseTimestamp: new Date(r.created_at).getTime(),
+        }));
+      }
+    } catch (err) {
+      console.error('[orderStore] MySQL getAllOrders error, falling back to disk:', err);
+    }
+  }
+  return getAllOrders();
 }
