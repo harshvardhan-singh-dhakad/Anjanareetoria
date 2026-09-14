@@ -13,9 +13,13 @@ import {
   ExternalLink,
   RefreshCw,
   Layers,
-  Sparkles
+  Sparkles,
+  Receipt,
+  CreditCard,
+  ArrowRight
 } from 'lucide-react';
 import { ExtendedBook } from '@/lib/db/cmsStore';
+import { EbookOrder } from '@/lib/ebook/orderStore';
 
 interface Stats {
   productsCount: number;
@@ -23,6 +27,8 @@ interface Stats {
   webinarsCount: number;
   blogsCount: number;
   ebooksWithPdf: number;
+  totalOrders: number;
+  totalRevenue: number;
 }
 
 export default function AdminDashboardPage() {
@@ -32,21 +38,30 @@ export default function AdminDashboardPage() {
     webinarsCount: 0,
     blogsCount: 0,
     ebooksWithPdf: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
   });
+  const [recentOrders, setRecentOrders] = useState<EbookOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const [resProd, resBooks, resWebinars, resBlogs] = await Promise.all([
+      const [resProd, resBooks, resWebinars, resBlogs, resOrders] = await Promise.all([
         fetch('/api/admin/products').then(r => r.json()),
         fetch('/api/admin/books').then(r => r.json()),
         fetch('/api/admin/webinars').then(r => r.json()),
         fetch('/api/admin/blogs').then(r => r.json()),
+        fetch('/api/admin/orders').then(r => r.json()).catch(() => ({ success: false })),
       ]);
 
       const booksList: ExtendedBook[] = resBooks.data || [];
       const pdfCount = booksList.filter((b) => b.pdfSourceFile).length;
+      const ordersList: EbookOrder[] = resOrders?.success && Array.isArray(resOrders.orders) ? resOrders.orders : [];
+      const revenue = ordersList.reduce((acc, o) => acc + (Number(o.amount) || 0), 0);
+
+      const sortedOrders = [...ordersList].sort((a, b) => (b.purchaseTimestamp || 0) - (a.purchaseTimestamp || 0));
+      setRecentOrders(sortedOrders.slice(0, 5));
 
       setStats({
         productsCount: resProd.data?.length || 0,
@@ -54,6 +69,8 @@ export default function AdminDashboardPage() {
         webinarsCount: resWebinars.data?.length || 0,
         blogsCount: resBlogs.data?.length || 0,
         ebooksWithPdf: pdfCount,
+        totalOrders: ordersList.length,
+        totalRevenue: revenue,
       });
     } catch (err) {
       console.error('Error fetching admin dashboard statistics:', err);
@@ -68,12 +85,21 @@ export default function AdminDashboardPage() {
 
   const statCards = [
     {
+      title: 'Gross Revenue',
+      count: `₹${stats.totalRevenue.toLocaleString('en-IN')}`,
+      desc: `${stats.totalOrders} live orders recorded`,
+      icon: Receipt,
+      href: '/admin/orders',
+      color: 'from-blue-700 to-indigo-900',
+      tag: 'Razorpay'
+    },
+    {
       title: 'Store Products',
       count: stats.productsCount,
-      desc: 'Energized Dollars, Fragrances, Tilaks, Cups',
+      desc: 'Energized Merchandise & Sacred Items',
       icon: Gem,
       href: '/admin/products',
-      color: 'from-blue-600 to-indigo-700',
+      color: 'from-sky-600 to-blue-700',
       tag: 'Catalog'
     },
     {
@@ -145,7 +171,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {statCards.map((card, idx) => {
           const Icon = card.icon;
           return (
@@ -323,6 +349,63 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
         </div>
+      </div>
+
+      {/* Recent Orders Section */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0008c1] flex items-center justify-center font-bold">
+              <Receipt size={20} />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900 font-serif">Recent Online Purchases</h3>
+              <p className="text-xs text-slate-500">Latest transactions processed through Razorpay</p>
+            </div>
+          </div>
+          <Link
+            href="/admin/orders"
+            className="inline-flex items-center space-x-1.5 text-xs font-bold text-[#0008c1] hover:underline"
+          >
+            <span>View All Orders</span>
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="py-8 text-center text-xs text-slate-400">Loading recent orders...</div>
+        ) : recentOrders.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-400">No orders recorded yet.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="text-[10px] uppercase font-bold text-slate-400 bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th className="py-2.5 px-3">Order ID</th>
+                  <th className="py-2.5 px-3">Type</th>
+                  <th className="py-2.5 px-3">Item</th>
+                  <th className="py-2.5 px-3">Customer</th>
+                  <th className="py-2.5 px-3">Amount</th>
+                  <th className="py-2.5 px-3">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {recentOrders.map((ord) => (
+                  <tr key={ord.orderId} className="hover:bg-slate-50/60">
+                    <td className="py-2.5 px-3 font-mono font-bold text-slate-900">{ord.orderId}</td>
+                    <td className="py-2.5 px-3 capitalize font-semibold text-slate-700">{ord.itemType || 'Book'}</td>
+                    <td className="py-2.5 px-3 text-slate-900 truncate max-w-xs">{ord.itemTitle || ord.productId}</td>
+                    <td className="py-2.5 px-3">{ord.customerName || ord.buyerPhone}</td>
+                    <td className="py-2.5 px-3 font-bold text-[#0008c1]">₹{Number(ord.amount).toLocaleString('en-IN')}</td>
+                    <td className="py-2.5 px-3 text-slate-400 text-[11px]">
+                      {ord.purchaseTimestamp ? new Date(ord.purchaseTimestamp).toLocaleDateString('en-IN') : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

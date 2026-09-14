@@ -15,6 +15,11 @@ export interface EbookOrder {
   viewToken?: string;
   accessCount?: number;
   firstAccessedAt?: string;
+  itemType?: 'product' | 'book' | 'webinar';
+  itemTitle?: string;
+  customerName?: string;
+  shippingAddress?: string;
+  metadata?: any;
 }
 
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
@@ -165,8 +170,11 @@ export async function saveOrderAsync(order: EbookOrder): Promise<void> {
     try {
       await initializeDatabaseTables();
       const query = `
-        INSERT INTO orders (order_id, payment_id, buyer_email, buyer_phone, product_id, amount, status, view_token, access_count, first_accessed_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO orders (
+          order_id, payment_id, buyer_email, buyer_phone, product_id, amount, status,
+          view_token, access_count, first_accessed_at, item_type, item_title, customer_name, shipping_address, metadata
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           payment_id = VALUES(payment_id),
           buyer_email = VALUES(buyer_email),
@@ -176,7 +184,12 @@ export async function saveOrderAsync(order: EbookOrder): Promise<void> {
           status = VALUES(status),
           view_token = VALUES(view_token),
           access_count = VALUES(access_count),
-          first_accessed_at = VALUES(first_accessed_at);
+          first_accessed_at = VALUES(first_accessed_at),
+          item_type = VALUES(item_type),
+          item_title = VALUES(item_title),
+          customer_name = VALUES(customer_name),
+          shipping_address = VALUES(shipping_address),
+          metadata = VALUES(metadata);
       `;
       await pool.query(query, [
         order.orderId.toUpperCase(),
@@ -189,6 +202,11 @@ export async function saveOrderAsync(order: EbookOrder): Promise<void> {
         order.viewToken || null,
         order.accessCount || 0,
         order.firstAccessedAt || null,
+        order.itemType || 'product',
+        order.itemTitle || null,
+        order.customerName || null,
+        order.shippingAddress || null,
+        order.metadata ? JSON.stringify(order.metadata) : null,
       ]);
     } catch (err) {
       console.error('[orderStore] MySQL saveOrder error:', err);
@@ -218,6 +236,11 @@ export async function getAllOrdersAsync(): Promise<EbookOrder[]> {
           viewToken: r.view_token || undefined,
           accessCount: r.access_count || 0,
           firstAccessedAt: r.first_accessed_at || undefined,
+          itemType: r.item_type || 'product',
+          itemTitle: r.item_title || undefined,
+          customerName: r.customer_name || undefined,
+          shippingAddress: r.shipping_address || undefined,
+          metadata: r.metadata ? (typeof r.metadata === 'string' ? JSON.parse(r.metadata) : r.metadata) : undefined,
           purchaseTimestamp: new Date(r.created_at).getTime(),
         }));
       }

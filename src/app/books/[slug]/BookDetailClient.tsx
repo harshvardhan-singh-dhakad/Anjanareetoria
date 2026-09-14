@@ -15,12 +15,18 @@ import {
   Plus,
   Minus,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  CreditCard,
+  Lock,
+  X
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Book } from '@/data/books';
 import { ExtendedBook, Webinar } from '@/lib/db/cmsStore';
 import { Product } from '@/data/products';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import { initiateRazorpayPayment } from '@/lib/payment/razorpayClient';
 
 interface BookDetailClientProps {
   book: Book;
@@ -35,7 +41,9 @@ export const BookDetailClient: React.FC<BookDetailClientProps> = ({
   relatedProducts = [],
   relatedWebinars = [],
 }) => {
+  const router = useRouter();
   const { addToCart } = useCart();
+  const { user, isLoggedIn, openAuthModal } = useAuth();
   const [selectedFormat, setSelectedFormat] = useState<'ebook' | 'physical'>(
     book.formatType === 'physical' ? 'physical' : 'ebook'
   );
@@ -43,6 +51,14 @@ export const BookDetailClient: React.FC<BookDetailClientProps> = ({
   const [isSampleOpen, setIsSampleOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'chapters' | 'specs'>('overview');
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Instant Buy Modal State
+  const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+  const [buyerName, setBuyerName] = useState(user?.name || '');
+  const [buyerPhone, setBuyerPhone] = useState(user?.phone || '');
+  const [buying, setBuying] = useState(false);
+  const [buyError, setBuyError] = useState<string | null>(null);
+  const [ebookReadyUrl, setEbookReadyUrl] = useState<string | null>(null);
 
   // Determine active price based on selected format
   const currentPrice =
@@ -59,6 +75,54 @@ export const BookDetailClient: React.FC<BookDetailClientProps> = ({
       price: currentPrice,
     };
     addToCart(formattedItem, quantity);
+  };
+
+  const startRazorpayPayment = async (name: string, phone: string) => {
+    setBuying(true);
+    setBuyError(null);
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+
+    await initiateRazorpayPayment({
+      type: 'book',
+      itemId: book.id || book.slug,
+      format: selectedFormat,
+      quantity,
+      customer: {
+        name: name || user?.name || 'Devotee',
+        phone: cleanPhone,
+        email: user?.email || undefined,
+      },
+      onSuccess: (result) => {
+        setBuying(false);
+        setIsBuyModalOpen(false);
+        if (selectedFormat === 'ebook') {
+          setEbookReadyUrl(result.readerUrl || `/reader?phone=${cleanPhone}&orderId=${result.orderId}`);
+        } else {
+          router.push('/account');
+        }
+      },
+      onError: (err) => {
+        setBuying(false);
+        setBuyError(err);
+      },
+      onDismiss: () => {
+        setBuying(false);
+      },
+    });
+  };
+
+  const handleInstantBuyClick = () => {
+    if (selectedFormat === 'physical') {
+      handleAddToCart();
+      router.push('/checkout');
+      return;
+    }
+
+    if (user?.phone) {
+      startRazorpayPayment(user.name || '', user.phone);
+    } else {
+      setIsBuyModalOpen(true);
+    }
   };
 
   const handleCopyShare = () => {
@@ -291,31 +355,44 @@ export const BookDetailClient: React.FC<BookDetailClientProps> = ({
                 </button>
               </div>
 
+              {/* 1. Primary: Razorpay Instant Buy */}
               <button
                 type="button"
-                onClick={handleAddToCart}
-                className="flex-1 inline-flex items-center justify-center space-x-2 bg-[#1346af] hover:bg-[#3a3a3a] text-white text-sm font-semibold py-3.5 px-6 rounded-full transition shadow-md"
+                disabled={buying}
+                onClick={handleInstantBuyClick}
+                className="flex-1 inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-[#0008c1] to-[#0a187a] hover:from-[#05138c] hover:to-[#0008c1] disabled:opacity-50 text-white text-sm font-bold py-3.5 px-6 rounded-full transition shadow-lg cursor-pointer"
               >
-                <ShoppingCart size={18} />
+                <CreditCard size={18} className="text-amber-300" />
                 <span>
-                  Add {selectedFormat === 'ebook' ? 'E-Book' : 'Book'} to Cart
+                  {buying ? 'Opening Razorpay...' : `Instant Buy (₹${currentPrice * quantity})`}
                 </span>
               </button>
             </div>
 
-            {/* Direct WhatsApp Order */}
-            <a
-              href={`https://wa.me/919999999999?text=${encodeURIComponent(
-                `Namaste! I would like to order "${book.name}" in ${
-                  selectedFormat === 'ebook' ? 'Digital E-Book' : 'Printed Book'
-                } format (₹${currentPrice * quantity}). Please guide me with payment.`
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full inline-flex items-center justify-center bg-[#25D366] hover:bg-[#20ba59] text-white text-sm font-semibold py-3 rounded-full transition shadow-md"
-            >
-              <span>⚡ Order via WhatsApp</span>
-            </a>
+            <div className="flex items-center space-x-3 pt-1">
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                className="flex-1 inline-flex items-center justify-center space-x-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-semibold py-3 px-4 rounded-full transition"
+              >
+                <ShoppingCart size={16} />
+                <span>Add to Cart</span>
+              </button>
+
+              {/* Direct WhatsApp Order */}
+              <a
+                href={`https://wa.me/919999999999?text=${encodeURIComponent(
+                  `Namaste! I would like to order "${book.name}" in ${
+                    selectedFormat === 'ebook' ? 'Digital E-Book' : 'Printed Book'
+                  } format (₹${currentPrice * quantity}). Please guide me with payment.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center space-x-1.5 bg-[#25D366] hover:bg-[#20ba59] text-white text-xs sm:text-sm font-semibold py-3 px-5 rounded-full transition shadow-sm"
+              >
+                <span>WhatsApp</span>
+              </a>
+            </div>
           </div>
 
           {/* Navigation Tabs (Overview / Chapters / Specs) */}
@@ -665,6 +742,145 @@ export const BookDetailClient: React.FC<BookDetailClientProps> = ({
                   <span>Get Complete Book</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Guest Instant Buy Modal */}
+      {isBuyModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative">
+            <button
+              onClick={() => setIsBuyModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition p-1"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-50 text-[#0008c1] mb-3">
+                <BookOpen size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Instant E-Book Access</h3>
+              <p className="text-xs text-gray-500 mt-1 line-clamp-1">{book.name}</p>
+              <div className="mt-2 text-2xl font-black text-[#0008c1]">₹{currentPrice * quantity}</div>
+            </div>
+
+            {buyError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600">
+                {buyError}
+              </div>
+            )}
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!buyerPhone || buyerPhone.replace(/\D/g, '').length < 10) {
+                  setBuyError('Please enter a valid 10-digit mobile number.');
+                  return;
+                }
+                startRazorpayPayment(buyerName, buyerPhone);
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                  Your Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Rahul Sharma"
+                  value={buyerName}
+                  onChange={(e) => setBuyerName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0008c1]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                  WhatsApp / Mobile Number
+                </label>
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-xs font-semibold">
+                    +91
+                  </span>
+                  <input
+                    type="tel"
+                    required
+                    maxLength={10}
+                    placeholder="9876543210"
+                    value={buyerPhone}
+                    onChange={(e) => setBuyerPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    className="w-full px-4 py-3 rounded-r-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0008c1]"
+                  />
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Your reading access link and watermarked PDF will be tied to this number.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={buying}
+                className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#0008c1] to-[#0a187a] hover:from-[#05138c] hover:to-[#0008c1] disabled:opacity-50 text-white font-bold text-sm shadow-lg transition flex items-center justify-center space-x-2 cursor-pointer mt-2"
+              >
+                <Lock size={16} />
+                <span>{buying ? 'Connecting to Razorpay...' : `Pay ₹${currentPrice * quantity} Now`}</span>
+              </button>
+
+              <div className="flex items-center justify-center space-x-2 text-[11px] text-gray-400 pt-2">
+                <span>🔒 256-bit Encrypted</span>
+                <span>•</span>
+                <span>Instant Online Access</span>
+                <span>•</span>
+                <span>Razorpay Verified</span>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* E-Book Access Ready Modal */}
+      {ebookReadyUrl && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 text-center shadow-2xl relative">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center mb-4">
+              <CheckCircle2 size={36} />
+            </div>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-1">Payment Successful!</h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Your personalized consecrated copy of <strong>{book.name}</strong> is ready to read.
+            </p>
+
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl mb-6 text-left text-xs text-emerald-800 space-y-1.5">
+              <div className="flex items-center space-x-1.5 font-bold text-emerald-950">
+                <Sparkles size={14} className="text-emerald-600" />
+                <span>Watermarked &amp; Prepared for You</span>
+              </div>
+              <p>
+                Access is active immediately on any device without downloads or expiration.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <a
+                href={ebookReadyUrl}
+                className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-6 rounded-xl bg-[#0008c1] hover:bg-[#05138c] text-white font-bold text-sm shadow-lg transition"
+              >
+                <BookOpen size={18} />
+                <span>Open E-Book Reader Now</span>
+                <ArrowRight size={16} />
+              </a>
+
+              <button
+                onClick={() => setEbookReadyUrl(null)}
+                className="w-full py-2.5 text-xs text-gray-500 hover:text-gray-700 font-semibold transition"
+              >
+                Close and return to book
+              </button>
             </div>
           </div>
         </div>

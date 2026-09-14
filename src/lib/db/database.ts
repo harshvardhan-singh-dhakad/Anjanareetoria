@@ -172,6 +172,23 @@ export async function initializeDatabaseTables(): Promise<boolean> {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
 
+      // Ensure orders table columns exist for unified e-commerce & webinar payments
+      const orderColNames = ['item_type', 'item_title', 'customer_name', 'shipping_address', 'metadata'];
+      for (const col of orderColNames) {
+        try {
+          const [check] = await connection.query(`SHOW COLUMNS FROM orders LIKE '${col}'`) as [any[], any];
+          if (!check || check.length === 0) {
+            let colDef = 'VARCHAR(255) NULL';
+            if (col === 'item_type') colDef = "VARCHAR(50) DEFAULT 'product'";
+            if (col === 'shipping_address') colDef = 'TEXT NULL';
+            if (col === 'metadata') colDef = 'JSON NULL';
+            await connection.query(`ALTER TABLE orders ADD COLUMN ${col} ${colDef}`);
+          }
+        } catch (colErr) {
+          console.warn(`[database] Note on orders column ${col}:`, colErr);
+        }
+      }
+
       await connection.query(`
         CREATE TABLE IF NOT EXISTS users (
           id VARCHAR(100) PRIMARY KEY,

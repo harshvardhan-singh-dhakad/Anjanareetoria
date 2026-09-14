@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Webinar, ExtendedBook } from '@/lib/db/cmsStore';
 import { Product } from '@/data/products';
+import { initiateRazorpayPayment } from '@/lib/payment/razorpayClient';
 
 interface WebinarDetailClientProps {
   webinar: Webinar;
@@ -42,6 +43,13 @@ export const WebinarDetailClient: React.FC<WebinarDetailClientProps> = ({
   const [registered, setRegistered] = useState(false);
   const [copied, setCopied] = useState(false);
   const [regForm, setRegForm] = useState({ name: '', email: '', phone: '' });
+  const [paying, setPaying] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [confirmedDetails, setConfirmedDetails] = useState<{
+    orderId?: string;
+    paymentId?: string;
+    webinarDetails?: any;
+  } | null>(null);
 
   // Countdown timer calculation
   const [timeLeft, setTimeLeft] = useState({ days: 3, hours: 14, minutes: 28, seconds: 45 });
@@ -67,9 +75,36 @@ export const WebinarDetailClient: React.FC<WebinarDetailClientProps> = ({
     }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setRegistered(true);
+    setPaymentError(null);
+
+    if (webinar.price > 0) {
+      setPaying(true);
+      await initiateRazorpayPayment({
+        type: 'webinar',
+        itemId: webinar.id || webinar.slug,
+        customer: {
+          name: regForm.name.trim(),
+          phone: regForm.phone.replace(/\D/g, '').slice(-10),
+          email: regForm.email.trim() || undefined,
+        },
+        onSuccess: (result) => {
+          setPaying(false);
+          setRegistered(true);
+          setConfirmedDetails(result);
+        },
+        onError: (err) => {
+          setPaying(false);
+          setPaymentError(err);
+        },
+        onDismiss: () => {
+          setPaying(false);
+        },
+      });
+    } else {
+      setRegistered(true);
+    }
   };
 
   const reviews = webinar.reviews || [];
@@ -727,11 +762,20 @@ export const WebinarDetailClient: React.FC<WebinarDetailClientProps> = ({
                     />
                   </div>
 
+                  {paymentError && (
+                    <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800">
+                      {paymentError}
+                    </div>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#0008c1] to-[#0a187a] text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition mt-2"
+                    disabled={paying}
+                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#0008c1] to-[#0a187a] hover:from-[#05138c] hover:to-[#0008c1] disabled:opacity-50 text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition mt-2 cursor-pointer"
                   >
-                    Confirm Masterclass RSVP
+                    {webinar.price === 0
+                      ? 'Confirm Complimentary Masterclass RSVP'
+                      : (paying ? 'Opening Payment Gateway...' : `Pay ₹${webinar.price} & Reserve Seat`)}
                   </button>
                 </form>
               </div>
@@ -747,16 +791,31 @@ export const WebinarDetailClient: React.FC<WebinarDetailClientProps> = ({
                   Namaste <strong>{regForm.name}</strong>, your seat for <em>{webinar.title}</em> is officially secured.
                 </p>
 
+                {confirmedDetails?.orderId && (
+                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-left text-xs space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Booking Order ID:</span>
+                      <strong className="font-mono text-[#0008c1]">{confirmedDetails.orderId}</strong>
+                    </div>
+                    {confirmedDetails.paymentId && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-600">Payment ID:</span>
+                        <span className="font-mono text-slate-700 text-[11px]">{confirmedDetails.paymentId}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 text-xs text-left space-y-1.5">
-                  <div className="font-semibold text-[#0008c1]">Direct Meeting Link:</div>
+                  <div className="font-semibold text-[#0008c1]">Direct Live Transmission Link:</div>
                   <a
-                    href={webinar.registrationUrl}
+                    href={webinar.registrationUrl || 'https://meet.google.com'}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center space-x-1.5 text-blue-700 font-mono text-[11px] underline break-all"
                   >
                     <ExternalLink size={13} />
-                    <span>{webinar.registrationUrl}</span>
+                    <span>{webinar.registrationUrl || 'https://meet.google.com'}</span>
                   </a>
                 </div>
 
