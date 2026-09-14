@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
+import { AuthProvider } from '@/context/AuthContext';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
@@ -80,13 +82,16 @@ export default function RootLayout({
         <WebSiteSchema />
         <LocalBusinessSchema />
         <FAQSchema />
-        <CartProvider>
-          <Header />
-          <CartDrawer />
-          <main className="flex-1">{children}</main>
-          <WhatsAppButton />
-          <Footer />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Header />
+            <CartDrawer />
+            <AuthModal />
+            <main className="flex-1">{children}</main>
+            <WhatsAppButton />
+            <Footer />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -172,6 +172,52 @@ export async function initializeDatabaseTables(): Promise<boolean> {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
 
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id VARCHAR(100) PRIMARY KEY,
+          phone VARCHAR(20) UNIQUE NOT NULL,
+          name VARCHAR(255),
+          email VARCHAR(255) NULL,
+          password_hash VARCHAR(255) NULL,
+          role VARCHAR(50) DEFAULT 'customer',
+          avatar VARCHAR(500),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          INDEX idx_user_phone (phone)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS otps (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          phone VARCHAR(20) NOT NULL,
+          otp_code VARCHAR(10) NOT NULL,
+          expires_at TIMESTAMP NOT NULL,
+          verified BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_otp_phone_expires (phone, expires_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS user_addresses (
+          id VARCHAR(100) PRIMARY KEY,
+          user_id VARCHAR(100) NOT NULL,
+          full_name VARCHAR(255) NOT NULL,
+          phone VARCHAR(20) NOT NULL,
+          alt_phone VARCHAR(20),
+          street_address TEXT NOT NULL,
+          landmark VARCHAR(255),
+          city VARCHAR(100) NOT NULL,
+          state VARCHAR(100) NOT NULL,
+          pincode VARCHAR(10) NOT NULL,
+          is_default BOOLEAN DEFAULT TRUE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          INDEX idx_address_user_id (user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
       tablesInitialized = true;
       return true;
     } finally {

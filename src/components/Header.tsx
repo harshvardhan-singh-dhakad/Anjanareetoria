@@ -3,14 +3,17 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Search, User, Menu, X } from 'lucide-react';
+import { ShoppingBag, Search, User, Menu, X, LogOut, MapPin, BookOpen } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export const Header: React.FC = () => {
   const { totalCount, setIsCartOpen } = useCart();
+  const { user, isLoggedIn, openAuthModal, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   return (
     <header className="w-full bg-white sticky top-0 z-40 border-b border-gray-100 shadow-sm transition-all">
@@ -128,14 +131,84 @@ export const Header: React.FC = () => {
             )}
           </div>
 
-          {/* User / Wishlist */}
-          <Link
-            href="/contact-us"
-            className="hidden sm:inline-block p-2 text-gray-700 hover:text-[#0008c1] transition"
-            aria-label="Account / Inquiries"
-          >
-            <User size={20} />
-          </Link>
+          {/* User / Account Dropdown */}
+          <div className="relative">
+            {isLoggedIn ? (
+              <div>
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="p-1.5 sm:px-3 sm:py-1.5 rounded-full bg-amber-50 text-[#0008c1] border border-amber-200/80 hover:bg-amber-100 transition flex items-center gap-1.5 text-xs font-semibold"
+                  aria-label="User Account Menu"
+                >
+                  <User size={16} />
+                  <span className="hidden md:inline max-w-[100px] truncate">
+                    {user?.name ? user.name.split(' ')[0] : 'Account'}
+                  </span>
+                </button>
+
+                {userDropdownOpen && (
+                  <div
+                    className="absolute right-0 top-11 w-56 bg-white shadow-2xl rounded-xl p-2 border border-gray-100 z-50 animate-scaleUp"
+                    onMouseLeave={() => setUserDropdownOpen(false)}
+                  >
+                    <div className="px-3 py-2 border-b border-gray-100 mb-1">
+                      <p className="text-xs font-bold text-gray-900 truncate">
+                        {user?.name || 'Blessed Devotee'}
+                      </p>
+                      <p className="text-[11px] text-gray-500 truncate">
+                        +91 {user?.phone}
+                      </p>
+                    </div>
+
+                    <Link
+                      href="/account"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-amber-50 hover:text-[#0008c1] rounded-lg transition"
+                    >
+                      <User size={15} /> My Profile (प्रोफाइल)
+                    </Link>
+
+                    <Link
+                      href="/account"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-amber-50 hover:text-[#0008c1] rounded-lg transition"
+                    >
+                      <MapPin size={15} /> Delivery Addresses (पते)
+                    </Link>
+
+                    <Link
+                      href={`/reader?phone=${user?.phone}`}
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-amber-50 hover:text-[#0008c1] rounded-lg transition"
+                    >
+                      <BookOpen size={15} /> My eBooks (किताबें)
+                    </Link>
+
+                    <div className="pt-1 mt-1 border-t border-gray-100">
+                      <button
+                        onClick={() => {
+                          setUserDropdownOpen(false);
+                          logout();
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition"
+                      >
+                        <LogOut size={15} /> Sign Out (लॉग आउट)
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={openAuthModal}
+                className="p-2 text-gray-700 hover:text-[#0008c1] transition flex items-center gap-1 text-xs font-semibold"
+                aria-label="Sign In / Register"
+              >
+                <User size={20} />
+                <span className="hidden md:inline">Sign In</span>
+              </button>
+            )}
+          </div>
 
           {/* Cart Icon & Counter */}
           <button
@@ -154,6 +227,35 @@ export const Header: React.FC = () => {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-b border-gray-200 px-6 py-4 space-y-3 animate-fadeIn">
+          {/* Mobile User Profile / Sign In */}
+          <div className="pb-3 border-b border-gray-100">
+            {isLoggedIn ? (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-gray-900">{user?.name || 'Blessed Devotee'}</p>
+                  <p className="text-[11px] text-gray-500">+91 {user?.phone}</p>
+                </div>
+                <Link
+                  href="/account"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="bg-amber-50 text-[#0008c1] border border-amber-200 px-3 py-1 rounded-full text-xs font-semibold"
+                >
+                  My Account
+                </Link>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openAuthModal();
+                }}
+                className="w-full bg-[#0008c1] hover:bg-[#1346af] text-white py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition"
+              >
+                <User size={15} /> Sign In with Mobile OTP / Password
+              </button>
+            )}
+          </div>
+
           <Link
             href="/"
             onClick={() => setMobileMenuOpen(false)}
