@@ -235,6 +235,54 @@ export async function initializeDatabaseTables(): Promise<boolean> {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
 
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS courses (
+          id VARCHAR(100) PRIMARY KEY,
+          slug VARCHAR(191) UNIQUE NOT NULL,
+          title VARCHAR(255) NOT NULL,
+          subtitle VARCHAR(255),
+          description TEXT,
+          category VARCHAR(100) DEFAULT 'Spiritual Wisdom',
+          level VARCHAR(50) DEFAULT 'All Levels',
+          instructor_name VARCHAR(255) DEFAULT 'Aacharya Ji',
+          instructor_title VARCHAR(255) DEFAULT 'Vedic Master & Energy Guide',
+          instructor_image VARCHAR(500),
+          thumbnail VARCHAR(500) NOT NULL,
+          trailer_video_url VARCHAR(500),
+          price INT DEFAULT 0,
+          original_price INT DEFAULT 0,
+          rating FLOAT DEFAULT 5.0,
+          reviews_count INT DEFAULT 0,
+          total_duration VARCHAR(100) DEFAULT '10 Hours',
+          total_lessons INT DEFAULT 12,
+          language VARCHAR(50) DEFAULT 'Hindi & English',
+          what_you_will_learn JSON,
+          requirements JSON,
+          certificate_enabled BOOLEAN DEFAULT TRUE,
+          status VARCHAR(50) DEFAULT 'published',
+          modules JSON,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS user_course_enrollments (
+          id VARCHAR(100) PRIMARY KEY,
+          user_id VARCHAR(100) NOT NULL,
+          user_phone VARCHAR(20) NOT NULL,
+          course_id VARCHAR(100) NOT NULL,
+          order_id VARCHAR(100),
+          progress_percentage INT DEFAULT 0,
+          completed_lesson_ids JSON,
+          last_lesson_id VARCHAR(100),
+          enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          completed_at TIMESTAMP NULL,
+          INDEX idx_user_phone (user_phone),
+          INDEX idx_course_id (course_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
       tablesInitialized = true;
       return true;
     } finally {

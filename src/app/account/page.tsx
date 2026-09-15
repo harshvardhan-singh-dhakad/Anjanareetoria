@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   User as UserIcon,
   MapPin,
@@ -17,7 +18,11 @@ import {
   BookOpen,
   ArrowRight,
   ShieldCheck,
-  Edit2
+  Edit2,
+  Download,
+  Video,
+  PlayCircle,
+  Clock
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { UserAddress } from '@/lib/auth/userStore';
@@ -25,10 +30,14 @@ import { UserAddress } from '@/lib/auth/userStore';
 export default function AccountPage() {
   const { user, isLoggedIn, isLoading, openAuthModal, logout, refreshUser } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'PROFILE' | 'ADDRESSES' | 'ORDERS'>('PROFILE');
+  const [activeTab, setActiveTab] = useState<'PROFILE' | 'ADDRESSES' | 'ORDERS' | 'EBOOKS' | 'COURSES'>('PROFILE');
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [ebooks, setEbooks] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(false);
+  const [loadingEbooks, setLoadingEbooks] = useState(false);
+  const [loadingCourses, setLoadingCourses] = useState(false);
 
   // Profile Edit State
   const [nameInput, setNameInput] = useState('');
@@ -58,12 +67,31 @@ export default function AccountPage() {
   const [addrSaving, setAddrSaving] = useState(false);
   const [addrError, setAddrError] = useState<string | null>(null);
 
+  // URL query tab sync
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      if (tab === 'COURSES' || tab === 'courses') {
+        setActiveTab('COURSES');
+      } else if (tab === 'EBOOKS' || tab === 'ebooks') {
+        setActiveTab('EBOOKS');
+      } else if (tab === 'ADDRESSES' || tab === 'addresses') {
+        setActiveTab('ADDRESSES');
+      } else if (tab === 'ORDERS' || tab === 'orders') {
+        setActiveTab('ORDERS');
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
       setNameInput(user.name || '');
       setEmailInput(user.email || '');
       fetchAddresses();
       fetchOrders();
+      fetchEbooks();
+      fetchCourses();
     }
   }, [user]);
 
@@ -79,13 +107,41 @@ export default function AccountPage() {
     }
   };
 
+  const fetchEbooks = async () => {
+    try {
+      setLoadingEbooks(true);
+      const res = await fetch('/api/user/ebooks');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.ebooks)) {
+        setEbooks(data.ebooks);
+      }
+    } catch (err) {
+      console.error('Error fetching user ebooks:', err);
+    } finally {
+      setLoadingEbooks(false);
+    }
+  };
+
+  const fetchCourses = async () => {
+    try {
+      setLoadingCourses(true);
+      const res = await fetch('/api/user/courses');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        setCourses(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching user courses:', err);
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
+
   const fetchOrders = async () => {
     if (!user?.phone) return;
     try {
       setLoadingData(true);
-      // Fetch orders for customer
-      const res = await fetch(`/api/ebook/abuse-logs`); // Endpoint fallback or direct query
-      // Also query directly if available
+      const res = await fetch(`/api/ebook/abuse-logs`);
     } catch (err) {
       console.error('Error fetching orders:', err);
     } finally {
@@ -287,6 +343,38 @@ export default function AccountPage() {
         </button>
 
         <button
+          onClick={() => setActiveTab('EBOOKS')}
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
+            activeTab === 'EBOOKS'
+              ? 'border-[#0008c1] text-[#0008c1]'
+              : 'border-transparent text-gray-500 hover:text-gray-900'
+          }`}
+        >
+          <BookOpen size={18} /> My E-Books (मेरी ई-बुक्स)
+          {ebooks.length > 0 && (
+            <span className="bg-[#0008c1] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+              {ebooks.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('COURSES')}
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
+            activeTab === 'COURSES'
+              ? 'border-[#0008c1] text-[#0008c1]'
+              : 'border-transparent text-gray-500 hover:text-gray-900'
+          }`}
+        >
+          <Video size={18} /> My Courses (मेरे कोर्सेस)
+          {courses.length > 0 && (
+            <span className="bg-[#0008c1] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+              {courses.length}
+            </span>
+          )}
+        </button>
+
+        <button
           onClick={() => setActiveTab('ORDERS')}
           className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
             activeTab === 'ORDERS'
@@ -294,7 +382,7 @@ export default function AccountPage() {
               : 'border-transparent text-gray-500 hover:text-gray-900'
           }`}
         >
-          <ShoppingBag size={18} /> My Orders &amp; eBooks
+          <ShoppingBag size={18} /> Orders &amp; Activity
         </button>
       </div>
 
@@ -682,14 +770,222 @@ export default function AccountPage() {
         </div>
       )}
 
-      {/* TAB 3: MY ORDERS & EBOOKS */}
+      {/* TAB 3: MY E-BOOKS */}
+      {activeTab === 'EBOOKS' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-4">
+            <div>
+              <h2 className="text-xl font-serif font-bold text-gray-900">
+                My E-Books (मेरी डिजिटल ई-बुक्स)
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Instant online access and personal forensic-watermarked downloads licensed to +91 {user?.phone}.
+              </p>
+            </div>
+            <Link
+              href="/books"
+              className="text-xs font-semibold text-[#0008c1] hover:underline flex items-center gap-1"
+            >
+              <span>Explore More Books</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {loadingEbooks ? (
+            <div className="py-12 flex justify-center items-center">
+              <Loader2 size={28} className="animate-spin text-[#0008c1]" />
+            </div>
+          ) : ebooks.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-10 text-center space-y-3">
+              <div className="w-14 h-14 rounded-full bg-amber-50 text-[#0008c1] flex items-center justify-center mx-auto">
+                <BookOpen size={28} />
+              </div>
+              <h3 className="text-base font-bold text-gray-900">No E-Books in Your Library Yet</h3>
+              <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                Explore our consecrated wealth, vastu, and sacred manifestation publications. E-Books unlock instantly upon purchase!
+              </p>
+              <Link
+                href="/books"
+                className="inline-flex items-center gap-2 bg-[#0008c1] hover:bg-[#0a187a] text-white text-xs font-bold px-6 py-2.5 rounded-xl transition shadow"
+              >
+                <span>Browse Sacred Books &amp; E-Books</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {ebooks.map((ebook) => (
+                <div
+                  key={ebook.orderId}
+                  className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm space-y-4 hover:border-[#0008c1]/30 transition flex flex-col justify-between"
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className="relative w-16 h-20 rounded-lg overflow-hidden bg-gray-900 flex-shrink-0 border border-gray-100 shadow">
+                      {ebook.image && (
+                        <Image
+                          src={ebook.image}
+                          alt={ebook.title}
+                          fill
+                          className="object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] uppercase font-bold text-amber-600 tracking-wider">
+                        Licensed Digital Edition
+                      </span>
+                      <h3 className="text-sm font-bold text-gray-900 truncate mt-0.5">
+                        {ebook.title}
+                      </h3>
+                      <p className="text-[11px] text-gray-500 truncate">{ebook.author}</p>
+                      <div className="mt-2 flex items-center gap-2 text-[11px] text-gray-600">
+                        <span className="font-mono text-gray-800 font-semibold">{ebook.orderId}</span>
+                        <span>&bull;</span>
+                        <span>₹{ebook.amount}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-50/70 border border-amber-200/60 rounded-xl p-2.5 text-[11px] text-amber-900 flex items-center space-x-2">
+                    <ShieldCheck size={14} className="text-emerald-600 flex-shrink-0" />
+                    <span className="truncate">Licensed to +91 {user?.phone} (Forensic Watermarked)</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <Link
+                      href={ebook.readerUrl}
+                      className="inline-flex items-center justify-center space-x-1.5 bg-[#0008c1] hover:bg-[#0a187a] text-white text-xs font-bold py-2.5 px-3 rounded-xl transition shadow"
+                    >
+                      <BookOpen size={14} />
+                      <span>Read Online</span>
+                    </Link>
+                    <a
+                      href={ebook.downloadUrl}
+                      className="inline-flex items-center justify-center space-x-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-2.5 px-3 rounded-xl transition shadow"
+                    >
+                      <Download size={14} />
+                      <span>Download PDF</span>
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB: MY COURSES */}
+      {activeTab === 'COURSES' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-4">
+            <div>
+              <h2 className="text-xl font-serif font-bold text-gray-900">
+                My Enrolled Courses &amp; Teachings (मेरे कोर्सेस)
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                On-demand video lectures, sacred worksheets, and progress tracking licensed to +91 {user?.phone}.
+              </p>
+            </div>
+            <Link
+              href="/courses"
+              className="text-xs font-semibold text-[#0008c1] hover:underline flex items-center gap-1"
+            >
+              <span>Explore All Courses</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {loadingCourses ? (
+            <div className="py-12 flex justify-center items-center">
+              <Loader2 size={28} className="animate-spin text-[#0008c1]" />
+            </div>
+          ) : courses.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-10 text-center space-y-3">
+              <div className="w-14 h-14 rounded-full bg-blue-50 text-[#0008c1] flex items-center justify-center mx-auto">
+                <Video size={28} />
+              </div>
+              <h3 className="text-base font-bold text-gray-900">No Courses Enrolled Yet</h3>
+              <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                Discover our Vedic manifestation, Brahma Muhurta, and non-destructive Vastu video masterclasses!
+              </p>
+              <Link
+                href="/courses"
+                className="inline-flex items-center gap-2 bg-[#0008c1] hover:bg-[#0a187a] text-white text-xs font-bold px-6 py-2.5 rounded-xl transition shadow"
+              >
+                <span>Browse Vedic Courses</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {courses.map((c) => (
+                <div
+                  key={c.enrollmentId}
+                  className="bg-white rounded-2xl border border-gray-200/90 p-5 shadow-sm space-y-4 hover:border-[#0008c1]/30 transition flex flex-col justify-between"
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-slate-900 flex-shrink-0 shadow">
+                      {c.thumbnail && (
+                        <Image
+                          src={c.thumbnail}
+                          alt={c.courseTitle}
+                          fill
+                          className="object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] uppercase font-bold text-blue-700 tracking-wider">
+                        Enrolled Course
+                      </span>
+                      <h3 className="text-sm font-bold text-gray-900 line-clamp-1 mt-0.5">
+                        {c.courseTitle}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {c.instructor?.name} • {c.totalLessons} Lessons
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-gray-600">Course Progress</span>
+                      <span className="font-bold font-mono text-[#0008c1]">{c.progressPercentage}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-emerald-500 h-full rounded-full transition-all duration-300"
+                        style={{ width: `${c.progressPercentage}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* CTA Button */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <Link
+                      href={c.classroomUrl}
+                      className="w-full inline-flex items-center justify-center space-x-2 bg-[#0008c1] hover:bg-[#0a187a] text-white text-xs font-bold py-2.5 px-4 rounded-xl transition shadow"
+                    >
+                      <PlayCircle size={16} />
+                      <span>Continue Learning (क्लासरूम खोलें)</span>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 4: ORDERS & ACTIVITY */}
       {activeTab === 'ORDERS' && (
         <div>
           <h2 className="text-xl font-serif font-bold text-gray-900 mb-2">
-            My Orders &amp; Digital Content
+            Orders &amp; Activity
           </h2>
           <p className="text-xs text-gray-500 mb-6">
-            View orders placed under your mobile number and read your watermarked eBooks.
+            View orders placed under your mobile number.
           </p>
 
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -699,16 +995,16 @@ export default function AccountPage() {
                 <h3 className="text-base font-bold text-gray-900">Karodon Ka Rahasya (करोड़ों का रहस्य)</h3>
                 <p className="text-xs text-gray-500">Includes Personalized Watermarking Security</p>
               </div>
-              <Link
-                href={`/reader?phone=${user?.phone}`}
-                className="bg-[#0008c1] hover:bg-[#1346af] text-white px-5 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 shadow transition"
+              <button
+                onClick={() => setActiveTab('EBOOKS')}
+                className="bg-[#0008c1] hover:bg-[#1346af] text-white px-5 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 shadow transition cursor-pointer"
               >
-                <BookOpen size={16} /> Open eBook Reader
-              </Link>
+                <BookOpen size={16} /> View in My E-Books
+              </button>
             </div>
 
             <div className="text-center py-6 text-xs text-gray-400">
-              For any payment queries or manual order tracking, contact our sacred support team anytime via WhatsApp.
+              For any payment queries or courier tracking, contact our sacred support team anytime via WhatsApp.
             </div>
           </div>
         </div>

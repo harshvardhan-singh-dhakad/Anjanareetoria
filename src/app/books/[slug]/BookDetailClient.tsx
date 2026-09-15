@@ -59,6 +59,7 @@ export const BookDetailClient: React.FC<BookDetailClientProps> = ({
   const [buying, setBuying] = useState(false);
   const [buyError, setBuyError] = useState<string | null>(null);
   const [ebookReadyUrl, setEbookReadyUrl] = useState<string | null>(null);
+  const [ebookDownloadUrl, setEbookDownloadUrl] = useState<string | null>(null);
 
   // Determine active price based on selected format
   const currentPrice =
@@ -97,6 +98,7 @@ export const BookDetailClient: React.FC<BookDetailClientProps> = ({
         setIsBuyModalOpen(false);
         if (selectedFormat === 'ebook') {
           setEbookReadyUrl(result.readerUrl || `/reader?phone=${cleanPhone}&orderId=${result.orderId}`);
+          setEbookDownloadUrl(result.downloadUrl || `/api/ebook/download?orderId=${result.orderId}&phone=${cleanPhone}`);
         } else {
           router.push('/account');
         }
@@ -861,7 +863,7 @@ export const BookDetailClient: React.FC<BookDetailClientProps> = ({
                 <span>Watermarked &amp; Prepared for You</span>
               </div>
               <p>
-                Access is active immediately on any device without downloads or expiration.
+                Access is active immediately. You can read online anytime or download your secure, personalized PDF copy.
               </p>
             </div>
 
@@ -871,12 +873,25 @@ export const BookDetailClient: React.FC<BookDetailClientProps> = ({
                 className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-6 rounded-xl bg-[#0008c1] hover:bg-[#05138c] text-white font-bold text-sm shadow-lg transition"
               >
                 <BookOpen size={18} />
-                <span>Open E-Book Reader Now</span>
+                <span>Open E-Book Reader Now (ऑनलाइन पढ़ें)</span>
                 <ArrowRight size={16} />
               </a>
 
+              {ebookDownloadUrl && (
+                <a
+                  href={ebookDownloadUrl}
+                  className="w-full inline-flex items-center justify-center space-x-2 py-3 px-6 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow transition"
+                >
+                  <Download size={16} />
+                  <span>Download Protected PDF (डाउनलोड करें)</span>
+                </a>
+              )}
+
               <button
-                onClick={() => setEbookReadyUrl(null)}
+                onClick={() => {
+                  setEbookReadyUrl(null);
+                  setEbookDownloadUrl(null);
+                }}
                 className="w-full py-2.5 text-xs text-gray-500 hover:text-gray-700 font-semibold transition"
               >
                 Close and return to book

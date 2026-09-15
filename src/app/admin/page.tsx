@@ -16,7 +16,8 @@ import {
   Sparkles,
   Receipt,
   CreditCard,
-  ArrowRight
+  ArrowRight,
+  GraduationCap
 } from 'lucide-react';
 import { ExtendedBook } from '@/lib/db/cmsStore';
 import { EbookOrder } from '@/lib/ebook/orderStore';
@@ -24,6 +25,7 @@ import { EbookOrder } from '@/lib/ebook/orderStore';
 interface Stats {
   productsCount: number;
   booksCount: number;
+  coursesCount: number;
   webinarsCount: number;
   blogsCount: number;
   ebooksWithPdf: number;
@@ -35,6 +37,7 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Stats>({
     productsCount: 0,
     booksCount: 0,
+    coursesCount: 0,
     webinarsCount: 0,
     blogsCount: 0,
     ebooksWithPdf: 0,
@@ -47,12 +50,13 @@ export default function AdminDashboardPage() {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const [resProd, resBooks, resWebinars, resBlogs, resOrders] = await Promise.all([
+      const [resProd, resBooks, resWebinars, resBlogs, resOrders, resCourses] = await Promise.all([
         fetch('/api/admin/products').then(r => r.json()),
         fetch('/api/admin/books').then(r => r.json()),
         fetch('/api/admin/webinars').then(r => r.json()),
         fetch('/api/admin/blogs').then(r => r.json()),
         fetch('/api/admin/orders').then(r => r.json()).catch(() => ({ success: false })),
+        fetch('/api/admin/courses').then(r => r.json()).catch(() => ({ success: false })),
       ]);
 
       const booksList: ExtendedBook[] = resBooks.data || [];
@@ -66,6 +70,7 @@ export default function AdminDashboardPage() {
       setStats({
         productsCount: resProd.data?.length || 0,
         booksCount: booksList.length || 0,
+        coursesCount: resCourses?.data?.length || 0,
         webinarsCount: resWebinars.data?.length || 0,
         blogsCount: resBlogs.data?.length || 0,
         ebooksWithPdf: pdfCount,
@@ -119,6 +124,15 @@ export default function AdminDashboardPage() {
       href: '/admin/webinars',
       color: 'from-emerald-600 to-teal-700',
       tag: 'Live Events'
+    },
+    {
+      title: 'Courses & LMS',
+      count: stats.coursesCount,
+      desc: 'Structured Video Teachings & Modules',
+      icon: GraduationCap,
+      href: '/admin/courses',
+      color: 'from-blue-600 to-indigo-800',
+      tag: 'Anti-Piracy Video'
     },
     {
       title: 'Blog Articles',

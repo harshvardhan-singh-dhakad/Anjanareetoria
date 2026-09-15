@@ -250,3 +250,41 @@ export async function getAllOrdersAsync(): Promise<EbookOrder[]> {
   }
   return getAllOrders();
 }
+
+export async function findOrdersByPhoneAsync(phone: string): Promise<EbookOrder[]> {
+  const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      const [rows] = await pool.query(
+        'SELECT * FROM orders WHERE buyer_phone LIKE ? ORDER BY created_at DESC',
+        [`%${cleanPhone}`]
+      ) as [any[], any];
+      if (rows && rows.length > 0) {
+        return rows.map((r) => ({
+          orderId: r.order_id,
+          paymentId: r.payment_id,
+          buyerEmail: r.buyer_email,
+          buyerPhone: r.buyer_phone,
+          productId: r.product_id,
+          amount: r.amount,
+          status: r.status.toLowerCase() as any,
+          viewToken: r.view_token || undefined,
+          accessCount: r.access_count || 0,
+          firstAccessedAt: r.first_accessed_at || undefined,
+          itemType: r.item_type || 'product',
+          itemTitle: r.item_title || undefined,
+          customerName: r.customer_name || undefined,
+          shippingAddress: r.shipping_address || undefined,
+          metadata: r.metadata ? (typeof r.metadata === 'string' ? JSON.parse(r.metadata) : r.metadata) : undefined,
+          purchaseTimestamp: new Date(r.created_at).getTime(),
+        }));
+      }
+    } catch (err) {
+      console.error('[orderStore] MySQL findOrdersByPhone error, falling back to disk:', err);
+    }
+  }
+  const all = readOrdersFromDisk();
+  return all.filter((o) => o.buyerPhone.replace(/\D/g, '').slice(-10) === cleanPhone);
+}

@@ -78,6 +78,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const hasDigitalEbook =
+      (type === 'book' && format === 'ebook') ||
+      (Array.isArray(items) &&
+        items.some(
+          (it: any) =>
+            String(it.productId || it.id).includes('ebook') ||
+            String(it.name || '').toLowerCase().includes('e-book') ||
+            String(it.name || '').toLowerCase().includes('digital')
+        ));
+
     // 3. Persist order record into MySQL orders table
     const orderRecord = {
       orderId: internalOrderId,
@@ -88,7 +98,7 @@ export async function POST(req: NextRequest) {
       purchaseTimestamp: Date.now(),
       amount: Number(amount) || 0,
       status: 'paid' as const,
-      itemType: (type || 'product') as any,
+      itemType: (hasDigitalEbook ? 'book' : (type || 'product')) as any,
       itemTitle: itemTitle || `${type ? type.toUpperCase() : 'PRODUCT'} Purchase`,
       customerName,
       shippingAddress: shippingAddress ? String(shippingAddress).trim() : undefined,
@@ -96,6 +106,7 @@ export async function POST(req: NextRequest) {
         razorpay_order_id,
         razorpay_payment_id,
         format,
+        hasDigitalEbook,
         items,
         notes,
         webinarDetails,
@@ -104,10 +115,12 @@ export async function POST(req: NextRequest) {
 
     await saveOrderAsync(orderRecord);
 
-    // 4. If eBook, pre-warm watermarked PDF and return reader url
+    // 4. If eBook, pre-warm watermarked PDF and return reader & download URLs
     let readerUrl = null;
-    if (type === 'book' && format === 'ebook') {
+    let downloadUrl = null;
+    if (hasDigitalEbook) {
       readerUrl = `/reader?phone=${encodeURIComponent(cleanPhone)}&orderId=${internalOrderId}`;
+      downloadUrl = `/api/ebook/download?orderId=${internalOrderId}&phone=${encodeURIComponent(cleanPhone)}`;
       try {
         await watermarkAndCache(internalOrderId);
       } catch (wmErr) {
@@ -121,6 +134,8 @@ export async function POST(req: NextRequest) {
       orderId: internalOrderId,
       paymentId: razorpay_payment_id,
       readerUrl,
+      downloadUrl,
+      hasDigitalEbook,
       webinarDetails,
     });
   } catch (err: unknown) {

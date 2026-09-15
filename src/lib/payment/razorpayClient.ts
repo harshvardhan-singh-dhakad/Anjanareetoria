@@ -42,6 +42,7 @@ export interface PaymentPayload {
     orderId: string;
     paymentId: string;
     readerUrl?: string;
+    downloadUrl?: string;
     webinarDetails?: any;
     message?: string;
   }) => void;

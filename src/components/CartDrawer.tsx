@@ -3,11 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { X, Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ArrowRight, ShoppingBag, User, CheckCircle2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export const CartDrawer: React.FC = () => {
   const { isCartOpen, setIsCartOpen, items, updateQuantity, removeFromCart, subtotal, totalCount } = useCart();
+  const { user, isLoggedIn, openAuthModal } = useAuth();
 
   if (!isCartOpen) return null;
 
@@ -35,6 +37,31 @@ export const CartDrawer: React.FC = () => {
               <X size={20} />
             </button>
           </div>
+
+          {/* Quick Login bar for Cart */}
+          {!isLoggedIn ? (
+            <div className="bg-amber-50/90 border-b border-amber-200/70 px-4 py-2.5 flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-2 text-amber-950 truncate">
+                <User size={14} className="text-amber-700 flex-shrink-0" />
+                <span className="truncate text-[11px] font-medium">Log in to use saved addresses</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCartOpen(false);
+                  openAuthModal();
+                }}
+                className="bg-[#0008c1] hover:bg-[#0a187a] text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition ml-2 flex-shrink-0 cursor-pointer shadow-sm"
+              >
+                Log In
+              </button>
+            </div>
+          ) : (
+            <div className="bg-blue-50/70 border-b border-blue-100 px-4 py-2 flex items-center space-x-2 text-[11px] text-[#0008c1]">
+              <CheckCircle2 size={13} className="text-emerald-600 flex-shrink-0" />
+              <span className="truncate font-medium">Logged in: +91 {user?.phone} (Saved addresses active)</span>
+            </div>
+          )}
 
           {/* Cart Items List */}
           <div className="flex-1 overflow-y-auto p-5 divide-y divide-gray-100">

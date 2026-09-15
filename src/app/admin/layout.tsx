@@ -13,7 +13,8 @@ import {
   ExternalLink,
   LogOut,
   Menu,
-  X
+  X,
+  GraduationCap
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -38,6 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { label: 'Overview', href: '/admin', icon: LayoutDashboard },
     { label: 'Orders & Payments', href: '/admin/orders', icon: Receipt },
+    { label: 'Courses & LMS', href: '/admin/courses', icon: GraduationCap },
     { label: 'Products', href: '/admin/products', icon: Gem },
     { label: 'Books & E-Books', href: '/admin/books', icon: BookOpen },
     { label: 'Webinars', href: '/admin/webinars', icon: Video },

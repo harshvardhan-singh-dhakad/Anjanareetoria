@@ -3,11 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, User, CheckCircle2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CartPage() {
   const { items, updateQuantity, removeFromCart, subtotal, clearCart } = useCart();
+  const { user, isLoggedIn, openAuthModal } = useAuth();
 
   if (items.length === 0) {
     return (
@@ -111,9 +113,31 @@ export default function CartPage() {
             <span>Total</span>
             <span>₹{subtotal.toLocaleString('en-IN')}.00</span>
           </div>
+
+          {!isLoggedIn ? (
+            <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-xs flex items-center justify-between gap-2">
+              <div className="flex items-center space-x-1.5 text-amber-950 truncate">
+                <User size={14} className="text-amber-700 flex-shrink-0" />
+                <span className="text-[11px] truncate">Returning customer?</span>
+              </div>
+              <button
+                type="button"
+                onClick={openAuthModal}
+                className="bg-[#0008c1] hover:bg-[#0a187a] text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition whitespace-nowrap cursor-pointer"
+              >
+                Log In
+              </button>
+            </div>
+          ) : (
+            <div className="p-2.5 bg-blue-50/70 border border-blue-100 rounded-xl text-xs flex items-center space-x-1.5 text-[#0008c1]">
+              <CheckCircle2 size={14} className="text-emerald-600 flex-shrink-0" />
+              <span className="text-[11px] font-medium truncate">Logged in as +91 {user?.phone}</span>
+            </div>
+          )}
+
           <Link
             href="/checkout"
-            className="w-full flex items-center justify-center space-x-2 bg-[#1346af] hover:bg-[#3a3a3a] text-white text-xs font-semibold py-3.5 rounded-full transition shadow"
+            className="w-full flex items-center justify-center space-x-2 bg-[#1346af] hover:bg-[#3a3a3a] text-white text-xs font-semibold py-3.5 rounded-full transition shadow cursor-pointer"
           >
             <span>Proceed to Checkout</span>
             <ArrowRight size={15} />

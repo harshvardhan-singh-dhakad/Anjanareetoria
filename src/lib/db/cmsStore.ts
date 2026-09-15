@@ -50,10 +50,275 @@ export interface Webinar {
   whoShouldAttend?: string[];
 }
 
+export interface CourseLesson {
+  id: string;
+  moduleId: string;
+  courseId: string;
+  title: string;
+  duration: string;
+  videoType: 'youtube' | 'direct_hls' | 'mp4' | 'bunny';
+  videoUrl: string;
+  isFreePreview?: boolean;
+  notesPdfUrl?: string;
+  description?: string;
+  sortOrder: number;
+}
+
+export interface CourseModule {
+  id: string;
+  courseId: string;
+  title: string;
+  description?: string;
+  sortOrder: number;
+  lessons: CourseLesson[];
+}
+
+export interface Course {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  category: string;
+  level: 'All Levels' | 'Beginner' | 'Intermediate' | 'Mastery';
+  instructor: {
+    name: string;
+    title: string;
+    image?: string;
+    bio?: string;
+  };
+  thumbnail: string;
+  trailerVideoUrl?: string;
+  price: number;
+  originalPrice?: number;
+  rating: number;
+  reviewsCount: number;
+  totalDuration: string;
+  totalLessons: number;
+  language: string;
+  whatYouWillLearn: string[];
+  requirements?: string[];
+  certificateEnabled?: boolean;
+  status: 'published' | 'draft';
+  modules: CourseModule[];
+}
+
+export interface UserCourseEnrollment {
+  id: string;
+  userId: string;
+  userPhone: string;
+  courseId: string;
+  orderId?: string;
+  enrolledAt: string;
+  completedAt?: string;
+  progressPercentage: number;
+  completedLessonIds: string[];
+  lastLessonId?: string;
+}
+
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
 const BOOKS_FILE = path.join(DATA_DIR, 'books.json');
 const BLOGS_FILE = path.join(DATA_DIR, 'blogs.json');
 const WEBINARS_FILE = path.join(DATA_DIR, 'webinars.json');
+const COURSES_FILE = path.join(DATA_DIR, 'courses.json');
+const ENROLLMENTS_FILE = path.join(DATA_DIR, 'course_enrollments.json');
+
+const INITIAL_COURSES: Course[] = [
+  {
+    id: "course-101",
+    slug: "brahma-muhurta-manifestation-mastery",
+    title: "Brahma Muhurta Manifestation & Wealth Frequency Mastery",
+    subtitle: "The Sacred 4:00 AM Vedic Science to Rewire Subconscious Money Vibration",
+    description: "An authentic, step-by-step video masterclass created by AR Blessings spiritual guides. Understand the metaphysics of cosmic alignment, how to activate the Kuber wealth vortex in your daily routine, sacred water manifestation, and potent beej mantra transmissions.",
+    category: "Manifestation & Sacred Energy",
+    level: "All Levels",
+    instructor: {
+      name: "Acharya Rajesh Shastri",
+      title: "Vedic Master & Energy Guide",
+      image: "/images/testimonials/review-1.png",
+      bio: "Over 22 years of Sadhana, consecrated temple Vastu, and guidance of thousands of seekers towards spiritual abundance."
+    },
+    thumbnail: "/images/blog/sacred-morning-rituals.svg",
+    trailerVideoUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+    price: 0,
+    originalPrice: 2999,
+    rating: 4.9,
+    reviewsCount: 342,
+    totalDuration: "4.5 Hours",
+    totalLessons: 8,
+    language: "Hindi & English",
+    whatYouWillLearn: [
+      "The exact metaphysical science of Brahma Muhurta (3:45 AM - 5:15 AM)",
+      "Kara Darshana: How to activate the divine Lakshmi-Saraswati palms energy",
+      "Sacred Water Energization with the Gayatri & Kuber Beej Mantras",
+      "Subconscious Financial Fear Clearing ritual with consecrated copper energy",
+      "The Daily Sacred Geometry Journaling Method for steady abundance"
+    ],
+    requirements: [
+      "An open mind and commitment to wake up 30 minutes earlier",
+      "A peaceful corner in your home for 15 minutes of daily practice"
+    ],
+    certificateEnabled: true,
+    status: "published",
+    modules: [
+      {
+        id: "mod-101-1",
+        courseId: "course-101",
+        title: "Section 1: Awakening the Subtle Energy Body",
+        sortOrder: 1,
+        lessons: [
+          {
+            id: "les-101-1",
+            moduleId: "mod-101-1",
+            courseId: "course-101",
+            title: "Lesson 1: Introduction to Vedic Space-Time & Prana",
+            duration: "14:20",
+            videoType: "youtube",
+            videoUrl: "dQw4w9WgXcQ",
+            isFreePreview: true,
+            description: "Why the planetary magnetic field at 4:00 AM acts as a zero-resistance conduit for conscious intention.",
+            sortOrder: 1,
+          },
+          {
+            id: "les-101-2",
+            moduleId: "mod-101-1",
+            courseId: "course-101",
+            title: "Lesson 2: Kara Darshana - Awakening Palm Energy Centers",
+            duration: "18:45",
+            videoType: "youtube",
+            videoUrl: "dQw4w9WgXcQ",
+            isFreePreview: true,
+            description: "Step-by-step palm mudra meditation practiced the moment your eyes open.",
+            sortOrder: 2,
+          }
+        ]
+      },
+      {
+        id: "mod-101-2",
+        courseId: "course-101",
+        title: "Section 2: Sacred Water & Wealth Vibration",
+        sortOrder: 2,
+        lessons: [
+          {
+            id: "les-101-3",
+            moduleId: "mod-101-2",
+            courseId: "course-101",
+            title: "Lesson 3: Consecrating Morning Water with Sound Frequencies",
+            duration: "21:10",
+            videoType: "youtube",
+            videoUrl: "dQw4w9WgXcQ",
+            isFreePreview: false,
+            description: "Using sacred copper vessels and sound waves to structure drinking water for vitality and prosperity.",
+            sortOrder: 3,
+          },
+          {
+            id: "les-101-4",
+            moduleId: "mod-101-2",
+            courseId: "course-101",
+            title: "Lesson 4: Tuning the Kuber Axis in Your Living Space",
+            duration: "25:30",
+            videoType: "youtube",
+            videoUrl: "dQw4w9WgXcQ",
+            isFreePreview: false,
+            description: "How to locate and clean the North-Eastern magnetic corridor to prevent energetic wealth drain.",
+            sortOrder: 4,
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: "course-102",
+    slug: "vedic-vastu-masterclass",
+    title: "Zero-Demolition Vedic Vastu & Wealth Architecture",
+    subtitle: "Transform Stagnant Space into a Magnet for Health, Peace & Financial Abundance",
+    description: "Master the sacred 16 zones of Vedic Vastu Shastra without breaking a single wall or brick. Learn energetic remedies, pyramidal corrections, elemental color balancing, and directional altar consecration.",
+    category: "Vastu Shastra & Space Healing",
+    level: "Intermediate",
+    instructor: {
+      name: "Dr. Arvind Vashishtha",
+      title: "Senior Vastu Architect & Geopathic Expert",
+      image: "/images/testimonials/review-2.png",
+      bio: "Pioneer in non-destructive Vastu remedies with 28+ years consulting for over 4,500 homes and commercial complexes globally."
+    },
+    thumbnail: "/images/blog/vastu-energy-guide.svg",
+    trailerVideoUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+    price: 999,
+    originalPrice: 4999,
+    rating: 5.0,
+    reviewsCount: 189,
+    totalDuration: "6.0 Hours",
+    totalLessons: 10,
+    language: "Hindi & English",
+    whatYouWillLearn: [
+      "The Cosmic Vastu Purusha Mandala and the 16 energetic directions",
+      "Zero-Demolition cures: Using metals, mirrors, lights, and sacred geometry",
+      "Diagnosing health and financial blockages caused by toilet/kitchen placement",
+      "Activating the South-East (Fire/Cash Liquidity) corner properly",
+      "North-East (Ishanya) purity protocols for mental peace and intuitive clarity"
+    ],
+    requirements: [
+      "Basic home floor plan or rough compass sketch of your house",
+      "A measuring tape and a digital smartphone compass"
+    ],
+    certificateEnabled: true,
+    status: "published",
+    modules: [
+      {
+        id: "mod-102-1",
+        courseId: "course-102",
+        title: "Section 1: The 16 Cardinal Zones & The 5 Elements",
+        sortOrder: 1,
+        lessons: [
+          {
+            id: "les-102-1",
+            moduleId: "mod-102-1",
+            courseId: "course-102",
+            title: "Lesson 1: Introduction to Pancha Tattva Elemental Cycles",
+            duration: "20:15",
+            videoType: "youtube",
+            videoUrl: "dQw4w9WgXcQ",
+            isFreePreview: true,
+            description: "Understanding Water, Air, Fire, Earth, and Space interactions inside your walls.",
+            sortOrder: 1,
+          },
+          {
+            id: "les-102-2",
+            moduleId: "mod-102-1",
+            courseId: "course-102",
+            title: "Lesson 2: Finding True North Using Compass Grids",
+            duration: "16:40",
+            videoType: "youtube",
+            videoUrl: "dQw4w9WgXcQ",
+            isFreePreview: false,
+            description: "How to take accurate directional readings avoiding magnetic interference.",
+            sortOrder: 2,
+          }
+        ]
+      },
+      {
+        id: "mod-102-2",
+        courseId: "course-102",
+        title: "Section 2: Practical Remedies for Main Doors & Entrances",
+        sortOrder: 2,
+        lessons: [
+          {
+            id: "les-102-3",
+            moduleId: "mod-102-2",
+            courseId: "course-102",
+            title: "Lesson 3: Entrance Energy Calibration (The 32 Pada System)",
+            duration: "28:50",
+            videoType: "youtube",
+            videoUrl: "dQw4w9WgXcQ",
+            isFreePreview: false,
+            description: "Why certain doors create expenses and how to neutralize them with copper/brass thresholds.",
+            sortOrder: 3,
+          }
+        ]
+      }
+    ]
+  }
+];
 
 const INITIAL_WEBINARS: Webinar[] = [
   {
@@ -733,4 +998,304 @@ export async function deleteWebinarAsync(idOrSlug: string): Promise<void> {
       console.error('[cmsStore] MySQL deleteWebinar error:', err);
     }
   }
+}
+
+// ==================== COURSES & LMS CMS ====================
+
+export function getCourses(): Course[] {
+  const disk = readJson<Course[]>(COURSES_FILE, []);
+  if (!disk || disk.length === 0) {
+    writeJson(COURSES_FILE, INITIAL_COURSES);
+    return INITIAL_COURSES;
+  }
+  return disk;
+}
+
+export async function getCoursesAsync(): Promise<Course[]> {
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      const [rows] = await pool.query('SELECT * FROM courses ORDER BY created_at DESC') as [any[], any];
+      if (rows && rows.length > 0) {
+        return rows.map((r) => ({
+          id: r.id,
+          slug: r.slug,
+          title: r.title,
+          subtitle: r.subtitle || '',
+          description: r.description || '',
+          category: r.category || 'Spiritual Wisdom',
+          level: r.level || 'All Levels',
+          instructor: {
+            name: r.instructor_name || 'Aacharya Ji',
+            title: r.instructor_title || 'Vedic Master',
+            image: r.instructor_image || undefined,
+          },
+          thumbnail: r.thumbnail,
+          trailerVideoUrl: r.trailer_video_url || undefined,
+          price: Number(r.price) || 0,
+          originalPrice: Number(r.original_price) || 0,
+          rating: Number(r.rating) || 5.0,
+          reviewsCount: Number(r.reviews_count) || 0,
+          totalDuration: r.total_duration || '5 Hours',
+          totalLessons: Number(r.total_lessons) || 10,
+          language: r.language || 'Hindi & English',
+          whatYouWillLearn: typeof r.what_you_will_learn === 'string' ? JSON.parse(r.what_you_will_learn) : (r.what_you_will_learn || []),
+          requirements: typeof r.requirements === 'string' ? JSON.parse(r.requirements) : (r.requirements || []),
+          certificateEnabled: Boolean(r.certificate_enabled),
+          status: r.status || 'published',
+          modules: typeof r.modules === 'string' ? JSON.parse(r.modules) : (r.modules || []),
+        }));
+      }
+      for (const c of INITIAL_COURSES) {
+        await saveCourseAsync(c);
+      }
+    } catch (err) {
+      console.error('[cmsStore] MySQL getCourses error, falling back to disk:', err);
+    }
+  }
+  return getCourses();
+}
+
+export function getCourseBySlug(slug: string): Course | undefined {
+  return getCourses().find((c) => c.slug === slug || c.id === slug);
+}
+
+export async function getCourseBySlugAsync(slug: string): Promise<Course | undefined> {
+  const list = await getCoursesAsync();
+  return list.find((c) => c.slug === slug || c.id === slug);
+}
+
+export function saveCourse(course: Course): void {
+  const list = getCourses();
+  const index = list.findIndex((c) => c.id === course.id || c.slug === course.slug);
+  if (index >= 0) {
+    list[index] = course;
+  } else {
+    list.unshift(course);
+  }
+  writeJson(COURSES_FILE, list);
+}
+
+export async function saveCourseAsync(course: Course): Promise<void> {
+  saveCourse(course);
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      const query = `
+        INSERT INTO courses (
+          id, slug, title, subtitle, description, category, level,
+          instructor_name, instructor_title, instructor_image, thumbnail, trailer_video_url,
+          price, original_price, rating, reviews_count, total_duration, total_lessons,
+          language, what_you_will_learn, requirements, certificate_enabled, status, modules
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          slug = VALUES(slug),
+          title = VALUES(title),
+          subtitle = VALUES(subtitle),
+          description = VALUES(description),
+          category = VALUES(category),
+          level = VALUES(level),
+          instructor_name = VALUES(instructor_name),
+          instructor_title = VALUES(instructor_title),
+          instructor_image = VALUES(instructor_image),
+          thumbnail = VALUES(thumbnail),
+          trailer_video_url = VALUES(trailer_video_url),
+          price = VALUES(price),
+          original_price = VALUES(original_price),
+          rating = VALUES(rating),
+          reviews_count = VALUES(reviews_count),
+          total_duration = VALUES(total_duration),
+          total_lessons = VALUES(total_lessons),
+          language = VALUES(language),
+          what_you_will_learn = VALUES(what_you_will_learn),
+          requirements = VALUES(requirements),
+          certificate_enabled = VALUES(certificate_enabled),
+          status = VALUES(status),
+          modules = VALUES(modules);
+      `;
+      await pool.query(query, [
+        course.id,
+        course.slug,
+        course.title,
+        course.subtitle || '',
+        course.description || '',
+        course.category,
+        course.level,
+        course.instructor.name,
+        course.instructor.title,
+        course.instructor.image || null,
+        course.thumbnail,
+        course.trailerVideoUrl || null,
+        course.price,
+        course.originalPrice || 0,
+        course.rating,
+        course.reviewsCount,
+        course.totalDuration,
+        course.totalLessons,
+        course.language,
+        JSON.stringify(course.whatYouWillLearn || []),
+        JSON.stringify(course.requirements || []),
+        course.certificateEnabled ? 1 : 0,
+        course.status,
+        JSON.stringify(course.modules || []),
+      ]);
+    } catch (err) {
+      console.error('[cmsStore] MySQL saveCourse error:', err);
+    }
+  }
+}
+
+export function deleteCourse(idOrSlug: string): void {
+  const list = getCourses().filter((c) => c.id !== idOrSlug && c.slug !== idOrSlug);
+  writeJson(COURSES_FILE, list);
+}
+
+export async function deleteCourseAsync(idOrSlug: string): Promise<void> {
+  deleteCourse(idOrSlug);
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      await pool.query('DELETE FROM courses WHERE id = ? OR slug = ?', [idOrSlug, idOrSlug]);
+    } catch (err) {
+      console.error('[cmsStore] MySQL deleteCourse error:', err);
+    }
+  }
+}
+
+// Enrollments & Progress Store
+export function getEnrollments(): UserCourseEnrollment[] {
+  return readJson<UserCourseEnrollment[]>(ENROLLMENTS_FILE, []);
+}
+
+export function saveEnrollment(en: UserCourseEnrollment): void {
+  const list = getEnrollments();
+  const idx = list.findIndex((x) => x.id === en.id || (x.userPhone === en.userPhone && x.courseId === en.courseId));
+  if (idx >= 0) {
+    list[idx] = en;
+  } else {
+    list.unshift(en);
+  }
+  writeJson(ENROLLMENTS_FILE, list);
+}
+
+export async function enrollUserInCourse(userId: string, userPhone: string, courseId: string, orderId?: string): Promise<UserCourseEnrollment> {
+  const cleanPhone = (userPhone || '').replace(/\D/g, '').slice(-10);
+  const enrollment: UserCourseEnrollment = {
+    id: `enr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    userId: userId || cleanPhone,
+    userPhone: cleanPhone,
+    courseId,
+    orderId,
+    enrolledAt: new Date().toISOString(),
+    progressPercentage: 0,
+    completedLessonIds: [],
+  };
+  saveEnrollment(enrollment);
+
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      await pool.query(`
+        INSERT INTO user_course_enrollments (id, user_id, user_phone, course_id, order_id, progress_percentage, completed_lesson_ids, enrolled_at)
+        VALUES (?, ?, ?, ?, ?, 0, '[]', NOW())
+        ON DUPLICATE KEY UPDATE order_id = VALUES(order_id);
+      `, [enrollment.id, enrollment.userId, enrollment.userPhone, enrollment.courseId, enrollment.orderId || null]);
+    } catch (err) {
+      console.error('[cmsStore] enrollUserInCourse MySQL error:', err);
+    }
+  }
+  return enrollment;
+}
+
+export async function getUserEnrollmentsAsync(userPhone: string): Promise<UserCourseEnrollment[]> {
+  const cleanPhone = (userPhone || '').replace(/\D/g, '').slice(-10);
+  if (!cleanPhone) return [];
+
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      const [rows] = await pool.query('SELECT * FROM user_course_enrollments WHERE user_phone = ?', [cleanPhone]) as [any[], any];
+      if (rows && rows.length > 0) {
+        return rows.map((r) => ({
+          id: r.id,
+          userId: r.user_id,
+          userPhone: r.user_phone,
+          courseId: r.course_id,
+          orderId: r.order_id || undefined,
+          enrolledAt: r.enrolled_at,
+          completedAt: r.completed_at || undefined,
+          progressPercentage: Number(r.progress_percentage) || 0,
+          completedLessonIds: typeof r.completed_lesson_ids === 'string' ? JSON.parse(r.completed_lesson_ids) : (r.completed_lesson_ids || []),
+          lastLessonId: r.last_lesson_id || undefined,
+        }));
+      }
+    } catch (err) {
+      console.error('[cmsStore] getUserEnrollmentsAsync error:', err);
+    }
+  }
+  return getEnrollments().filter((e) => e.userPhone === cleanPhone);
+}
+
+export async function updateLessonProgressAsync(
+  userPhone: string,
+  courseId: string,
+  lessonId: string,
+  completed: boolean
+): Promise<{ progressPercentage: number; completedLessonIds: string[] }> {
+  const cleanPhone = (userPhone || '').replace(/\D/g, '').slice(-10);
+  const enrollments = await getUserEnrollmentsAsync(cleanPhone);
+  let enrollment = enrollments.find((e) => e.courseId === courseId);
+  if (!enrollment) {
+    enrollment = await enrollUserInCourse(cleanPhone, cleanPhone, courseId);
+  }
+
+  const course = await getCourseBySlugAsync(courseId);
+  const totalLessons = course?.totalLessons || 10;
+
+  let completedSet = new Set<string>(enrollment.completedLessonIds || []);
+  if (completed) {
+    completedSet.add(lessonId);
+  } else {
+    completedSet.delete(lessonId);
+  }
+
+  const completedLessonIds = Array.from(completedSet);
+  const progressPercentage = Math.min(100, Math.round((completedLessonIds.length / totalLessons) * 100));
+
+  enrollment.completedLessonIds = completedLessonIds;
+  enrollment.progressPercentage = progressPercentage;
+  enrollment.lastLessonId = lessonId;
+  if (progressPercentage === 100 && !enrollment.completedAt) {
+    enrollment.completedAt = new Date().toISOString();
+  }
+
+  saveEnrollment(enrollment);
+
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      await pool.query(`
+        UPDATE user_course_enrollments
+        SET progress_percentage = ?, completed_lesson_ids = ?, last_lesson_id = ?, completed_at = ?
+        WHERE user_phone = ? AND course_id = ?
+      `, [
+        progressPercentage,
+        JSON.stringify(completedLessonIds),
+        lessonId,
+        enrollment.completedAt || null,
+        cleanPhone,
+        courseId,
+      ]);
+    } catch (err) {
+      console.error('[cmsStore] updateLessonProgressAsync error:', err);
+    }
+  }
+
+  return { progressPercentage, completedLessonIds };
 }

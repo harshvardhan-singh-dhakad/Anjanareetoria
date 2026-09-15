@@ -72,6 +72,12 @@ export const Header: React.FC = () => {
             Blog
           </Link>
           <Link
+            href="/courses"
+            className="text-sm font-semibold tracking-wide text-[#2b2b2b] hover:text-[#0008c1] transition-colors"
+          >
+            Courses
+          </Link>
+          <Link
             href="/webinars"
             className="text-sm font-semibold tracking-wide text-[#2b2b2b] hover:text-[#0008c1] transition-colors"
           >
@@ -177,7 +183,7 @@ export const Header: React.FC = () => {
                     </Link>
 
                     <Link
-                      href={`/reader?phone=${user?.phone}`}
+                      href="/account?tab=EBOOKS"
                       onClick={() => setUserDropdownOpen(false)}
                       className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-amber-50 hover:text-[#0008c1] rounded-lg transition"
                     >
@@ -283,6 +289,13 @@ export const Header: React.FC = () => {
             className="block text-sm font-medium text-gray-800 hover:text-[#0008c1] py-2 border-b border-gray-50"
           >
             Blog
+          </Link>
+          <Link
+            href="/courses"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm font-medium text-gray-800 hover:text-[#0008c1] py-2 border-b border-gray-50"
+          >
+            Courses &amp; Teachings
           </Link>
           <Link
             href="/webinars"
