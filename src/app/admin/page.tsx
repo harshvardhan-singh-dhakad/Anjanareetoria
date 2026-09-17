@@ -59,7 +59,12 @@ export default function AdminDashboardPage() {
         fetch('/api/admin/courses').then(r => r.json()).catch(() => ({ success: false })),
       ]);
 
-      const booksList: ExtendedBook[] = resBooks.data || [];
+      const prodList = resProd?.products || resProd?.data || [];
+      const booksList: ExtendedBook[] = resBooks?.books || resBooks?.data || [];
+      const webinarsList = resWebinars?.webinars || resWebinars?.data || [];
+      const blogsList = resBlogs?.blogs || resBlogs?.data || [];
+      const coursesList = resCourses?.courses || resCourses?.data || [];
+
       const pdfCount = booksList.filter((b) => b.pdfSourceFile).length;
       const ordersList: EbookOrder[] = resOrders?.success && Array.isArray(resOrders.orders) ? resOrders.orders : [];
       const revenue = ordersList.reduce((acc, o) => acc + (Number(o.amount) || 0), 0);
@@ -68,11 +73,11 @@ export default function AdminDashboardPage() {
       setRecentOrders(sortedOrders.slice(0, 5));
 
       setStats({
-        productsCount: resProd.data?.length || 0,
-        booksCount: booksList.length || 0,
-        coursesCount: resCourses?.data?.length || 0,
-        webinarsCount: resWebinars.data?.length || 0,
-        blogsCount: resBlogs.data?.length || 0,
+        productsCount: prodList.length,
+        booksCount: booksList.length,
+        coursesCount: coursesList.length,
+        webinarsCount: webinarsList.length,
+        blogsCount: blogsList.length,
         ebooksWithPdf: pdfCount,
         totalOrders: ordersList.length,
         totalRevenue: revenue,

@@ -5,10 +5,18 @@ import { BooksHomeSection } from '@/components/BooksHomeSection';
 import { BlogHomeSection } from '@/components/BlogHomeSection';
 import { VideoSection } from '@/components/VideoSection';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
-import { products } from '@/data/products';
+import { getProductsAsync, getBooksAsync, getBlogsAsync } from '@/lib/db/cmsStore';
 import { ProductListSchema } from '@/components/SchemaMarkup';
 
-export default function HomePage() {
+export const dynamic = 'force-dynamic';
+
+export default async function HomePage() {
+  const [products, books, blogs] = await Promise.all([
+    getProductsAsync(),
+    getBooksAsync(),
+    getBlogsAsync(),
+  ]);
+
   return (
     <div className="w-full">
       <ProductListSchema products={products} />
@@ -38,7 +46,7 @@ export default function HomePage() {
       </section>
 
       {/* Sacred Books & E-Books Showcase */}
-      <BooksHomeSection />
+      <BooksHomeSection initialBooks={books} />
 
       {/* Video Insights Section */}
       <VideoSection />
@@ -47,7 +55,7 @@ export default function HomePage() {
       <TestimonialCarousel />
 
       {/* Spiritual Journal & Blog Section */}
-      <BlogHomeSection />
+      <BlogHomeSection initialBlogs={blogs} />
     </div>
   );
 }

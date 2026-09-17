@@ -57,10 +57,14 @@ export default function AdminBlogsPage() {
       const res = await fetch('/api/admin/blogs');
       const data = await res.json();
       if (data.success) {
-        setBlogs(data.data);
+        const list = Array.isArray(data.blogs) ? data.blogs : Array.isArray(data.data) ? data.data : [];
+        setBlogs(list);
+      } else {
+        setBlogs([]);
       }
     } catch (err) {
       console.error('Failed to load blogs:', err);
+      setBlogs([]);
     } finally {
       setLoading(false);
     }
@@ -71,13 +75,18 @@ export default function AdminBlogsPage() {
   }, []);
 
   const filteredBlogs = useMemo(() => {
-    return blogs.filter(b => {
+    const list = Array.isArray(blogs) ? blogs : [];
+    return list.filter(b => {
+      if (!b) return false;
       const q = search.toLowerCase().trim();
+      const title = b.title || '';
+      const category = b.category || '';
+      const slug = b.slug || '';
       return (
         !q ||
-        b.title.toLowerCase().includes(q) ||
-        b.category.toLowerCase().includes(q) ||
-        b.slug.toLowerCase().includes(q)
+        title.toLowerCase().includes(q) ||
+        category.toLowerCase().includes(q) ||
+        slug.toLowerCase().includes(q)
       );
     });
   }, [blogs, search]);
@@ -169,18 +178,18 @@ export default function AdminBlogsPage() {
   const openEditModal = (b: ExtendedBlogPost) => {
     setEditingBlog(b);
     setFormData({
-      id: b.id,
-      slug: b.slug,
-      title: b.title,
-      excerpt: b.excerpt,
-      category: b.category,
-      coverImage: b.coverImage,
-      publishedDate: b.publishedDate,
-      readTimeMinutes: b.readTimeMinutes,
+      id: b.id || '',
+      slug: b.slug || '',
+      title: b.title || '',
+      excerpt: b.excerpt || '',
+      category: b.category || 'Manifestation & Wealth',
+      coverImage: b.coverImage || '/images/blog/sacred-morning-rituals.svg',
+      publishedDate: b.publishedDate || '',
+      readTimeMinutes: b.readTimeMinutes || 5,
       featured: b.featured ?? false,
       authorName: b.author?.name || 'AR Blessings Spiritual Council',
       authorRole: b.author?.role || 'Vedic Guidance Masters',
-      tagsText: (b.tags || []).join(', '),
+      tagsText: Array.isArray(b.tags) ? b.tags.join(', ') : '',
       htmlContent: b.htmlContent || defaultHtmlTemplate,
     });
     setLastUploadedImageUrl(null);
@@ -396,7 +405,7 @@ export default function AdminBlogsPage() {
                       <div className="flex items-center space-x-3">
                         <div className="w-14 h-10 rounded-lg bg-slate-100 relative overflow-hidden flex-shrink-0 border border-slate-200 shadow-sm">
                           {b.coverImage ? (
-                            <Image src={b.coverImage} alt={b.title} fill className="object-cover" />
+                            <Image src={b.coverImage} alt={b.title || 'Blog'} fill className="object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-300">
                               <FileEdit size={16} />
@@ -405,7 +414,7 @@ export default function AdminBlogsPage() {
                         </div>
                         <div>
                           <div className="font-semibold text-slate-900 font-serif line-clamp-1">
-                            {b.title}
+                            {b.title || 'Untitled Article'}
                           </div>
                           <div className="text-[11px] text-slate-400 font-mono">
                             /blog/{b.slug}

@@ -34,13 +34,17 @@ export default function AdminOrdersPage() {
     try {
       const res = await fetch('/api/admin/orders');
       const data = await res.json();
-      if (data.success && Array.isArray(data.orders)) {
+      const raw = Array.isArray(data.orders) ? data.orders : Array.isArray(data.data) ? data.data : [];
+      if (data.success) {
         // Sort descending by purchaseTimestamp
-        const sorted = [...data.orders].sort((a, b) => (b.purchaseTimestamp || 0) - (a.purchaseTimestamp || 0));
+        const sorted = [...raw].sort((a, b) => (b.purchaseTimestamp || 0) - (a.purchaseTimestamp || 0));
         setOrders(sorted);
+      } else {
+        setOrders([]);
       }
     } catch (err) {
       console.error('Failed to load orders:', err);
+      setOrders([]);
     } finally {
       setLoading(false);
     }

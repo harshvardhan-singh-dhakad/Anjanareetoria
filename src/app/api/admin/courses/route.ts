@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const courses = await getCoursesAsync();
-    return NextResponse.json({ success: true, data: courses });
+    return NextResponse.json({ success: true, data: courses, courses });
   } catch (error: any) {
     console.error('[API /api/admin/courses GET] Error:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

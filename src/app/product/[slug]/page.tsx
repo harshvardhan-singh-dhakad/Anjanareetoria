@@ -1,23 +1,19 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getProducts } from '@/lib/db/cmsStore';
+import { getProductsAsync } from '@/lib/db/cmsStore';
 import { ProductDetailClient } from './ProductDetailClient';
 import { ProductSchema, BreadcrumbSchema } from '@/components/SchemaMarkup';
+import { getCrossRecommendations } from '@/lib/recommendations';
 
-export function generateStaticParams() {
-  const allProducts = getProducts();
-  return allProducts.map((product) => ({
-    slug: product.slug,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const allProducts = getProducts();
+  const allProducts = await getProductsAsync();
   const product = allProducts.find((p) => p.slug === params.slug);
   if (!product) {
     return { title: 'Product Not Found | AR Blessings' };
@@ -38,10 +34,8 @@ export async function generateMetadata({
   };
 }
 
-import { getCrossRecommendations } from '@/lib/recommendations';
-
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const allProducts = getProducts();
+export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
+  const allProducts = await getProductsAsync();
   const product = allProducts.find((p) => p.slug === params.slug);
 
   if (!product) {
@@ -76,4 +70,3 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     </>
   );
 }
-

@@ -431,6 +431,16 @@ const INITIAL_WEBINARS: Webinar[] = [
   }
 ];
 
+function safeJsonParse<T>(val: any, fallback: T): T {
+  if (!val) return fallback;
+  if (typeof val !== 'string') return val as T;
+  try {
+    return JSON.parse(val);
+  } catch {
+    return fallback;
+  }
+}
+
 function readJson<T>(filePath: string, defaultData: T): T {
   ensureStorageDirs();
   if (!fs.existsSync(filePath)) {
@@ -481,8 +491,8 @@ export async function getProductsAsync(): Promise<Product[]> {
             shortDescription: desc.length > 120 ? desc.slice(0, 117) + '...' : desc,
             category: r.category || 'Sacred Essentials',
             inStock: Boolean(r.in_stock),
-            features: typeof r.features === 'string' ? JSON.parse(r.features) : (r.features || []),
-            specifications: typeof r.specifications === 'string' ? JSON.parse(r.specifications) : (r.specifications || {}),
+            features: safeJsonParse(r.features, []),
+            specifications: safeJsonParse(r.specifications, {}),
           } as Product;
         });
       }
@@ -614,8 +624,8 @@ export async function getBooksAsync(): Promise<ExtendedBook[]> {
             tableOfContents: base.tableOfContents || [],
             sampleExcerpt: base.sampleExcerpt || { chapterTitle: 'Introduction', paragraphs: [] },
             features: base.features || [],
-            previewPages: typeof r.preview_pages === 'string' ? JSON.parse(r.preview_pages) : (r.preview_pages || []),
-            keyTakeaways: typeof r.key_takeaways === 'string' ? JSON.parse(r.key_takeaways) : (r.key_takeaways || []),
+            previewPages: safeJsonParse(r.preview_pages, []),
+            keyTakeaways: safeJsonParse(r.key_takeaways, []),
           } as ExtendedBook;
         });
       }
@@ -745,8 +755,8 @@ export async function getBlogsAsync(): Promise<ExtendedBlogPost[]> {
             category: r.category || base.category,
             coverImage: r.image || base.coverImage,
             htmlContent: r.html_content || undefined,
-            relatedProductSlugs: typeof r.related_product_slugs === 'string' ? JSON.parse(r.related_product_slugs) : (r.related_product_slugs || base.relatedProductSlugs || []),
-            relatedBookSlugs: typeof r.related_book_slugs === 'string' ? JSON.parse(r.related_book_slugs) : (r.related_book_slugs || base.relatedBookSlugs || []),
+            relatedProductSlugs: safeJsonParse(r.related_product_slugs, base.relatedProductSlugs || []),
+            relatedBookSlugs: safeJsonParse(r.related_book_slugs, base.relatedBookSlugs || []),
           } as ExtendedBlogPost;
         });
       }
@@ -879,8 +889,8 @@ export async function getWebinarsAsync(): Promise<Webinar[]> {
             registrationUrl: r.registration_url,
             status: r.status || 'upcoming',
             bannerImage: r.banner_image,
-            agenda: typeof r.agenda === 'string' ? JSON.parse(r.agenda) : (r.agenda || []),
-            whoShouldAttend: typeof r.who_should_attend === 'string' ? JSON.parse(r.who_should_attend) : (r.who_should_attend || []),
+            agenda: safeJsonParse(r.agenda, []),
+            whoShouldAttend: safeJsonParse(r.who_should_attend, []),
             reviews,
           });
         }
@@ -1040,11 +1050,11 @@ export async function getCoursesAsync(): Promise<Course[]> {
           totalDuration: r.total_duration || '5 Hours',
           totalLessons: Number(r.total_lessons) || 10,
           language: r.language || 'Hindi & English',
-          whatYouWillLearn: typeof r.what_you_will_learn === 'string' ? JSON.parse(r.what_you_will_learn) : (r.what_you_will_learn || []),
-          requirements: typeof r.requirements === 'string' ? JSON.parse(r.requirements) : (r.requirements || []),
+          whatYouWillLearn: safeJsonParse(r.what_you_will_learn, []),
+          requirements: safeJsonParse(r.requirements, []),
           certificateEnabled: Boolean(r.certificate_enabled),
           status: r.status || 'published',
-          modules: typeof r.modules === 'string' ? JSON.parse(r.modules) : (r.modules || []),
+          modules: safeJsonParse(r.modules, []),
         }));
       }
       for (const c of INITIAL_COURSES) {
@@ -1230,7 +1240,7 @@ export async function getUserEnrollmentsAsync(userPhone: string): Promise<UserCo
           enrolledAt: r.enrolled_at,
           completedAt: r.completed_at || undefined,
           progressPercentage: Number(r.progress_percentage) || 0,
-          completedLessonIds: typeof r.completed_lesson_ids === 'string' ? JSON.parse(r.completed_lesson_ids) : (r.completed_lesson_ids || []),
+          completedLessonIds: safeJsonParse(r.completed_lesson_ids, []),
           lastLessonId: r.last_lesson_id || undefined,
         }));
       }

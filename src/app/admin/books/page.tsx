@@ -66,10 +66,14 @@ export default function AdminBooksPage() {
       const res = await fetch('/api/admin/books');
       const data = await res.json();
       if (data.success) {
-        setBooks(data.data);
+        const list = Array.isArray(data.books) ? data.books : Array.isArray(data.data) ? data.data : [];
+        setBooks(list);
+      } else {
+        setBooks([]);
       }
     } catch (err) {
       console.error('Failed to load books:', err);
+      setBooks([]);
     } finally {
       setLoading(false);
     }
@@ -80,14 +84,19 @@ export default function AdminBooksPage() {
   }, []);
 
   const filteredBooks = useMemo(() => {
-    return books.filter(b => {
+    const list = Array.isArray(books) ? books : [];
+    return list.filter(b => {
+      if (!b) return false;
       const matchesFormat = selectedFormat === 'All' || b.formatType === selectedFormat;
       const q = search.toLowerCase().trim();
+      const name = b.name || (b as any).title || '';
+      const author = typeof b.author === 'string' ? b.author : (b.author as any)?.name || '';
+      const slug = b.slug || '';
       const matchesSearch =
         !q ||
-        b.name.toLowerCase().includes(q) ||
-        b.author.toLowerCase().includes(q) ||
-        b.slug.toLowerCase().includes(q);
+        name.toLowerCase().includes(q) ||
+        author.toLowerCase().includes(q) ||
+        slug.toLowerCase().includes(q);
       return matchesFormat && matchesSearch;
     });
   }, [books, selectedFormat, search]);
@@ -126,14 +135,14 @@ export default function AdminBooksPage() {
   const openEditModal = (b: ExtendedBook) => {
     setEditingBook(b);
     setFormData({
-      id: b.id,
-      slug: b.slug,
-      name: b.name,
-      author: b.author || 'AR Blessings Research Guild',
+      id: b.id || '',
+      slug: b.slug || '',
+      name: b.name || (b as any).title || '',
+      author: (typeof b.author === 'string' ? b.author : (b.author as any)?.name) || 'AR Blessings Research Guild',
       formatType: b.formatType || 'both',
-      ebookPrice: b.ebookPrice || b.price,
+      ebookPrice: b.ebookPrice || b.price || 499,
       physicalPrice: b.physicalPrice || 899,
-      price: b.price,
+      price: b.price || 499,
       originalPrice: b.originalPrice || 0,
       discountPercent: b.discountPercent || 0,
       pages: b.pages || 200,
@@ -141,13 +150,13 @@ export default function AdminBooksPage() {
       publishedYear: b.publishedYear || 2024,
       isbn: b.isbn || '',
       category: b.category || 'Books & E-Books',
-      image: b.image || '',
+      image: b.image || b.coverImage || '',
       pdfSourceFile: b.pdfSourceFile || '',
       inStock: b.inStock ?? true,
       badge: b.badge || '',
       shortDescription: b.shortDescription || '',
       description: b.description || '',
-      featuresText: (b.features || []).join('\n'),
+      featuresText: Array.isArray(b.features) ? b.features.join('\n') : '',
     });
     setPdfSuccessMessage(null);
     setStatusMessage(null);
@@ -344,7 +353,7 @@ export default function AdminBooksPage() {
           </span>
         </div>
         <span className="text-slate-500 font-mono text-[11px] self-end sm:self-auto">
-          {books.filter(b => b.pdfSourceFile).length} of {books.length} eBooks have master PDF linked
+          {(Array.isArray(books) ? books : []).filter(b => b?.pdfSourceFile).length} of {Array.isArray(books) ? books.length : 0} eBooks have master PDF linked
         </span>
       </div>
 
@@ -413,7 +422,7 @@ export default function AdminBooksPage() {
                           {b.image ? (
                             <Image
                               src={b.image}
-                              alt={b.name}
+                              alt={b.name || (b as any).title || 'Book'}
                               fill
                               className="object-cover"
                             />
@@ -425,10 +434,10 @@ export default function AdminBooksPage() {
                         </div>
                         <div>
                           <div className="font-semibold text-slate-900 font-serif">
-                            {b.name}
+                            {b.name || (b as any).title || 'Untitled Book'}
                           </div>
                           <div className="text-xs text-slate-500">
-                            By {b.author} &bull; {b.pages} Pages
+                            By {b.author || 'AR Blessings'} &bull; {b.pages || 0} Pages
                           </div>
                           {b.badge && (
                             <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
@@ -491,7 +500,7 @@ export default function AdminBooksPage() {
                           <Edit2 size={15} />
                         </button>
                         <button
-                          onClick={() => handleDelete(b.id, b.name)}
+                          onClick={() => handleDelete(b.id, b.name || (b as any).title || 'Book')}
                           className="p-1.5 text-rose-500 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition"
                           title="Delete Book"
                         >

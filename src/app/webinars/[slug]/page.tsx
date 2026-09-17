@@ -1,22 +1,18 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getWebinars } from '@/lib/db/cmsStore';
+import { getWebinarsAsync } from '@/lib/db/cmsStore';
 import { WebinarDetailClient } from './WebinarDetailClient';
+import { getCrossRecommendations } from '@/lib/recommendations';
 
-export function generateStaticParams() {
-  const webinars = getWebinars();
-  return webinars.map((w) => ({
-    slug: w.slug,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const webinars = getWebinars();
+  const webinars = await getWebinarsAsync();
   const webinar = webinars.find((w) => w.slug === params.slug);
   if (!webinar) {
     return {
@@ -35,10 +31,8 @@ export async function generateMetadata({
   };
 }
 
-import { getCrossRecommendations } from '@/lib/recommendations';
-
-export default function WebinarDetailPage({ params }: { params: { slug: string } }) {
-  const webinars = getWebinars();
+export default async function WebinarDetailPage({ params }: { params: { slug: string } }) {
+  const webinars = await getWebinarsAsync();
   const webinar = webinars.find((w) => w.slug === params.slug);
 
   if (!webinar) {

@@ -1,23 +1,19 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getBooks } from '@/lib/db/cmsStore';
+import { getBooksAsync } from '@/lib/db/cmsStore';
 import { BookDetailClient } from './BookDetailClient';
 import { BookSchema, BreadcrumbSchema } from '@/components/SchemaMarkup';
+import { getCrossRecommendations } from '@/lib/recommendations';
 
-export function generateStaticParams() {
-  const allBooks = getBooks();
-  return allBooks.map((book) => ({
-    slug: book.slug,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const allBooks = getBooks();
+  const allBooks = await getBooksAsync();
   const book = allBooks.find((b) => b.slug === params.slug);
   if (!book) {
     return {
@@ -40,10 +36,8 @@ export async function generateMetadata({
   };
 }
 
-import { getCrossRecommendations } from '@/lib/recommendations';
-
-export default function BookDetailPage({ params }: { params: { slug: string } }) {
-  const allBooks = getBooks();
+export default async function BookDetailPage({ params }: { params: { slug: string } }) {
+  const allBooks = await getBooksAsync();
   const book = allBooks.find((b) => b.slug === params.slug);
 
   if (!book) {

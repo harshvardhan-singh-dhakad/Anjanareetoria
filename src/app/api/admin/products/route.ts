@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const products = await getProductsAsync();
-  return NextResponse.json({ success: true, products });
+  return NextResponse.json({ success: true, products, data: products });
 }
 
 export async function POST(req: NextRequest) {

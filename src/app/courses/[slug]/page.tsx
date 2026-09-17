@@ -2,21 +2,16 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CourseDetailClient } from './CourseDetailClient';
-import { getCourses, getCourseBySlug } from '@/lib/db/cmsStore';
+import { getCourseBySlugAsync } from '@/lib/db/cmsStore';
+
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: { slug: string };
 }
 
-export async function generateStaticParams() {
-  const courses = getCourses();
-  return courses.map((course) => ({
-    slug: course.slug,
-  }));
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const course = getCourseBySlug(params.slug);
+  const course = await getCourseBySlugAsync(params.slug);
   if (!course) {
     return {
       title: 'Course Not Found | AR Blessings',
@@ -34,8 +29,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function CourseDetailPage({ params }: PageProps) {
-  const course = getCourseBySlug(params.slug);
+export default async function CourseDetailPage({ params }: PageProps) {
+  const course = await getCourseBySlugAsync(params.slug);
   if (!course) {
     notFound();
   }

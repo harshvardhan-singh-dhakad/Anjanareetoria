@@ -4,11 +4,12 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { BookOpen, Download, ArrowRight, Star, ShoppingCart, Sparkles } from 'lucide-react';
-import { books } from '@/data/books';
+import { books as defaultBooks, Book } from '@/data/books';
 import { useCart } from '@/context/CartContext';
 
-export const BooksHomeSection: React.FC = () => {
+export const BooksHomeSection: React.FC<{ initialBooks?: Book[] }> = ({ initialBooks }) => {
   const { addToCart } = useCart();
+  const displayBooks = initialBooks && initialBooks.length > 0 ? initialBooks : defaultBooks;
 
   return (
     <section className="py-14 sm:py-20 bg-[#f8faff] border-t border-b border-blue-100/60">
@@ -39,7 +40,7 @@ export const BooksHomeSection: React.FC = () => {
 
         {/* Books Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {books.slice(0, 4).map((book) => (
+          {displayBooks.slice(0, 4).map((book) => (
             <div
               key={book.id}
               className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group"

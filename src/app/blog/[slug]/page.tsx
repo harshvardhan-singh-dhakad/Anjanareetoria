@@ -1,23 +1,19 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getBlogs } from '@/lib/db/cmsStore';
+import { getBlogsAsync } from '@/lib/db/cmsStore';
 import { BlogPostClient } from './BlogPostClient';
 import { BlogArticleSchema, BreadcrumbSchema } from '@/components/SchemaMarkup';
+import { getCrossRecommendations } from '@/lib/recommendations';
 
-export function generateStaticParams() {
-  const allBlogs = getBlogs();
-  return allBlogs.map((post) => ({
-    slug: post.slug,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const allBlogs = getBlogs();
+  const allBlogs = await getBlogsAsync();
   const post = allBlogs.find((b) => b.slug === params.slug);
   if (!post) {
     return {
@@ -42,10 +38,8 @@ export async function generateMetadata({
   };
 }
 
-import { getCrossRecommendations } from '@/lib/recommendations';
-
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const allBlogs = getBlogs();
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const allBlogs = await getBlogsAsync();
   const post = allBlogs.find((b) => b.slug === params.slug);
 
   if (!post) {
@@ -82,4 +76,3 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     </>
   );
 }
-

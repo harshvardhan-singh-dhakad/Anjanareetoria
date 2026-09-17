@@ -66,10 +66,18 @@ export default function AdminWebinarsPage() {
       const res = await fetch('/api/admin/webinars');
       const data = await res.json();
       if (data.success) {
-        setWebinars(data.data);
+        const list = Array.isArray(data.webinars)
+          ? data.webinars
+          : Array.isArray(data.data)
+          ? data.data
+          : [];
+        setWebinars(list);
+      } else {
+        setWebinars([]);
       }
     } catch (err) {
       console.error('Failed to load webinars:', err);
+      setWebinars([]);
     } finally {
       setLoading(false);
     }
@@ -409,7 +417,7 @@ export default function AdminWebinarsPage() {
                   <div className="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <div className="flex items-center space-x-2">
                       <User size={14} className="text-emerald-600" />
-                      <span className="font-semibold text-slate-900">{w.speaker.name}</span>
+                      <span className="font-semibold text-slate-900">{w.speaker?.name || 'Vedic Mentor'}</span>
                     </div>
                     <div className="flex items-center space-x-1 text-slate-500">
                       <Clock size={13} />

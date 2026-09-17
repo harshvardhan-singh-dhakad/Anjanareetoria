@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const blogs = await getBlogsAsync();
-  return NextResponse.json({ success: true, blogs });
+  return NextResponse.json({ success: true, blogs, data: blogs });
 }
 
 export async function POST(req: NextRequest) {

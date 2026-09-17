@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import { Lock, AlertCircle, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('admin');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -45,10 +46,10 @@ export default function AdminLoginPage() {
             <Lock size={26} className="text-[#0008c1]" />
           </div>
           <h1 className="text-2xl font-bold font-serif text-[#0008c1]">
-            AR Blessings Admin
+            AR Blessings Super Admin
           </h1>
           <p className="text-xs text-gray-500">
-            Sign in to manage products, consecrated books, webinars, and spiritual blog publications.
+            Secure master control panel. Access restricted exclusively to authorized administrators.
           </p>
         </div>
 
@@ -62,10 +63,11 @@ export default function AdminLoginPage() {
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Username
+              Super Admin Email or Mobile (84335 58905)
             </label>
             <input
               type="text"
+              placeholder="40se40crore.merchandise@gmail.com or 84335 58905"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -75,30 +77,40 @@ export default function AdminLoginPage() {
 
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Password
+              Admin Password
             </label>
-            <input
-              type="password"
-              placeholder="••••••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full text-sm px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#0008c1] transition"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full text-sm px-4 py-3 pr-11 rounded-xl border border-gray-200 outline-none focus:border-[#0008c1] transition"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#1346af] hover:bg-[#3a3a3a] text-white font-semibold text-sm py-3.5 rounded-xl transition shadow-md flex items-center justify-center space-x-2 disabled:opacity-50"
+            className="w-full bg-[#1346af] hover:bg-[#0008c1] text-white font-semibold text-sm py-3.5 rounded-xl transition shadow-md flex items-center justify-center space-x-2 disabled:opacity-50"
           >
-            <span>{loading ? 'Authenticating...' : 'Access Dashboard'}</span>
+            <span>{loading ? 'Authenticating Super Admin...' : 'Sign In with Full Control'}</span>
             <ArrowRight size={16} />
           </button>
         </form>
 
-        <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100 text-center text-xs text-blue-900">
-          <span>Initial Default: Password is <strong>arblessings@admin2024</strong></span>
+        <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-center text-xs text-amber-900 flex items-center justify-center space-x-2">
+          <ShieldCheck size={16} className="text-amber-700 flex-shrink-0" />
+          <span>Authorized Super Admin Access Protected</span>
         </div>
       </div>
     </div>

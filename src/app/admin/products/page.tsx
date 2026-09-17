@@ -52,10 +52,18 @@ export default function AdminProductsPage() {
       const res = await fetch('/api/admin/products');
       const data = await res.json();
       if (data.success) {
-        setProducts(data.data);
+        const list = Array.isArray(data.products)
+          ? data.products
+          : Array.isArray(data.data)
+          ? data.data
+          : [];
+        setProducts(list);
+      } else {
+        setProducts([]);
       }
     } catch (err) {
       console.error('Failed to load products:', err);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -66,15 +74,22 @@ export default function AdminProductsPage() {
   }, []);
 
   const categories = useMemo(() => {
-    const set = new Set(products.map(p => p.category).filter(Boolean));
+    const list = Array.isArray(products) ? products : [];
+    const set = new Set(list.map(p => p?.category).filter(Boolean));
     return ['All', ...Array.from(set)];
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    return products.filter(p => {
+    const list = Array.isArray(products) ? products : [];
+    return list.filter(p => {
+      if (!p) return false;
       const matchesCat = selectedCategory === 'All' || p.category === selectedCategory;
       const q = search.toLowerCase().trim();
-      const matchesSearch = !q || p.name.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q));
+      const matchesSearch =
+        !q ||
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.slug && p.slug.toLowerCase().includes(q)) ||
+        (p.description && p.description.toLowerCase().includes(q));
       return matchesCat && matchesSearch;
     });
   }, [products, selectedCategory, search]);

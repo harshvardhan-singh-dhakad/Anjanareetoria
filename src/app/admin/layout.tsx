@@ -21,10 +21,46 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(pathname !== '/admin/login');
+
+  const [adminUser, setAdminUser] = useState('40se40crore.merchandise@gmail.com');
 
   // If on login page, don't show admin sidebar
   if (pathname === '/admin/login') {
     return <>{children}</>;
+  }
+
+  React.useEffect(() => {
+    let isMounted = true;
+    fetch('/api/admin/auth/me')
+      .then((res) => {
+        if (!res.ok) throw new Error('Unauthorized');
+        return res.json();
+      })
+      .then((data) => {
+        if (data.authenticated) {
+          if (data.user) setAdminUser(data.user);
+          if (isMounted) setCheckingAuth(false);
+        } else {
+          router.replace('/admin/login');
+        }
+      })
+      .catch(() => {
+        router.replace('/admin/login');
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname, router]);
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white space-y-4">
+        <div className="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs text-slate-400 font-mono tracking-wider">Verifying Admin Authorization...</p>
+      </div>
+    );
   }
 
   const handleLogout = async () => {
@@ -105,7 +141,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-slate-900 space-y-2">
+        <div className="p-4 border-t border-slate-900 space-y-3">
+          <div className="bg-slate-900/90 rounded-2xl p-3 border border-slate-800">
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Super Admin</span>
+            </div>
+            <p className="text-[11px] font-mono text-slate-300 truncate mt-1" title={adminUser}>
+              {adminUser}
+            </p>
+          </div>
+
           <Link
             href="/"
             target="_blank"

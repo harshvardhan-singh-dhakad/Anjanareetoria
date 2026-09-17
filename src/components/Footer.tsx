@@ -15,13 +15,18 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-3 text-xs sm:text-sm text-blue-50">
               <li>
-                <Link href="/term-of-service-policy" className="hover:text-white transition">
-                  Terms of Service Policy
+                <Link href="/terms-of-service" className="hover:text-white transition">
+                  Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/privacy-policy-2" className="hover:text-white transition">
+                <Link href="/privacy-policy" className="hover:text-white transition">
                   Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/data-deletion" className="hover:text-white transition">
+                  Data Deletion Instructions
                 </Link>
               </li>
               <li>

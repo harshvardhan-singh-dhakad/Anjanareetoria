@@ -71,8 +71,9 @@ export default function AdminCoursesPage() {
     try {
       const res = await fetch('/api/admin/courses');
       const data = await res.json();
-      if (data.success && Array.isArray(data.data)) {
-        setCourses(data.data);
+      if (data.success) {
+        const list = Array.isArray(data.courses) ? data.courses : Array.isArray(data.data) ? data.data : [];
+        setCourses(list);
       }
     } catch (err) {
       console.error('Error fetching admin courses:', err);
@@ -322,9 +323,10 @@ export default function AdminCoursesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((c) => {
+          {(Array.isArray(courses) ? courses : []).map((c) => {
+            const modulesList = Array.isArray(c.modules) ? c.modules : [];
             const lessonsCount =
-              c.totalLessons || c.modules.reduce((acc, m) => acc + m.lessons.length, 0);
+              c.totalLessons || modulesList.reduce((acc, m) => acc + (Array.isArray(m?.lessons) ? m.lessons.length : 0), 0);
 
             return (
               <div

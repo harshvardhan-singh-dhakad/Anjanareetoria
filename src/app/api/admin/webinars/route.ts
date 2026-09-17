@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const webinars = await getWebinarsAsync();
-  return NextResponse.json({ success: true, webinars });
+  return NextResponse.json({ success: true, webinars, data: webinars });
 }
 
 export async function POST(req: NextRequest) {

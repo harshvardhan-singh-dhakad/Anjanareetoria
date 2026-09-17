@@ -2,9 +2,10 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar, Clock, ArrowRight, Sparkles } from 'lucide-react';
-import { blogs } from '@/data/blogs';
+import { blogs as defaultBlogs, BlogPost } from '@/data/blogs';
 
-export const BlogHomeSection: React.FC = () => {
+export const BlogHomeSection: React.FC<{ initialBlogs?: BlogPost[] }> = ({ initialBlogs }) => {
+  const displayBlogs = initialBlogs && initialBlogs.length > 0 ? initialBlogs : defaultBlogs;
   return (
     <section className="py-14 sm:py-20 bg-white">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
@@ -34,7 +35,7 @@ export const BlogHomeSection: React.FC = () => {
 
         {/* Blog Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-          {blogs.slice(0, 3).map((post) => (
+          {displayBlogs.slice(0, 3).map((post) => (
             <article
               key={post.id}
               className="bg-[#fafbfc] rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col group"
