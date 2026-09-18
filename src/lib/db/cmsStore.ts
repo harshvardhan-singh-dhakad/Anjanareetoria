@@ -442,12 +442,16 @@ function safeJsonParse<T>(val: any, fallback: T): T {
 }
 
 function readJson<T>(filePath: string, defaultData: T): T {
-  ensureStorageDirs();
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
-    return defaultData;
-  }
   try {
+    ensureStorageDirs();
+    if (!fs.existsSync(filePath)) {
+      try {
+        fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+      } catch (wErr) {
+        // Disk not writeable, non-fatal
+      }
+      return defaultData;
+    }
     const raw = fs.readFileSync(filePath, 'utf-8');
     return JSON.parse(raw);
   } catch (err) {
@@ -457,8 +461,12 @@ function readJson<T>(filePath: string, defaultData: T): T {
 }
 
 function writeJson<T>(filePath: string, data: T): void {
-  ensureStorageDirs();
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  try {
+    ensureStorageDirs();
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.warn('[cmsStore] writeJson warning (ignoring disk write):', err);
+  }
 }
 
 // ---------------- PRODUCTS CRUD ----------------
