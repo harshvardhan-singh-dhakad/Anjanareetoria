@@ -29,6 +29,134 @@ export interface Book extends Product {
 
 export const books: Book[] = [
   {
+    id: "bk-lakshmi-75",
+    slug: "75-days-to-welcome-maa-lakshmi",
+    name: "माँ लक्ष्मी के स्वागत के 75 दिन (75 Days to Welcome Maa Lakshmi)",
+    price: 500,
+    originalPrice: 999,
+    discountPercent: 50,
+    rating: 5.0,
+    reviewCount: 64,
+    image: "/images/books/lakshmi-75-days.jpg",
+    inStock: true,
+    category: "Books & E-Books",
+    author: "Anjanaa Reetoria",
+    formatType: "ebook",
+    ebookPrice: 500,
+    pages: 75,
+    language: "Hindi & English",
+    publishedYear: 2026,
+    downloadFormat: "Instant PDF / Digital Guide via Email",
+    badge: "Digital Guide",
+    shortDescription: "Start whenever you are ready. Your Day 1 begins today, and after completing the 75-day journey, celebrate Day 75 as your Personal Diwali.",
+    description: "यह केवल Diwali के पहले शुरू होने वाली booklet नहीं है। Customer किसी भी दिन Day 1 शुरू कर सकता है। जिस दिन उसके 75 दिन पूरे हों, उस completion को वह अपनी Personal Diwali की तरह celebrate कर सकता है। इस journey का उद्देश्य घर की तैयारी के साथ अपनी daily habits, discipline, अन्न के प्रति सम्मान, धन के प्रति awareness, दान, साधना और जीवन की व्यवस्था पर काम करना है।",
+    features: [
+      "75 Days • Daily Practices • Digital Access",
+      "Daily practices: Sankalp, 1 Mala, Evening Diya/Rangoli",
+      "Vishnu/Annapurna Bhajan & Awareness against food wastage",
+      "Weekly Daan & Clearing pending responsibilities",
+      "Non-promotional, authentic spiritual & discipline practice"
+    ],
+    tableOfContents: [
+      { number: 1, title: "Sankalp & Inner Purification", summary: "Beginning your Day 1 whenever ready—no waiting for festive dates required." },
+      { number: 2, title: "Daily Sadhana: 1 Mala & Evening Diya", summary: "Establishing peaceful resonance with evening rangoli and prayer." },
+      { number: 3, title: "De-cluttering & Sacred Space Management", summary: "Creating space for divine energy through clean environments." },
+      { number: 4, title: "Respect for Food & Weekly Daan", summary: "Cultivating mindful awareness around food wastage and purposeful charity." },
+      { number: 5, title: "Day 75: Your Personal Diwali Celebration", summary: "Honoring the completion of your 75-day spiritual discipline." }
+    ],
+    sampleExcerpt: {
+      chapterTitle: "The Philosophy of 75 Days",
+      subheading: "दीपावली की तारीख का इंतज़ार क्यों? आज से अपने 75 दिन शुरू कीजिए।",
+      paragraphs: [
+        "यह केवल Diwali के पहले शुरू होने वाली booklet नहीं है। Customer किसी भी दिन Day 1 शुरू कर सकता है। जिस दिन उसके 75 दिन पूरे हों, उस completion को वह अपनी Personal Diwali की तरह celebrate कर सकता है।",
+        "इस journey का उद्देश्य घर की तैयारी के साथ अपनी daily habits, discipline, अन्न के प्रति सम्मान, धन के प्रति awareness, दान, साधना और जीवन की व्यवस्था पर काम करना है।",
+        "यह एक guided spiritual और discipline practice है जो आपके भीतर स्थिरता और श्रद्धा का निर्माण करती है।"
+      ]
+    }
+  },
+  {
+    id: "prod-lakshmi-combo",
+    slug: "the-complete-lakshmi-journey-combo",
+    name: "The Complete Lakshmi Journey (Combo: Book + 75-Day Digital Guide)",
+    price: 1750,
+    originalPrice: 2150,
+    discountPercent: 19,
+    rating: 5.0,
+    reviewCount: 112,
+    image: "/images/books/lakshmi-combo.jpg",
+    inStock: true,
+    category: "Books & E-Books",
+    author: "Anjanaa Reetoria",
+    formatType: "both",
+    ebookPrice: 500,
+    physicalPrice: 1750,
+    pages: 395,
+    language: "Hindi & English",
+    publishedYear: 2026,
+    badge: "RECOMMENDED",
+    shortDescription: "First understand Lakshmi. Then begin your 75-day preparation. Includes Main Lakshmi Hoon physical book + 75-Day Digital Guide.",
+    description: "The complete Lakshmi journey: First understand Lakshmi through Anjanaa Reetoria's book 'Main Lakshmi Hoon', and then begin your 75-day preparation journey. Includes physical printed book delivered to your doorstep + digital booklet access.",
+    features: [
+      "📖 Main Lakshmi Hoon — Physical Book (Doorstep delivery across India)",
+      "🪔 75-Day Lakshmi Digital Guide (Instant digital access & email delivery)",
+      "Includes ₹150 physical-book delivery charge (Total ₹1,750)",
+      "Dual fulfillment: Digital access + physical parcel dispatch"
+    ],
+    tableOfContents: [
+      { number: 1, title: "Part 1: Understand Her (Main Lakshmi Hoon)", summary: "Deep philosophical and spiritual exploration by Anjanaa Reetoria." },
+      { number: 2, title: "Part 2: Prepare for Her (75-Day Daily Guide)", summary: "Daily structured practices, sankalp, 1 mala, and decluttering protocol." }
+    ],
+    sampleExcerpt: {
+      chapterTitle: "The Complete Journey",
+      subheading: "First Understand Lakshmi. Then Begin Your 75-Day Preparation.",
+      paragraphs: [
+        "ज्ञान के बिना साधना अधूरी है, और साधना के बिना ज्ञान मात्र विचार बनकर रह जाता है।",
+        "The Complete Lakshmi Journey combines deep understanding with daily committed practice. Read 'Main Lakshmi Hoon' to cultivate reverence, and practice the 75-Day Guide to transform your daily lifestyle."
+      ]
+    }
+  },
+  {
+    id: "bk-main-lakshmi-hoon",
+    slug: "main-lakshmi-hoon",
+    name: "Main Lakshmi Hoon (मैं लक्ष्मी हूँ)",
+    price: 1250,
+    originalPrice: 1400,
+    discountPercent: 11,
+    rating: 5.0,
+    reviewCount: 88,
+    image: "/images/books/main-lakshmi-hoon.jpg",
+    inStock: true,
+    category: "Books & E-Books",
+    author: "Anjanaa Reetoria",
+    formatType: "physical",
+    physicalPrice: 1250,
+    pages: 320,
+    language: "Hindi",
+    publishedYear: 2026,
+    badge: "Physical Book",
+    shortDescription: "A book by Anjanaa Reetoria for readers who want to understand Maa Lakshmi and the philosophy and perspective she shares through her work.",
+    description: "Main Lakshmi Hoon is a book by Anjanaa Reetoria for readers who want to understand Maa Lakshmi and the philosophy and perspective she shares through her work. Includes ₹1,100 Direct Price + ₹150 Delivery.",
+    features: [
+      "A book by Anjanaa Reetoria to understand Maa Lakshmi",
+      "Deep spiritual insights & philosophical perspectives",
+      "₹1,100 Direct Price + ₹150 Delivery (Total ₹1,250)",
+      "High quality printed physical book with Pan-India courier delivery"
+    ],
+    tableOfContents: [
+      { number: 1, title: "Who is Lakshmi? The Cosmic Principle", summary: "Moving beyond superficial concepts to understand Maa Lakshmi's true essence." },
+      { number: 2, title: "Consciousness & Inner Purity", summary: "Why consciousness precedes currency in every dimension of existence." },
+      { number: 3, title: "Living with Reverence & Gratitude", summary: "How living in pure devotion invites sustained prosperity." }
+    ],
+    sampleExcerpt: {
+      chapterTitle: "Introduction: The Living Essence of Lakshmi",
+      subheading: "Understanding Beyond the Surface",
+      paragraphs: [
+        "लक्ष्मी केवल स्वर्ण और मुद्राओं का नाम नहीं है। वह इस ब्रह्मांड का वह पोषणकारी चैतन्य है जो जीवन को सजीव, सुंदर और पूर्ण बनाता है।",
+        "जब हम श्रद्धा और सेवाभाव से जीवन जीते हैं, तो लक्ष्मी का वास स्वतः हमारे विचारों, कर्मों और परिवेश में होने लगता है।"
+      ]
+    }
+  },
+  {
     id: "bk-101",
     slug: "karodon-ka-rahasya",
     name: "Karodon Ka Rahasya (करोड़ों का रहस्य)",

@@ -136,5 +136,27 @@ export const products: Product[] = [
     shortDescription: "Energized ceramic cup for mindful morning rituals and high vibrations.",
     description: "Start your morning with high frequency thoughts. Every sip from Karodon Ka Cup reinforces affirmations of health, wealth, and gratitude. Dishwasher and microwave safe high-grade ceramic.",
     features: ["High-Grade Ceramic Build", "Positive Affirmation Emblem", "Microwave & Dishwasher Safe", "5-Star Customer Favorite"]
+  },
+  {
+    id: "prod-lakshmi-combo",
+    slug: "the-complete-lakshmi-journey-combo",
+    name: "The Complete Lakshmi Journey (Combo: Book + 75-Day Digital Guide)",
+    price: 1750,
+    originalPrice: 2150,
+    discountPercent: 19,
+    rating: 5.0,
+    reviewCount: 112,
+    image: "/images/books/lakshmi-combo.jpg",
+    inStock: true,
+    category: "Books & E-Books",
+    shortDescription: "First understand Lakshmi. Then begin your 75-day preparation. Includes Main Lakshmi Hoon physical book + 75-Day Digital Guide.",
+    description: "The complete Lakshmi journey: First understand Lakshmi through Anjanaa Reetoria's book 'Main Lakshmi Hoon', and then begin your 75-day preparation journey. Includes physical printed book delivered to your doorstep + digital booklet access.",
+    features: [
+      "📖 Main Lakshmi Hoon — Physical Book (Doorstep delivery across India)",
+      "🪔 75-Day Lakshmi Digital Guide (Instant digital access & email delivery)",
+      "Includes ₹150 physical-book delivery charge (Total ₹1,750)",
+      "Dual fulfillment: Digital access + physical parcel dispatch"
+    ]
   }
 ];
+

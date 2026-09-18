@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Search, BookOpen, Download, Package, Star, ShoppingCart, Eye, Sparkles } from 'lucide-react';
 import { books as defaultBooks, Book } from '@/data/books';
 import { useCart } from '@/context/CartContext';
+import { LakshmiJourneySection } from '@/components/books/LakshmiJourneySection';
 
 export const BooksCatalogClient: React.FC<{ initialBooks?: Book[] }> = ({ initialBooks }) => {
   const books = initialBooks && initialBooks.length > 0 ? initialBooks : defaultBooks;
@@ -69,20 +70,30 @@ export const BooksCatalogClient: React.FC<{ initialBooks?: Book[] }> = ({ initia
             </div>
           </div>
 
-          <div className="pt-3">
+          <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="#lakshmi-journey"
+              className="inline-flex items-center space-x-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-gray-950 font-bold text-xs px-5 py-2.5 rounded-full transition shadow-md"
+            >
+              <Sparkles size={14} />
+              <span>Begin Your Lakshmi Journey (75 Days &amp; Combo) ↓</span>
+            </a>
             <Link
               href="/reader"
-              className="inline-flex items-center space-x-2 bg-amber-400 hover:bg-amber-300 text-gray-950 font-bold text-xs px-5 py-2.5 rounded-full transition shadow-md"
+              className="inline-flex items-center space-x-2 bg-white/15 hover:bg-white/25 text-white font-semibold text-xs px-5 py-2.5 rounded-full transition border border-white/30"
             >
               <BookOpen size={14} />
-              <span>Already Purchased? Open Protected E-Book Reader →</span>
+              <span>Open Protected E-Book Reader →</span>
             </Link>
           </div>
         </div>
       </div>
 
+      {/* Featured Section: BEGIN YOUR LAKSHMI JOURNEY */}
+      <LakshmiJourneySection />
+
       {/* Main Catalog Controls */}
-      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 -mt-7 relative z-20">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 pt-4 relative z-20">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Filter Tabs */}
           <div className="flex items-center p-1 bg-gray-100 rounded-xl w-full md:w-auto overflow-x-auto">

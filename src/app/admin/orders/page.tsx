@@ -27,8 +27,20 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<EbookOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'product' | 'book' | 'webinar'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'lakshmi' | 'product' | 'book' | 'webinar'>('all');
   const [selectedOrder, setSelectedOrder] = useState<EbookOrder | null>(null);
+
+  const isLakshmiOrder = (o: EbookOrder) => {
+    const pId = (o.productId || '').toLowerCase();
+    const title = (o.itemTitle || '').toLowerCase();
+    const crmTag = (o.metadata?.crmTag || '').toLowerCase();
+    return (
+      crmTag.includes('lakshmi') ||
+      pId.includes('lakshmi') ||
+      title.includes('lakshmi') ||
+      title.includes('लक्ष्मी')
+    );
+  };
 
   const loadOrders = async () => {
     setLoading(true);
@@ -57,7 +69,13 @@ export default function AdminOrdersPage() {
 
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
-      const typeMatch = filterType === 'all' || (o.itemType || 'book') === filterType;
+      const typeMatch =
+        filterType === 'all'
+          ? true
+          : filterType === 'lakshmi'
+          ? isLakshmiOrder(o)
+          : (o.itemType || 'book') === filterType;
+
       const term = search.toLowerCase().trim();
       if (!term) return typeMatch;
 
@@ -66,8 +84,9 @@ export default function AdminOrdersPage() {
       const phoneMatch = (o.buyerPhone || '').includes(term);
       const paymentIdMatch = (o.paymentId || '').toLowerCase().includes(term);
       const titleMatch = (o.itemTitle || o.productId || '').toLowerCase().includes(term);
+      const crmTagMatch = (o.metadata?.crmTag || '').toLowerCase().includes(term);
 
-      return typeMatch && (orderIdMatch || nameMatch || phoneMatch || paymentIdMatch || titleMatch);
+      return typeMatch && (orderIdMatch || nameMatch || phoneMatch || paymentIdMatch || titleMatch || crmTagMatch);
     });
   }, [orders, filterType, search]);
 
@@ -76,6 +95,7 @@ export default function AdminOrdersPage() {
     const productCount = orders.filter((o) => o.itemType === 'product').length;
     const bookCount = orders.filter((o) => !o.itemType || o.itemType === 'book').length;
     const webinarCount = orders.filter((o) => o.itemType === 'webinar').length;
+    const lakshmiCount = orders.filter(isLakshmiOrder).length;
 
     return {
       totalRev,
@@ -83,10 +103,37 @@ export default function AdminOrdersPage() {
       productCount,
       bookCount,
       webinarCount,
+      lakshmiCount,
     };
   }, [orders]);
 
-  const renderTypeBadge = (type?: string) => {
+  const renderTypeBadge = (orderOrType?: string | EbookOrder) => {
+    const order = typeof orderOrType === 'object' && orderOrType !== null ? orderOrType : null;
+    const type = typeof orderOrType === 'string' ? orderOrType : order?.itemType;
+    const crmTag = order?.metadata?.crmTag;
+    const title = (order?.itemTitle || '').toLowerCase();
+
+    if (crmTag === 'lakshmi-combo' || title.includes('complete lakshmi journey')) {
+      return (
+        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+          <span>⭐ Lakshmi Combo</span>
+        </span>
+      );
+    }
+    if (crmTag === 'lakshmi-75-days-digital' || title.includes('75 दिन')) {
+      return (
+        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-orange-50 text-orange-800 border border-orange-200">
+          <span>🪔 Lakshmi 75 Days</span>
+        </span>
+      );
+    }
+    if (crmTag === 'main-lakshmi-hoon-book' || title.includes('main lakshmi hoon')) {
+      return (
+        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
+          <span>📖 Main Lakshmi Hoon</span>
+        </span>
+      );
+    }
     switch (type) {
       case 'product':
         return (
@@ -143,7 +190,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">
             Total Revenue
@@ -162,6 +209,16 @@ export default function AdminOrdersPage() {
             {stats.totalOrders}
           </div>
           <span className="text-[11px] text-slate-500 mt-1 block">Confirmed transactions</span>
+        </div>
+
+        <div className="bg-white rounded-2xl p-5 border border-amber-200 shadow-sm bg-gradient-to-br from-white to-amber-50/50">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#8b1d20] block mb-1 flex items-center space-x-1">
+            <span>🪔 Lakshmi Journey</span>
+          </span>
+          <div className="text-2xl sm:text-3xl font-bold font-serif text-[#8b1d20]">
+            {stats.lakshmiCount}
+          </div>
+          <span className="text-[11px] text-amber-900/70 mt-1 block">Digital, Books &amp; Combos</span>
         </div>
 
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
@@ -190,17 +247,24 @@ export default function AdminOrdersPage() {
       {/* Filter and Search Bar */}
       <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="flex items-center space-x-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-          {(['all', 'product', 'book', 'webinar'] as const).map((type) => (
+          {(['all', 'lakshmi', 'book', 'product', 'webinar'] as const).map((type) => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition ${
+              className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition flex items-center space-x-1.5 ${
                 filterType === type
-                  ? 'bg-slate-900 text-white shadow-sm'
+                  ? type === 'lakshmi'
+                    ? 'bg-[#8b1d20] text-white shadow-sm'
+                    : 'bg-slate-900 text-white shadow-sm'
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
               }`}
             >
-              {type === 'all' ? 'All Orders' : `${type}s`}
+              <span>{type === 'all' ? 'All Orders' : type === 'lakshmi' ? '🪔 Lakshmi Journey' : `${type}s`}</span>
+              {type === 'lakshmi' && stats.lakshmiCount > 0 && (
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${filterType === 'lakshmi' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-900'}`}>
+                  {stats.lakshmiCount}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -267,7 +331,7 @@ export default function AdminOrdersPage() {
                         {order.orderId}
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        {renderTypeBadge(order.itemType)}
+                        {renderTypeBadge(order)}
                       </td>
                       <td className="py-3.5 px-4 max-w-xs">
                         <div className="font-semibold text-slate-900 truncate">
@@ -334,7 +398,7 @@ export default function AdminOrdersPage() {
                   <h3 className="text-xl font-bold font-serif text-slate-900">
                     Order {selectedOrder.orderId}
                   </h3>
-                  {renderTypeBadge(selectedOrder.itemType)}
+                  {renderTypeBadge(selectedOrder)}
                 </div>
                 <p className="text-xs text-slate-400">
                   Razorpay Transaction Details &amp; Fulfillment
@@ -395,6 +459,31 @@ export default function AdminOrdersPage() {
                   </span>
                 </div>
               </div>
+
+              {/* CRM Tag & Fulfillment Status */}
+              {selectedOrder.metadata?.crmTag && (
+                <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-300 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-amber-900 uppercase tracking-wider">
+                      CRM Classification &amp; Fulfillment
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-white text-[#8b1d20] border border-amber-300">
+                      {selectedOrder.metadata.crmTag}
+                    </span>
+                  </div>
+                  <div className="text-xs text-amber-950 space-y-1">
+                    {selectedOrder.metadata.crmTag === 'lakshmi-combo' && (
+                      <p>✨ <strong>Dual Fulfillment:</strong> Digital Guide access granted + Physical book courier parcel required.</p>
+                    )}
+                    {selectedOrder.metadata.crmTag === 'lakshmi-75-days-digital' && (
+                      <p>✨ <strong>Digital Fulfillment:</strong> Instant access delivered via email and protected online reader.</p>
+                    )}
+                    {selectedOrder.metadata.crmTag === 'main-lakshmi-hoon-book' && (
+                      <p>📦 <strong>Physical Dispatch:</strong> Hardcover book courier delivery across India.</p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Shipping Address (for physical merchandise) */}
               {selectedOrder.shippingAddress && (

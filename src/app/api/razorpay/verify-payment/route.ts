@@ -78,12 +78,32 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const prodKey = String(itemId || (items?.[0]?.productId || '')).toLowerCase();
+    let crmTag: string | null = null;
+    let requiresDispatch = false;
+
+    if (prodKey.includes('lakshmi-75') || String(itemTitle).includes('75 दिन')) {
+      crmTag = 'lakshmi-75-days-digital';
+    } else if (prodKey.includes('lakshmi-combo') || String(itemTitle).includes('Complete Lakshmi Journey')) {
+      crmTag = 'lakshmi-combo';
+      requiresDispatch = true;
+    } else if (prodKey.includes('main-lakshmi-hoon') || String(itemTitle).includes('Main Lakshmi Hoon')) {
+      crmTag = 'main-lakshmi-hoon-book';
+      requiresDispatch = true;
+    } else if (shippingAddress && shippingAddress.length > 5 && !shippingAddress.toLowerCase().includes('digital delivery')) {
+      requiresDispatch = true;
+    }
+
     const hasDigitalEbook =
+      crmTag === 'lakshmi-75-days-digital' ||
+      crmTag === 'lakshmi-combo' ||
       (type === 'book' && format === 'ebook') ||
       (Array.isArray(items) &&
         items.some(
           (it: any) =>
             String(it.productId || it.id).includes('ebook') ||
+            String(it.productId || it.id).includes('bk-lakshmi-75') ||
+            String(it.productId || it.id).includes('lakshmi-combo') ||
             String(it.name || '').toLowerCase().includes('e-book') ||
             String(it.name || '').toLowerCase().includes('digital')
         ));
@@ -98,7 +118,7 @@ export async function POST(req: NextRequest) {
       purchaseTimestamp: Date.now(),
       amount: Number(amount) || 0,
       status: 'paid' as const,
-      itemType: (hasDigitalEbook ? 'book' : (type || 'product')) as any,
+      itemType: (crmTag?.includes('book') ? 'book' : hasDigitalEbook ? 'book' : (type || 'product')) as any,
       itemTitle: itemTitle || `${type ? type.toUpperCase() : 'PRODUCT'} Purchase`,
       customerName,
       shippingAddress: shippingAddress ? String(shippingAddress).trim() : undefined,
@@ -107,6 +127,8 @@ export async function POST(req: NextRequest) {
         razorpay_payment_id,
         format,
         hasDigitalEbook,
+        requiresDispatch,
+        crmTag,
         items,
         notes,
         webinarDetails,

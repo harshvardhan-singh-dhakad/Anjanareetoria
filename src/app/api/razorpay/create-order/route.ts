@@ -52,14 +52,27 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Book publication not found.' }, { status: 404 });
       }
 
-      const isEbook = format === 'ebook';
-      const unitPrice = isEbook
-        ? (book.ebookPrice || book.price)
-        : (book.physicalPrice || (book.price + 200));
+      let unitPrice = 0;
+      const isEbook = format === 'ebook' || book.formatType === 'ebook';
+
+      if (book.id === 'bk-lakshmi-75' || book.slug === '75-days-to-welcome-maa-lakshmi') {
+        unitPrice = 500;
+        itemTitle = 'माँ लक्ष्मी के स्वागत के 75 दिन (75-Day Digital Guide)';
+      } else if (book.id === 'prod-lakshmi-combo' || book.slug === 'the-complete-lakshmi-journey-combo') {
+        unitPrice = 1750;
+        itemTitle = 'The Complete Lakshmi Journey (Book + 75-Day Digital Guide Combo)';
+      } else if (book.id === 'bk-main-lakshmi-hoon' || book.slug === 'main-lakshmi-hoon') {
+        unitPrice = 1250;
+        itemTitle = 'Main Lakshmi Hoon (Physical Book Edition)';
+      } else {
+        unitPrice = isEbook
+          ? (book.ebookPrice || book.price)
+          : (book.physicalPrice || (book.price + 200));
+        itemTitle = `${book.name} (${isEbook ? 'Digital E-Book' : 'Printed Edition'})`;
+      }
 
       const qty = Math.max(1, Number(quantity) || 1);
       calculatedAmount = unitPrice * qty;
-      itemTitle = `${book.name} (${isEbook ? 'Digital E-Book' : 'Printed Edition'})`;
       orderDescription = `${itemTitle} x ${qty}`;
     } else if (type === 'product') {
       // Cart items checkout or single product buy
