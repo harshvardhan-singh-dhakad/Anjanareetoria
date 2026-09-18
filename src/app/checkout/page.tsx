@@ -17,8 +17,6 @@ import {
   User as UserIcon,
   Loader2,
   X,
-  RefreshCw,
-  KeyRound,
   CheckCircle2,
   Download
 } from 'lucide-react';
@@ -40,7 +38,30 @@ interface Address {
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
-  const { user, isLoggedIn, openAuthModal, setUser, refreshUser } = useAuth();
+  const { user, isLoggedIn, openAuthModal, loginWithGoogle, refreshUser } = useAuth();
+  const [quickGoogleLoading, setQuickGoogleLoading] = useState(false);
+
+  const handleQuickGoogleSignIn = async () => {
+    setQuickGoogleLoading(true);
+    setErrorMessage(null);
+    try {
+      const loggedUser = await loginWithGoogle();
+      if (loggedUser) {
+        setFormData((prev) => ({
+          ...prev,
+          name: loggedUser.name || prev.name,
+          email: loggedUser.email || prev.email,
+        }));
+      }
+      await refreshUser();
+    } catch (err: any) {
+      if (err?.code !== 'auth/popup-closed-by-user') {
+        setErrorMessage('Google Sign-In was cancelled. You can continue filling details as guest.');
+      }
+    } finally {
+      setQuickGoogleLoading(false);
+    }
+  };
 
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>('custom');
@@ -94,26 +115,6 @@ export default function CheckoutPage() {
     totalAmount: number;
     phone: string;
   } | null>(null);
-
-  // OTP verification states for guest customers
-  const [otpModalOpen, setOtpModalOpen] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [otpSubmitting, setOtpSubmitting] = useState(false);
-  const [otpError, setOtpError] = useState<string | null>(null);
-  const [devOtpPreview, setDevOtpPreview] = useState<string | null>(null);
-  const [otpTimer, setOtpTimer] = useState(60);
-  const [pendingAction, setPendingAction] = useState<'razorpay' | 'whatsapp'>('razorpay');
-
-  // Countdown timer for OTP resend
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (otpModalOpen && otpTimer > 0) {
-      interval = setInterval(() => {
-        setOtpTimer((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [otpModalOpen, otpTimer]);
 
   useEffect(() => {
     if (isLoggedIn && user) {
@@ -173,7 +174,18 @@ export default function CheckoutPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'phone') {
+      const digits = value.replace(/\D/g, '').slice(0, 10);
+      setFormData((prev) => ({ ...prev, phone: digits }));
+      return;
+    }
+    if (name === 'pincode') {
+      const digits = value.replace(/\D/g, '').slice(0, 6);
+      setFormData((prev) => ({ ...prev, pincode: digits }));
+      return;
+    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const validateDetails = (): boolean => {
@@ -183,14 +195,24 @@ export default function CheckoutPage() {
       return false;
     }
     const cleanPhone = formData.phone.replace(/\D/g, '').slice(-10);
-    if (cleanPhone.length !== 10) {
-      setErrorMessage('Please enter a valid 10-digit Mobile Number.');
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      setErrorMessage('Mobile number is mandatory. Please enter a valid 10-digit Mobile Number for delivery & order updates.');
+      return false;
+    }
+    const cleanEmail = formData.email.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setErrorMessage('Email address is mandatory for order receipts & account access.');
       return false;
     }
     // Only require physical delivery address if the cart has physical items
     if (!isPureDigital) {
-      if (!formData.address.trim() || !formData.city.trim() || !formData.pincode.trim()) {
-        setErrorMessage('Please complete your Delivery Address, City, and PIN code.');
+      if (!formData.address.trim() || !formData.city.trim() || !formData.state.trim() || !formData.pincode.trim()) {
+        setErrorMessage('Please complete your Delivery Address, City, State, and PIN code.');
+        return false;
+      }
+      const cleanPincode = formData.pincode.replace(/\D/g, '');
+      if (cleanPincode.length !== 6) {
+        setErrorMessage('Please enter a valid 6-digit PIN code for physical delivery.');
         return false;
       }
     }
@@ -286,34 +308,6 @@ export default function CheckoutPage() {
 
   const handleRazorpayCheckout = async () => {
     if (!validateDetails()) return;
-
-    if (!isLoggedIn) {
-      setPaymentLoading(true);
-      setErrorMessage(null);
-      try {
-        const cleanPhone = formData.phone.replace(/\D/g, '').slice(-10);
-        const res = await fetch('/api/auth/send-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: cleanPhone }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || 'Failed to send verification OTP.');
-        }
-        setDevOtpPreview(data.devOtp || null);
-        setOtpTimer(60);
-        setOtpError(null);
-        setPendingAction('razorpay');
-        setOtpModalOpen(true);
-      } catch (err: any) {
-        setErrorMessage(err.message || 'Error sending OTP to your mobile.');
-      } finally {
-        setPaymentLoading(false);
-      }
-      return;
-    }
-
     await saveCustomAddressIfLoggedIn();
     await executeRazorpayPayment();
   };
@@ -321,132 +315,8 @@ export default function CheckoutPage() {
   const handleWhatsAppOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateDetails()) return;
-
-    if (!isLoggedIn) {
-      setPaymentLoading(true);
-      setErrorMessage(null);
-      try {
-        const cleanPhone = formData.phone.replace(/\D/g, '').slice(-10);
-        const res = await fetch('/api/auth/send-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: cleanPhone }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || 'Failed to send verification OTP.');
-        }
-        setDevOtpPreview(data.devOtp || null);
-        setOtpTimer(60);
-        setOtpError(null);
-        setPendingAction('whatsapp');
-        setOtpModalOpen(true);
-      } catch (err: any) {
-        setErrorMessage(err.message || 'Error sending OTP to your mobile.');
-      } finally {
-        setPaymentLoading(false);
-      }
-      return;
-    }
-
     await saveCustomAddressIfLoggedIn();
     executeWhatsAppOrder();
-  };
-
-  const handleResendOtp = async () => {
-    if (otpTimer > 0) return;
-    setOtpSubmitting(true);
-    setOtpError(null);
-    try {
-      const cleanPhone = formData.phone.replace(/\D/g, '').slice(-10);
-      const res = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: cleanPhone }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to resend OTP.');
-      setDevOtpPreview(data.devOtp || null);
-      setOtpTimer(60);
-    } catch (err: any) {
-      setOtpError(err.message || 'Could not resend OTP.');
-    } finally {
-      setOtpSubmitting(false);
-    }
-  };
-
-  const handleVerifyOtpAndProceed = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otpCode.trim().length < 4) {
-      setOtpError('Please enter the verification code.');
-      return;
-    }
-
-    setOtpSubmitting(true);
-    setOtpError(null);
-
-    const cleanPhone = formData.phone.replace(/\D/g, '').slice(-10);
-
-    try {
-      const res = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: cleanPhone,
-          otp: otpCode.trim(),
-          name: formData.name.trim(),
-          email: formData.email.trim() || undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Invalid OTP code. Please try again.');
-      }
-
-      if (data.user) {
-        setUser(data.user);
-      }
-      await refreshUser();
-
-      // Auto-save physical address if provided and not pure digital
-      if (!isPureDigital && formData.address.trim()) {
-        try {
-          const addrRes = await fetch('/api/user/addresses', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fullName: formData.name.trim(),
-              phone: cleanPhone,
-              streetAddress: formData.address.trim(),
-              city: formData.city.trim(),
-              state: formData.state.trim(),
-              pincode: formData.pincode.trim(),
-              isDefault: true,
-            }),
-          });
-          const addrData = await addrRes.json();
-          if (addrData.success && addrData.address) {
-            setSavedAddresses([addrData.address]);
-            setSelectedAddressId(addrData.address.id);
-          }
-        } catch (saveErr) {
-          console.warn('Address auto-save warning:', saveErr);
-        }
-      }
-
-      setOtpModalOpen(false);
-      setOtpCode('');
-
-      if (pendingAction === 'whatsapp') {
-        executeWhatsAppOrder();
-      } else {
-        await executeRazorpayPayment();
-      }
-    } catch (err: any) {
-      setOtpError(err.message || 'OTP verification failed. Please try again.');
-    } finally {
-      setOtpSubmitting(false);
-    }
   };
 
   if (confirmedOrder) {
@@ -522,8 +392,38 @@ export default function CheckoutPage() {
               </div>
               <p className="text-[11px] text-amber-800 flex items-center space-x-1.5 pt-1">
                 <ShieldCheck size={13} className="text-emerald-600 flex-shrink-0" />
-                <span>Watermarked with your mobile number (+91 {confirmedOrder.phone}) to prevent piracy and ensure authentic blessings.</span>
+                <span>Protected Digital Edition: Personalized to your devotee account to ensure authentic blessings.</span>
               </p>
+            </div>
+          )}
+
+          {!isLoggedIn && (
+            <div className="p-5 bg-gradient-to-r from-blue-50 via-amber-50 to-blue-50 rounded-2xl border border-blue-200 text-center space-y-2.5">
+              <div className="flex items-center justify-center gap-2 text-xs font-bold text-gray-900">
+                <Sparkles size={16} className="text-amber-500" />
+                <span>Save this order to your Google Account (गूगल से जोड़ें)</span>
+              </div>
+              <p className="text-[11px] text-gray-600 max-w-md mx-auto leading-relaxed">
+                Connect your Google account in 1-Click so you can access your eBooks, invoices, and delivery tracking from any device anytime!
+              </p>
+              <button
+                type="button"
+                onClick={handleQuickGoogleSignIn}
+                disabled={quickGoogleLoading}
+                className="inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-800 text-xs font-bold px-5 py-2.5 rounded-xl transition shadow-sm cursor-pointer mx-auto disabled:opacity-50"
+              >
+                {quickGoogleLoading ? (
+                  <Loader2 size={15} className="animate-spin text-[#0008c1]" />
+                ) : (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                )}
+                <span>Link with Google in 1-Click</span>
+              </button>
             </div>
           )}
 
@@ -578,19 +478,39 @@ export default function CheckoutPage() {
               <UserIcon size={20} />
             </div>
             <div>
-              <p className="text-xs font-bold text-gray-900">Already registered? / पहले से अकाउंट है?</p>
+              <p className="text-xs font-bold text-gray-900">Sign In with Google / पहले से खाता है?</p>
               <p className="text-[11px] text-gray-600">
-                Log in with Mobile OTP to automatically load your saved delivery addresses.
+                1-Click Google Sign-In to auto-load saved addresses, or checkout as guest below.
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={openAuthModal}
-            className="bg-[#0008c1] hover:bg-[#0a187a] text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm whitespace-nowrap cursor-pointer"
-          >
-            Log In with OTP
-          </button>
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <button
+              type="button"
+              onClick={handleQuickGoogleSignIn}
+              disabled={quickGoogleLoading}
+              className="inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-800 text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-sm cursor-pointer disabled:opacity-50"
+            >
+              {quickGoogleLoading ? (
+                <Loader2 size={14} className="animate-spin text-[#0008c1]" />
+              ) : (
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+              )}
+              <span>Continue with Google</span>
+            </button>
+            <button
+              type="button"
+              onClick={openAuthModal}
+              className="bg-[#0008c1] hover:bg-[#0a187a] text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow-sm whitespace-nowrap cursor-pointer"
+            >
+              Email Sign In
+            </button>
+          </div>
         </div>
       )}
 
@@ -667,7 +587,7 @@ export default function CheckoutPage() {
                 <div className="space-y-1">
                   <strong className="block font-bold text-gray-900">Instant Digital Delivery (तुरंत डिजिटल ई-बुक)</strong>
                   <p className="text-gray-600 text-[11px] leading-relaxed">
-                    No courier delivery needed! Your personalized E-Book will be licensed directly to your verified mobile number (+91 {formData.phone || '...'}) and available to read online and download as a protected PDF immediately upon payment.
+                    No courier delivery needed! Your personalized E-Book will be licensed directly to your account and available to read online and download as a protected PDF immediately upon payment.
                   </p>
                 </div>
               </div>
@@ -688,28 +608,39 @@ export default function CheckoutPage() {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Mobile / WhatsApp Number * <span className="text-[11px] text-blue-600 font-normal">(For OTP &amp; License)</span>
+                  Mobile / WhatsApp Number <span className="text-rose-600 font-bold">*</span>{' '}
+                  <span className="text-[11px] text-blue-600 font-medium">(Mandatory for Delivery &amp; Receipt)</span>
                 </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  required
-                  placeholder="e.g. 9876543210"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full text-xs sm:text-sm px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-[#0008c1] transition"
-                />
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-600 text-xs font-semibold">
+                    +91
+                  </span>
+                  <input
+                    type="tel"
+                    name="phone"
+                    required
+                    maxLength={10}
+                    placeholder="10-digit Mobile Number"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full text-xs sm:text-sm px-4 py-2.5 rounded-r-xl border border-gray-200 outline-none focus:border-[#0008c1] transition"
+                  />
+                </div>
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Email Address <span className="text-gray-400 font-normal">{isPureDigital ? '(To receive copy link)' : '(Optional)'}</span>
+                Email Address <span className="text-rose-600 font-bold">*</span>{' '}
+                <span className="text-gray-400 font-normal">
+                  {isPureDigital ? '(To receive digital eBook copy link)' : '(For account sync & order receipt)'}
+                </span>
               </label>
               <input
                 type="email"
                 name="email"
-                placeholder="e.g. aarav@example.com"
+                required
+                placeholder="e.g. devotee@example.com"
                 value={formData.email}
                 onChange={handleChange}
                 className="w-full text-xs sm:text-sm px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-[#0008c1] transition"
@@ -719,7 +650,9 @@ export default function CheckoutPage() {
             {!isPureDigital && (
               <>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Delivery Address *</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Delivery Address <span className="text-rose-600 font-bold">*</span>
+                  </label>
                   <textarea
                     name="address"
                     required
@@ -733,7 +666,9 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">City / Town *</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      City / Town <span className="text-rose-600 font-bold">*</span>
+                    </label>
                     <input
                       type="text"
                       name="city"
@@ -745,7 +680,9 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">State *</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      State <span className="text-rose-600 font-bold">*</span>
+                    </label>
                     <input
                       type="text"
                       name="state"
@@ -757,11 +694,14 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">PIN Code *</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      PIN Code <span className="text-rose-600 font-bold">*</span>
+                    </label>
                     <input
                       type="text"
                       name="pincode"
                       required
+                      maxLength={6}
                       placeholder="e.g. 281121"
                       value={formData.pincode}
                       onChange={handleChange}
@@ -880,7 +820,7 @@ export default function CheckoutPage() {
             {isPureDigital ? (
               <div className="bg-blue-50/60 border border-blue-100 p-3 rounded-xl text-[11px] text-blue-900 flex items-center space-x-2">
                 <ShieldCheck size={20} className="text-[#0008c1] flex-shrink-0" />
-                <span>Protected Digital Edition: Licensed and watermarked with your verified mobile number to ensure authenticity and prevent piracy.</span>
+                <span>Protected Digital Edition: Licensed and personalized to your devotee account to ensure authenticity.</span>
               </div>
             ) : (
               <div className="bg-blue-50/60 border border-blue-100 p-3 rounded-xl text-[11px] text-blue-900 flex items-center space-x-2">
@@ -891,121 +831,6 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-
-      {/* Mobile OTP Verification Dialog before Purchase */}
-      {otpModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-amber-100">
-            {/* Modal Header */}
-            <div className="bg-gradient-to-r from-[#0008c1] to-[#0a187a] text-white p-5 text-center relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setOtpModalOpen(false);
-                  setOtpCode('');
-                  setOtpError(null);
-                }}
-                className="absolute top-4 right-4 text-white/70 hover:text-white transition"
-              >
-                <X size={20} />
-              </button>
-              <div className="w-12 h-12 rounded-full bg-white/15 flex items-center justify-center mx-auto mb-2 backdrop-blur-sm border border-white/20 shadow-inner">
-                <KeyRound size={22} className="text-amber-300" />
-              </div>
-              <h3 className="text-base font-bold">Mobile OTP Verification</h3>
-              <p className="text-xs text-blue-100 mt-0.5">मोबाइल नंबर सत्यापन &bull; Save Address</p>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <p className="text-xs text-gray-600 text-center leading-relaxed">
-                Enter the 6-digit OTP sent to <strong className="text-gray-900 font-semibold">+91 {formData.phone.replace(/\D/g, '').slice(-10)}</strong>.
-                This verifies your order and automatically saves your delivery address so you don&apos;t have to enter it again!
-              </p>
-
-              {devOtpPreview && (
-                <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                  <span className="text-[11px] text-amber-800 font-medium">
-                    Demo Mode OTP: <strong className="font-mono text-xs text-amber-950 font-bold">{devOtpPreview}</strong>
-                  </span>
-                </div>
-              )}
-
-              {otpError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center space-x-2 text-xs text-rose-700">
-                  <AlertCircle size={15} className="flex-shrink-0" />
-                  <span>{otpError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleVerifyOtpAndProceed} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5 text-center">
-                    Enter 6-Digit OTP Code
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    maxLength={6}
-                    placeholder="• • • • • •"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="w-full text-center tracking-[0.5em] text-xl font-bold py-3 px-4 rounded-xl border border-gray-300 focus:border-[#0008c1] focus:ring-2 focus:ring-blue-100 outline-none transition"
-                    autoFocus
-                  />
-                </div>
-
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <span className="text-gray-500">
-                    {otpTimer > 0 ? `Resend OTP in ${otpTimer}s` : 'Did not receive code?'}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={otpTimer > 0 || otpSubmitting}
-                    onClick={handleResendOtp}
-                    className="text-[#0008c1] font-semibold hover:underline disabled:opacity-40 disabled:no-underline cursor-pointer flex items-center space-x-1"
-                  >
-                    <RefreshCw size={12} className={otpSubmitting ? 'animate-spin' : ''} />
-                    <span>Resend OTP</span>
-                  </button>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={otpSubmitting || otpCode.trim().length < 4}
-                  className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-[#0008c1] to-[#0a187a] hover:from-[#05138c] hover:to-[#0008c1] disabled:opacity-50 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-md text-xs cursor-pointer"
-                >
-                  {otpSubmitting ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      <span>Verifying &amp; Saving Address...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 size={16} className="text-amber-300" />
-                      <span>Verify &amp; Proceed to {pendingAction === 'whatsapp' ? 'WhatsApp' : 'Payment'}</span>
-                    </>
-                  )}
-                </button>
-              </form>
-
-              <div className="pt-2 text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOtpModalOpen(false);
-                    setOtpCode('');
-                    setOtpError(null);
-                  }}
-                  className="text-xs text-gray-500 hover:text-gray-800 cursor-pointer"
-                >
-                  Cancel / Edit Details
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
