@@ -19,7 +19,7 @@ import {
 import { LakshmiJourneySection } from '@/components/books/LakshmiJourneySection';
 
 export const metadata: Metadata = {
-  title: 'माँ लक्ष्मी के स्वागत के 75 दिन & The Complete Lakshmi Journey | AR Blessings',
+  title: '75 Days to Welcome Maa Lakshmi & The Complete Lakshmi Journey | AR Blessings',
   description: 'Start whenever you are ready. Your Day 1 begins today, and after completing the 75-day journey, celebrate Day 75 as your Personal Diwali. Guided spiritual & discipline practice by Anjanaa Reetoria.',
   openGraph: {
     title: 'Begin Your Lakshmi Journey | 75-Day Digital Guide & Sacred Book',
@@ -42,14 +42,14 @@ export default function LakshmiJourneyPage() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black font-serif tracking-tight text-white leading-tight">
-            दीपावली की तारीख का इंतज़ार क्यों?
+            Why Wait for the Date of Diwali?
             <span className="block text-amber-300 text-2xl sm:text-4xl lg:text-5xl mt-2">
-              आज से अपने 75 दिन शुरू कीजिए।
+              Begin Your 75 Days Today.
             </span>
           </h1>
 
           <p className="text-amber-100 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed pt-2">
-            यह केवल Diwali के पहले शुरू होने वाली booklet नहीं है। आप किसी भी दिन <strong>Day 1</strong> शुरू कर सकते हैं। जिस दिन आपके 75 दिन पूरे हों, उस completion को अपनी <strong>Personal Diwali</strong> की तरह celebrate कीजिए।
+            This is not merely a guide to start before Diwali. You can begin <strong>Day 1</strong> on any day of the year. Whenever your 75 days are complete, celebrate that milestone as your <strong>Personal Diwali</strong>.
           </p>
 
           <div className="pt-4 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-amber-200">
@@ -59,7 +59,7 @@ export default function LakshmiJourneyPage() {
             </span>
             <span className="flex items-center space-x-1.5 bg-white/10 px-3 py-1.5 rounded-full border border-white/10">
               <CheckCircle size={14} className="text-amber-300" />
-              <span>अन्न के प्रति सम्मान &amp; धन के प्रति Awareness</span>
+              <span>Food Reverence &amp; Mindful Wealth Awareness</span>
             </span>
             <span className="flex items-center space-x-1.5 bg-white/10 px-3 py-1.5 rounded-full border border-white/10">
               <CheckCircle size={14} className="text-amber-300" />
@@ -80,10 +80,10 @@ export default function LakshmiJourneyPage() {
               A Journey of True Inner Alignment
             </span>
             <h3 className="text-2xl sm:text-3xl font-extrabold text-[#78181a] font-serif">
-              इस 75-दिवसीय यात्रा में क्या शामिल है?
+              What is Included in This 75-Day Journey?
             </h3>
             <p className="text-xs sm:text-sm text-gray-600">
-              घर की तैयारी के साथ अपनी daily habits, discipline, अन्न के प्रति सम्मान, धन के प्रति awareness, दान, साधना और जीवन की व्यवस्था पर समग्र काम:
+              A holistic transformation combining home preparation with daily habits, discipline, reverence for food, wealth awareness, selfless giving, spiritual sadhana, and structured living:
             </p>
           </div>
 
@@ -94,7 +94,7 @@ export default function LakshmiJourneyPage() {
               </div>
               <h4 className="text-base font-bold text-gray-900">Daily Sankalp &amp; 1 Mala</h4>
               <p className="text-xs text-gray-600 leading-relaxed">
-                प्रतिदिन अपने इष्ट और माँ लक्ष्मी के प्रति संकल्प के साथ 1 माला का नित्य जाप। मन की चंचलता को शांत कर स्थिरता में स्थापित होना।
+                Daily sacred intention (sankalp) and chanting of 1 mala dedicated to your Ishta Devata and Maa Lakshmi. Calm mental restlessness and anchor yourself in spiritual stability.
               </p>
             </div>
 
@@ -102,9 +102,9 @@ export default function LakshmiJourneyPage() {
               <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-[#8b1d20] font-bold text-lg">
                 🌸
               </div>
-              <h4 className="text-base font-bold text-gray-900">Evening Diya &amp; Rangoli</h4>
+              <h4 className="text-base font-bold text-gray-900">Evening Diya &amp; Sacred Space</h4>
               <p className="text-xs text-gray-600 leading-relaxed">
-                संध्या वेला में मुख्य द्वार और पूजा स्थल पर दीपक व पवित्र रंगोली की निरंतर परंपरा, जो घर में सकारात्मक प्राण ऊर्जा का संचार करती है।
+                The sacred evening tradition of lighting an oil lamp (diya) and creating sacred rangoli at your home entrance and altar, inviting auspicious divine energy into your home.
               </p>
             </div>
 
@@ -112,9 +112,9 @@ export default function LakshmiJourneyPage() {
               <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-[#8b1d20] font-bold text-lg">
                 🌾
               </div>
-              <h4 className="text-base font-bold text-gray-900">अन्न के प्रति सम्मान</h4>
+              <h4 className="text-base font-bold text-gray-900">Reverence for Food &amp; Nourishment</h4>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Food wastage पर पूरी सजगता। माँ अन्नपूर्णा और भगवान विष्णु का स्मरण करते हुए अन्न का एक भी दाना व्यर्थ न करने का व्यावहारिक नियम।
+                Heightened mindfulness toward food wastage. Remembering Maa Annapurna and Lord Vishnu with the sacred discipline of honoring every single grain of food.
               </p>
             </div>
 
@@ -122,9 +122,9 @@ export default function LakshmiJourneyPage() {
               <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-[#8b1d20] font-bold text-lg">
                 🧹
               </div>
-              <h4 className="text-base font-bold text-gray-900">Cleaning &amp; Decluttering</h4>
+              <h4 className="text-base font-bold text-gray-900">Cleaning &amp; Mindful Decluttering</h4>
               <p className="text-xs text-gray-600 leading-relaxed">
-                अलमारी, पर्स, किचन और घर के हर कोने से अनावश्यक कबाड़ को हटाना। स्वच्छ और व्यवस्थित वातावरण ही देवी चेतना का वास्तविक आधार है।
+                Systematically clearing stagnant clutter from wardrobes, wallets, kitchen, and living spaces. A clean, harmonious environment is the true seat of divine consciousness.
               </p>
             </div>
 
@@ -132,9 +132,9 @@ export default function LakshmiJourneyPage() {
               <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-[#8b1d20] font-bold text-lg">
                 🙏
               </div>
-              <h4 className="text-base font-bold text-gray-900">Weekly Daan (साप्ताहिक दान)</h4>
+              <h4 className="text-base font-bold text-gray-900">Weekly Daan (Selfless Giving)</h4>
               <p className="text-xs text-gray-600 leading-relaxed">
-                अपने सामर्थ्य अनुसार जरूरतमंदों, गायों या पक्षियों के लिए नियमित साप्ताहिक दान। धन के संकुचन को खोलकर प्रवाह में बदलना।
+                Regular weekly charity according to your capacity—feeding cows, birds, or helping those in need. Transforming financial contraction into the natural flow of abundance.
               </p>
             </div>
 
@@ -142,9 +142,9 @@ export default function LakshmiJourneyPage() {
               <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-[#8b1d20] font-bold text-lg">
                 📋
               </div>
-              <h4 className="text-base font-bold text-gray-900">Pending Responsibilities</h4>
+              <h4 className="text-base font-bold text-gray-900">Resolving Pending Responsibilities</h4>
               <p className="text-xs text-gray-600 leading-relaxed">
-                अधूरे पड़े कार्यों, कर्जों और टालमटोल की आदतों को योजनाबद्ध तरीके से समाप्त करना, ताकि मानसिक तनाव पूरी तरह दूर हो सके।
+                Methodically completing unfinished obligations, financial dues, and overcoming procrastination habits to eliminate subconscious weight and mental strain.
               </p>
             </div>
           </div>
@@ -165,37 +165,37 @@ export default function LakshmiJourneyPage() {
         <div className="space-y-4 text-xs sm:text-sm">
           <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
             <h5 className="font-bold text-gray-900 text-sm mb-1.5">
-              क्या यह केवल दिवाली के पहले ही शुरू की जा सकती है?
+              Can this journey only be started before Diwali?
             </h5>
             <p className="text-gray-600 leading-relaxed">
-              बिल्कुल नहीं! यही इस यात्रा की सबसे खूबसूरत बात है। आपका Day 1 आज ही शुरू हो सकता है। जिस दिन आपके 75 दिन पूरे होंगे, उस दिन को आप अपनी <strong>Personal Diwali</strong> की तरह मना सकते हैं।
+              Not at all! That is the true essence of this journey. Your Day 1 can begin today or any day of the year. The day you complete your 75 days, you can celebrate that milestone as your own <strong>Personal Diwali</strong>.
             </p>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
             <h5 className="font-bold text-gray-900 text-sm mb-1.5">
-              ₹500 वाले Digital Guide का एक्सेस मुझे कैसे मिलेगा?
+              How will I receive access to the ₹500 Digital Guide?
             </h5>
             <p className="text-gray-600 leading-relaxed">
-              भुगतान पूर्ण होते ही आपके रजिस्टर्ड ईमेल पर डिजिटल गाइड की कॉपी और हमारे सुरक्षित ऑनलाइन ई-बुक रीडर का सीधा लिंक तुरंत प्राप्त हो जाएगा।
+              Immediately upon successful payment, a digital copy along with instant access to our secure online e-book reader will be delivered to your registered email address.
             </p>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
             <h5 className="font-bold text-gray-900 text-sm mb-1.5">
-              COMPLETE COMBO (₹1,750) में क्या दोनों चीजें मिलेंगी?
+              What is included in the COMPLETE COMBO (₹1,750)?
             </h5>
             <p className="text-gray-600 leading-relaxed">
-              हाँ! Complete Combo सबसे अनुशंसित विकल्प है। इसमें <strong>Main Lakshmi Hoon</strong> की हार्डकवर फिजिकल बुक आपके घर पर कूरियर द्वारा भेजी जाएगी (डिलीवरी शुल्क शामिल) और <strong>75-Day Digital Guide</strong> का तुरंत ईमेल एक्सेस मिलेगा।
+              Yes! The Complete Combo is our most recommended choice. You receive the consecrated hardcover physical book of <strong>Main Lakshmi Hoon</strong> delivered to your doorstep via insured courier (delivery charges included), plus immediate digital email access to the <strong>75-Day Digital Guide</strong>.
             </p>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
             <h5 className="font-bold text-gray-900 text-sm mb-1.5">
-              क्या इसके लिए किसी विशेष पूजा सामग्री की जरूरत है?
+              Is any special ritual equipment or puja samagri required?
             </h5>
             <p className="text-gray-600 leading-relaxed">
-              नहीं। यह एक व्यावहारिक आध्यात्मिक और अनुशासन साधना है। इसके लिए केवल श्रद्धा, नियमितता, एक साधारण जप माला और शाम के दीपक की आवश्यकता होती है।
+              No. This is a practical spiritual and personal discipline practice. All that is required is sincere devotion, daily consistency, a simple japa mala, and an evening oil lamp (diya).
             </p>
           </div>
         </div>

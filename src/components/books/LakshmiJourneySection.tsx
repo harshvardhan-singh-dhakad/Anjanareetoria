@@ -35,6 +35,13 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
   const [activeTier, setActiveTier] = useState<SelectedTier>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [createdOrderInfo, setCreatedOrderInfo] = useState<{
+    orderId: string;
+    amountInInr: number;
+    paymentLink?: string;
+    qrCodeUrl?: string;
+    itemTitle?: string;
+  } | null>(null);
   const [successOrder, setSuccessOrder] = useState<{
     orderId: string;
     readerUrl?: string;
@@ -74,6 +81,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
     setActiveTier(tier);
     setErrorMsg(null);
     setSuccessOrder(null);
+    setCreatedOrderInfo(null);
 
     if (tier === 'digital') {
       trackLakshmiEvent('Booklet Click', { tier: 'digital_500', price: 500 });
@@ -140,7 +148,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
     let itemId = 'bk-lakshmi-75';
     let format: 'ebook' | 'physical' = 'ebook';
     let amount = 500;
-    let itemTitle = 'माँ लक्ष्मी के स्वागत के 75 दिन (75-Day Digital Guide)';
+    let itemTitle = '75 Days to Welcome Maa Lakshmi (75-Day Digital Guide)';
 
     if (activeTier === 'combo') {
       itemId = 'prod-lakshmi-combo';
@@ -168,6 +176,9 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
       },
       shippingAddress: shippingString,
       notes: `Lakshmi Journey Purchase [Tier: ${activeTier}]`,
+      onOrderCreated: (info) => {
+        setCreatedOrderInfo(info);
+      },
       onSuccess: (result) => {
         setLoading(false);
         trackLakshmiEvent('Payment Successful', {
@@ -217,7 +228,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
 
           <div className="pt-2 max-w-2xl mx-auto text-xs sm:text-sm text-gray-700 bg-amber-50/80 border border-amber-200/60 rounded-xl p-3.5 leading-relaxed">
             <p className="font-semibold text-[#8b1d20]">
-              “दीपावली की तारीख का इंतज़ार क्यों? आज से अपने 75 दिन शुरू कीजिए।”
+              “Why wait for the date of Diwali? Begin your 75 days today.”
             </p>
             <p className="text-gray-600 mt-1">
               Start Day 1 whenever you are ready. After completing the 75-day journey of daily habits, discipline, food reverence, and inner sadhana, celebrate Day 75 as your <span className="font-bold text-[#8b1d20]">Personal Diwali</span>.
@@ -244,7 +255,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
               <div className="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden bg-amber-50/50 mb-5 border border-amber-100">
                 <Image
                   src="/images/books/lakshmi-75-days.jpg"
-                  alt="माँ लक्ष्मी के स्वागत के 75 दिन - 75 Days to Welcome Maa Lakshmi"
+                  alt="75 Days to Welcome Maa Lakshmi - Digital Guide"
                   fill
                   className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                   priority
@@ -254,7 +265,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
               {/* Content */}
               <div className="space-y-2.5 flex-1">
                 <h3 className="text-xl sm:text-2xl font-bold font-serif text-gray-900 leading-snug">
-                  माँ लक्ष्मी के स्वागत के 75 दिन
+                  75 Days to Welcome Maa Lakshmi
                 </h3>
                 <p className="text-xs font-semibold uppercase tracking-wider text-amber-800">
                   75-Day Digital Preparation Guide
@@ -604,7 +615,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
                     {activeTier === 'digital' ? 'Digital Guide Checkout' : activeTier === 'combo' ? 'Complete Combo Checkout' : 'Physical Book Checkout'}
                   </span>
                   <h3 className="text-lg font-bold text-gray-900 font-serif">
-                    {activeTier === 'digital' && 'माँ लक्ष्मी के स्वागत के 75 दिन'}
+                    {activeTier === 'digital' && '75 Days to Welcome Maa Lakshmi'}
                     {activeTier === 'combo' && 'The Complete Lakshmi Journey'}
                     {activeTier === 'physical' && 'Main Lakshmi Hoon Book'}
                   </h3>
@@ -749,6 +760,36 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
                     <span>•</span>
                     <span>UPI, Cards &amp; NetBanking</span>
                   </div>
+
+                  {createdOrderInfo && createdOrderInfo.paymentLink && (
+                    <div className="mt-4 p-4 bg-gradient-to-b from-amber-50 to-orange-50/50 border border-amber-300/80 rounded-2xl text-center space-y-2.5 animate-in fade-in">
+                      <div className="flex items-center justify-center space-x-1.5 text-xs font-bold text-[#8b1d20] uppercase tracking-wider">
+                        <span>Instant UPI Pay QR</span>
+                      </div>
+                      <p className="text-[11px] text-gray-600">
+                        Scan with Google Pay, PhonePe, Paytm, BHIM, or any UPI App:
+                      </p>
+                      {createdOrderInfo.qrCodeUrl && (
+                        <div className="flex justify-center my-1">
+                          <img
+                            src={createdOrderInfo.qrCodeUrl}
+                            alt="Razorpay Pay QR"
+                            className="w-40 h-40 rounded-xl border border-amber-300 shadow-md bg-white p-1.5"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <a
+                          href={createdOrderInfo.paymentLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center space-x-1 bg-white hover:bg-gray-50 border border-amber-300 text-[#8b1d20] font-bold text-xs px-3.5 py-2 rounded-xl shadow-sm hover:shadow transition"
+                        >
+                          <span>Open Direct Razorpay Payment Link ↗</span>
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

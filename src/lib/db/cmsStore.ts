@@ -594,7 +594,7 @@ export async function getBooksAsync(): Promise<ExtendedBook[]> {
       await initializeDatabaseTables();
       const [rows] = await pool.query('SELECT * FROM books ORDER BY created_at DESC') as [any[], any];
       if (rows && rows.length > 0) {
-        return rows.map((r) => {
+        const dbBooks = rows.map((r) => {
           const base = initialBooks.find((b) => b.id === r.id || b.slug === r.slug) || initialBooks[0];
           const desc = r.description || base.description || '';
           return {
@@ -628,6 +628,21 @@ export async function getBooksAsync(): Promise<ExtendedBook[]> {
             keyTakeaways: safeJsonParse(r.key_takeaways, []),
           } as ExtendedBook;
         });
+
+        // Ensure newly added initialBooks (such as Lakshmi journey offerings) are included
+        const missingFromDb = initialBooks.filter(
+          (ib) => !dbBooks.some((db) => db.id === ib.id || db.slug === ib.slug)
+        );
+        if (missingFromDb.length > 0) {
+          for (const m of missingFromDb) {
+            saveBookAsync(m as ExtendedBook).catch((err) =>
+              console.error('[cmsStore] Auto-seeding missing initial book to MySQL:', m.id, err)
+            );
+          }
+          return [...dbBooks, ...(missingFromDb as ExtendedBook[])];
+        }
+
+        return dbBooks;
       }
       // Seed MySQL with initial books if table is empty
       for (const b of initialBooks) {

@@ -46,7 +46,51 @@ export async function POST(req: NextRequest) {
       }
     } else if (type === 'book') {
       const books = await getBooksAsync();
-      const book = books.find((b) => b.id === itemId || b.slug === itemId);
+      let book = books.find((b) => b.id === itemId || b.slug === itemId);
+
+      if (!book) {
+        const { books: staticBooks } = await import('@/data/books');
+        book = staticBooks.find((b) => b.id === itemId || b.slug === itemId) as any;
+        if (book) {
+          const { saveBookAsync } = await import('@/lib/db/cmsStore');
+          saveBookAsync(book as any).catch(() => {});
+        }
+      }
+
+      // Explicit fail-safe for Lakshmi Journey offerings
+      if (!book) {
+        if (itemId === 'bk-lakshmi-75' || itemId === '75-days-to-welcome-maa-lakshmi') {
+          book = {
+            id: 'bk-lakshmi-75',
+            slug: '75-days-to-welcome-maa-lakshmi',
+            name: '75 Days to Welcome Maa Lakshmi',
+            title: '75 Days to Welcome Maa Lakshmi',
+            price: 500,
+            ebookPrice: 500,
+            formatType: 'ebook',
+          } as any;
+        } else if (itemId === 'prod-lakshmi-combo' || itemId === 'the-complete-lakshmi-journey-combo') {
+          book = {
+            id: 'prod-lakshmi-combo',
+            slug: 'the-complete-lakshmi-journey-combo',
+            name: 'The Complete Lakshmi Journey (Book + 75-Day Digital Guide Combo)',
+            title: 'The Complete Lakshmi Journey (Book + 75-Day Digital Guide Combo)',
+            price: 1750,
+            physicalPrice: 1750,
+            formatType: 'both',
+          } as any;
+        } else if (itemId === 'bk-main-lakshmi-hoon' || itemId === 'main-lakshmi-hoon') {
+          book = {
+            id: 'bk-main-lakshmi-hoon',
+            slug: 'main-lakshmi-hoon',
+            name: 'Main Lakshmi Hoon (Physical Book Edition)',
+            title: 'Main Lakshmi Hoon (Physical Book Edition)',
+            price: 1250,
+            physicalPrice: 1250,
+            formatType: 'physical',
+          } as any;
+        }
+      }
 
       if (!book) {
         return NextResponse.json({ error: 'Book publication not found.' }, { status: 404 });
@@ -57,7 +101,7 @@ export async function POST(req: NextRequest) {
 
       if (book.id === 'bk-lakshmi-75' || book.slug === '75-days-to-welcome-maa-lakshmi') {
         unitPrice = 500;
-        itemTitle = 'माँ लक्ष्मी के स्वागत के 75 दिन (75-Day Digital Guide)';
+        itemTitle = '75 Days to Welcome Maa Lakshmi (75-Day Digital Guide)';
       } else if (book.id === 'prod-lakshmi-combo' || book.slug === 'the-complete-lakshmi-journey-combo') {
         unitPrice = 1750;
         itemTitle = 'The Complete Lakshmi Journey (Book + 75-Day Digital Guide Combo)';
@@ -68,7 +112,7 @@ export async function POST(req: NextRequest) {
         unitPrice = isEbook
           ? (book.ebookPrice || book.price)
           : (book.physicalPrice || (book.price + 200));
-        itemTitle = `${book.name} (${isEbook ? 'Digital E-Book' : 'Printed Edition'})`;
+        itemTitle = `${book.name || (book as any).title} (${isEbook ? 'Digital E-Book' : 'Printed Edition'})`;
       }
 
       const qty = Math.max(1, Number(quantity) || 1);
@@ -153,6 +197,46 @@ export async function POST(req: NextRequest) {
 
     const rzpOrder = await rzpResponse.json();
 
+    // Generate hosted payment link / QR code companion
+    let paymentLinkUrl: string | undefined = undefined;
+    try {
+      const cleanCustomerPhone = customer?.phone ? String(customer.phone).replace(/\D/g, '').slice(-10) : '';
+      const plResponse = await fetch('https://api.razorpay.com/v1/payment_links', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authHeader,
+        },
+        body: JSON.stringify({
+          amount: amountInPaise,
+          currency: 'INR',
+          description: orderDescription.slice(0, 200),
+          customer: {
+            name: customer?.name || 'Devotee',
+            email: customer?.email || undefined,
+            contact: cleanCustomerPhone ? `+91${cleanCustomerPhone}` : undefined,
+          },
+          notify: {
+            sms: false,
+            email: false,
+          },
+          reminder_enable: false,
+          notes: {
+            type,
+            itemId: String(itemId || ''),
+            format: String(format || ''),
+            orderId: rzpOrder.id,
+          },
+        }),
+      });
+      if (plResponse.ok) {
+        const plData = await plResponse.json();
+        paymentLinkUrl = plData.short_url;
+      }
+    } catch (plErr) {
+      console.warn('[razorpay/create-order] Payment link generation optional fallback:', plErr);
+    }
+
     return NextResponse.json({
       success: true,
       orderId: rzpOrder.id,
@@ -162,6 +246,10 @@ export async function POST(req: NextRequest) {
       keyId,
       itemTitle,
       description: orderDescription,
+      paymentLink: paymentLinkUrl,
+      qrCodeUrl: paymentLinkUrl
+        ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(paymentLinkUrl)}`
+        : undefined,
     });
   } catch (error: unknown) {
     console.error('[razorpay/create-order] Unexpected error:', error);

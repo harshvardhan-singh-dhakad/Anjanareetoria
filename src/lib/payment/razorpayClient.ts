@@ -38,6 +38,14 @@ export interface PaymentPayload {
   };
   shippingAddress?: string;
   notes?: string;
+  onOrderCreated?: (orderData: {
+    orderId: string;
+    amount: number;
+    amountInInr: number;
+    paymentLink?: string;
+    qrCodeUrl?: string;
+    itemTitle?: string;
+  }) => void;
   onSuccess: (result: {
     orderId: string;
     paymentId: string;
@@ -78,6 +86,17 @@ export async function initiateRazorpayPayment(payload: PaymentPayload): Promise<
         return;
       }
       throw new Error(orderData.error || 'Failed to initiate payment.');
+    }
+
+    if (payload.onOrderCreated) {
+      payload.onOrderCreated({
+        orderId: orderData.orderId,
+        amount: orderData.amount,
+        amountInInr: orderData.amountInInr,
+        paymentLink: orderData.paymentLink,
+        qrCodeUrl: orderData.qrCodeUrl,
+        itemTitle: orderData.itemTitle,
+      });
     }
 
     // 2. Load Razorpay script
