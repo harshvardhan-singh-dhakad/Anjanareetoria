@@ -24,8 +24,11 @@ export const Header: React.FC = () => {
   return (
     <header className="w-full bg-white sticky top-0 z-40 border-b border-gray-100 shadow-sm transition-all">
       {/* Topbar */}
-      <div className="bg-[#0008c1] text-white py-1.5 px-4 text-center text-xs tracking-wider font-medium">
-        <span>✨ Welcome to AR Blessings — Authentically Blessed Spiritual & Luxury Essentials ✨</span>
+      <div className="bg-[#78181a] text-white py-1.5 px-4 text-center text-xs tracking-wider font-medium flex items-center justify-center flex-wrap gap-2">
+        <span>✨ Welcome to AR Blessings •</span>
+        <Link href="/lakshmi-journey" className="font-bold text-amber-300 underline hover:text-amber-200 transition">
+          Begin Your 75-Day Lakshmi Journey Today (75 दिन साधना) →
+        </Link>
       </div>
 
       {/* Main Navigation Bar */}
@@ -52,7 +55,7 @@ export const Header: React.FC = () => {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center space-x-8">
+        <nav className="hidden lg:flex items-center space-x-6">
           <Link
             href="/"
             className="text-sm font-semibold tracking-wide text-[#0008c1] hover:text-[#1346af] transition-colors"
@@ -64,6 +67,14 @@ export const Header: React.FC = () => {
             className="text-sm font-semibold tracking-wide text-[#2b2b2b] hover:text-[#0008c1] transition-colors"
           >
             Shop
+          </Link>
+          <Link
+            href="/lakshmi-journey"
+            className="text-sm font-bold tracking-wide text-[#8b1d20] hover:text-[#701618] transition-colors flex items-center space-x-1.5 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-full border border-amber-300 shadow-sm"
+          >
+            <span>🪔</span>
+            <span>Lakshmi Journey</span>
+            <span className="text-[10px] font-extrabold bg-[#8b1d20] text-white px-1.5 py-0.5 rounded-full uppercase">NEW</span>
           </Link>
           <Link
             href="/books"
@@ -267,6 +278,20 @@ export const Header: React.FC = () => {
               </button>
             )}
           </div>
+
+          <Link
+            href="/lakshmi-journey"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center justify-between text-sm font-bold text-[#8b1d20] bg-amber-50/90 p-3 rounded-xl border border-amber-300 shadow-sm my-1"
+          >
+            <span className="flex items-center space-x-2">
+              <span>🪔</span>
+              <span>Lakshmi Journey (75 Days &amp; Combo)</span>
+            </span>
+            <span className="text-[10px] font-extrabold bg-[#8b1d20] text-white px-2 py-0.5 rounded-full uppercase">
+              New
+            </span>
+          </Link>
 
           <Link
             href="/"
