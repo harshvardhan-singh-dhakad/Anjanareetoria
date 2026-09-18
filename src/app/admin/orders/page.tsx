@@ -20,7 +20,7 @@ import {
   User,
   Calendar
 } from 'lucide-react';
-import { EbookOrder } from '@/lib/ebook/orderStore';
+import type { EbookOrder } from '@/lib/ebook/orderStore';
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<EbookOrder[]>([]);

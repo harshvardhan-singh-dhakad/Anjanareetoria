@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCustomerSessionToken } from '@/lib/auth/userStore';
-import { findOrdersByPhoneAsync } from '@/lib/ebook/orderStore';
+import { findOrdersByCustomerAsync } from '@/lib/ebook/orderStore';
 import { getBooksAsync } from '@/lib/db/cmsStore';
 
 export const runtime = 'nodejs';
@@ -14,12 +14,14 @@ export async function GET(req: NextRequest) {
     }
 
     const session = verifyCustomerSessionToken(cookieToken);
-    if (!session || !session.phone) {
+    if (!session || (!session.email && !session.phone)) {
       return NextResponse.json({ error: 'Invalid or expired session.' }, { status: 401 });
     }
 
-    const cleanPhone = session.phone.replace(/\D/g, '').slice(-10);
-    const orders = await findOrdersByPhoneAsync(cleanPhone);
+    const orders = await findOrdersByCustomerAsync({
+      email: session.email,
+      phone: session.phone,
+    });
     const books = await getBooksAsync();
 
     // Filter paid orders containing ebooks
@@ -48,8 +50,8 @@ export async function GET(req: NextRequest) {
           slug: bookData?.slug || 'karodon-ka-rahasya',
           purchaseDate: o.purchaseTimestamp,
           amount: o.amount,
-          readerUrl: `/reader?phone=${cleanPhone}&orderId=${o.orderId}`,
-          downloadUrl: `/api/ebook/download?orderId=${o.orderId}&phone=${cleanPhone}`,
+          readerUrl: `/reader?phone=${encodeURIComponent(o.buyerPhone || session.phone || '')}&orderId=${o.orderId}`,
+          downloadUrl: `/api/ebook/download?orderId=${o.orderId}&phone=${encodeURIComponent(o.buyerPhone || session.phone || '')}`,
         });
       }
     }

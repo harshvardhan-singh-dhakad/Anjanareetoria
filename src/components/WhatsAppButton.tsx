@@ -1,9 +1,14 @@
 "use client";
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { MessageCircle } from 'lucide-react';
 
 export const WhatsAppButton: React.FC = () => {
+  const pathname = usePathname();
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
   const whatsappNumber = "919999999999"; // Can be updated to exact business number
   const message = encodeURIComponent("Hello! I am interested in ordering from AR Blessings.");
 

@@ -3,17 +3,23 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { ShoppingBag, Search, User, Menu, X, LogOut, MapPin, BookOpen } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 
 export const Header: React.FC = () => {
+  const pathname = usePathname();
   const { totalCount, setIsCartOpen } = useCart();
   const { user, isLoggedIn, openAuthModal, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <header className="w-full bg-white sticky top-0 z-40 border-b border-gray-100 shadow-sm transition-all">
@@ -162,7 +168,7 @@ export const Header: React.FC = () => {
                         {user?.name || 'Blessed Devotee'}
                       </p>
                       <p className="text-[11px] text-gray-500 truncate">
-                        +91 {user?.phone}
+                        {user?.email || (user?.phone ? `+91 ${user.phone}` : '')}
                       </p>
                     </div>
 
@@ -239,7 +245,7 @@ export const Header: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold text-gray-900">{user?.name || 'Blessed Devotee'}</p>
-                  <p className="text-[11px] text-gray-500">+91 {user?.phone}</p>
+                  <p className="text-[11px] text-gray-500">{user?.email || (user?.phone ? `+91 ${user.phone}` : '')}</p>
                 </div>
                 <Link
                   href="/account"
@@ -255,9 +261,9 @@ export const Header: React.FC = () => {
                   setMobileMenuOpen(false);
                   openAuthModal();
                 }}
-                className="w-full bg-[#0008c1] hover:bg-[#1346af] text-white py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition"
+                className="w-full bg-[#0008c1] hover:bg-[#1346af] text-white py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition"
               >
-                <User size={15} /> Sign In with Mobile OTP / Password
+                <User size={15} /> Sign In / Register (लॉगिन करें)
               </button>
             )}
           </div>

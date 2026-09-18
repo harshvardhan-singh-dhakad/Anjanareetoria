@@ -4,10 +4,12 @@ import { getMySQLPool, initializeDatabaseTables } from '../db/database';
 
 export interface User {
   id: string;
-  phone: string;
-  name?: string;
   email?: string;
+  phone?: string;
+  name?: string;
   passwordHash?: string;
+  firebaseUid?: string;
+  provider?: string;
   role: string;
   avatar?: string;
   createdAt: string;
@@ -38,6 +40,143 @@ export async function verifyPasswordAsync(password: string, hash: string): Promi
   return bcrypt.compare(password, hash);
 }
 
+export async function findUserByEmailAsync(email: string): Promise<User | null> {
+  const pool = getMySQLPool();
+  const cleanEmail = (email || '').trim().toLowerCase();
+  if (!cleanEmail || !pool) return null;
+
+  try {
+    await initializeDatabaseTables();
+    const [rows] = await pool.query(
+      'SELECT * FROM users WHERE LOWER(email) = ? LIMIT 1',
+      [cleanEmail]
+    ) as [any[], any];
+
+    if (rows && rows.length > 0) {
+      const r = rows[0];
+      return {
+        id: r.id,
+        email: r.email || undefined,
+        phone: r.phone || undefined,
+        name: r.name || undefined,
+        passwordHash: r.password_hash || undefined,
+        firebaseUid: r.firebase_uid || undefined,
+        provider: r.provider || undefined,
+        role: r.role || 'customer',
+        avatar: r.avatar || undefined,
+        createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+      };
+    }
+  } catch (err) {
+    console.error('[userStore] findUserByEmailAsync error:', err);
+  }
+  return null;
+}
+
+export async function findUserByFirebaseUidAsync(uid: string): Promise<User | null> {
+  const pool = getMySQLPool();
+  if (!uid || !pool) return null;
+
+  try {
+    await initializeDatabaseTables();
+    const [rows] = await pool.query(
+      'SELECT * FROM users WHERE firebase_uid = ? LIMIT 1',
+      [uid]
+    ) as [any[], any];
+
+    if (rows && rows.length > 0) {
+      const r = rows[0];
+      return {
+        id: r.id,
+        email: r.email || undefined,
+        phone: r.phone || undefined,
+        name: r.name || undefined,
+        passwordHash: r.password_hash || undefined,
+        firebaseUid: r.firebase_uid || undefined,
+        provider: r.provider || undefined,
+        role: r.role || 'customer',
+        avatar: r.avatar || undefined,
+        createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+      };
+    }
+  } catch (err) {
+    console.error('[userStore] findUserByFirebaseUidAsync error:', err);
+  }
+  return null;
+}
+
+export async function upsertFirebaseUserAsync(data: {
+  email: string;
+  name?: string;
+  firebaseUid?: string;
+  avatar?: string;
+  provider?: string;
+}): Promise<User> {
+  const pool = getMySQLPool();
+  const cleanEmail = (data.email || '').trim().toLowerCase();
+
+  if (cleanEmail) {
+    const existing = await findUserByEmailAsync(cleanEmail);
+    if (existing) {
+      if (pool) {
+        try {
+          await pool.query(
+            `UPDATE users SET 
+              name = COALESCE(?, name), 
+              avatar = COALESCE(?, avatar), 
+              firebase_uid = COALESCE(?, firebase_uid),
+              provider = COALESCE(?, provider)
+             WHERE id = ?`,
+            [data.name || null, data.avatar || null, data.firebaseUid || null, data.provider || 'firebase', existing.id]
+          );
+        } catch (err) {
+          console.error('[userStore] upsertFirebaseUserAsync update error:', err);
+        }
+      }
+      return {
+        ...existing,
+        name: data.name || existing.name,
+        avatar: data.avatar || existing.avatar,
+        firebaseUid: data.firebaseUid || existing.firebaseUid,
+        provider: data.provider || existing.provider,
+      };
+    }
+  }
+
+  // Check by firebase UID if email wasn't matched
+  if (data.firebaseUid) {
+    const existingByUid = await findUserByFirebaseUidAsync(data.firebaseUid);
+    if (existingByUid) {
+      return existingByUid;
+    }
+  }
+
+  // Create new user
+  const id = `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      await pool.query(
+        'INSERT INTO users (id, email, name, avatar, firebase_uid, provider, role) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [id, cleanEmail || null, data.name || null, data.avatar || null, data.firebaseUid || null, data.provider || 'firebase', 'customer']
+      );
+    } catch (err) {
+      console.error('[userStore] upsertFirebaseUserAsync insert error:', err);
+    }
+  }
+
+  return {
+    id,
+    email: cleanEmail || undefined,
+    name: data.name || undefined,
+    avatar: data.avatar || undefined,
+    firebaseUid: data.firebaseUid || undefined,
+    provider: data.provider || 'firebase',
+    role: 'customer',
+    createdAt: new Date().toISOString(),
+  };
+}
+
 export async function findUserByPhoneAsync(phone: string): Promise<User | null> {
   const pool = getMySQLPool();
   if (!pool) return null;
@@ -54,10 +193,12 @@ export async function findUserByPhoneAsync(phone: string): Promise<User | null> 
       const r = rows[0];
       return {
         id: r.id,
-        phone: r.phone,
+        phone: r.phone || undefined,
         name: r.name || undefined,
         email: r.email || undefined,
         passwordHash: r.password_hash || undefined,
+        firebaseUid: r.firebase_uid || undefined,
+        provider: r.provider || undefined,
         role: r.role || 'customer',
         avatar: r.avatar || undefined,
         createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
@@ -84,10 +225,12 @@ export async function findUserByIdAsync(id: string): Promise<User | null> {
       const r = rows[0];
       return {
         id: r.id,
-        phone: r.phone,
+        phone: r.phone || undefined,
         name: r.name || undefined,
         email: r.email || undefined,
         passwordHash: r.password_hash || undefined,
+        firebaseUid: r.firebase_uid || undefined,
+        provider: r.provider || undefined,
         role: r.role || 'customer',
         avatar: r.avatar || undefined,
         createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
@@ -354,7 +497,7 @@ export function createCustomerSessionToken(user: User): string {
 
 export function verifyCustomerSessionToken(token: string): {
   userId: string;
-  phone: string;
+  phone?: string;
   name?: string;
   email?: string;
   role: string;

@@ -2,8 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export const Footer: React.FC = () => {
+  const pathname = usePathname();
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
   return (
     <footer className="bg-[#1778f2] text-white pt-16 pb-12 mt-16 border-t border-blue-400">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6">

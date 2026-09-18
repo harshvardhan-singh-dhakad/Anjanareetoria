@@ -192,17 +192,41 @@ export async function initializeDatabaseTables(): Promise<boolean> {
       await connection.query(`
         CREATE TABLE IF NOT EXISTS users (
           id VARCHAR(100) PRIMARY KEY,
-          phone VARCHAR(20) UNIQUE NOT NULL,
+          phone VARCHAR(50) NULL,
           name VARCHAR(255),
           email VARCHAR(255) NULL,
           password_hash VARCHAR(255) NULL,
+          firebase_uid VARCHAR(128) NULL,
+          provider VARCHAR(50) DEFAULT 'email',
           role VARCHAR(50) DEFAULT 'customer',
           avatar VARCHAR(500),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          INDEX idx_user_phone (phone)
+          INDEX idx_user_email (email),
+          INDEX idx_user_phone (phone),
+          INDEX idx_user_firebase_uid (firebase_uid)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
+
+      // Gracefully ensure nullable phone and new columns for Firebase users
+      try {
+        await connection.query(`ALTER TABLE users MODIFY COLUMN phone VARCHAR(50) NULL`);
+      } catch (e) {}
+      try {
+        await connection.query(`ALTER TABLE users DROP INDEX phone`);
+      } catch (e) {}
+      try {
+        await connection.query(`ALTER TABLE users ADD COLUMN firebase_uid VARCHAR(128) NULL`);
+      } catch (e) {}
+      try {
+        await connection.query(`ALTER TABLE users ADD COLUMN provider VARCHAR(50) DEFAULT 'email'`);
+      } catch (e) {}
+      try {
+        await connection.query(`ALTER TABLE users ADD INDEX idx_user_email (email)`);
+      } catch (e) {}
+      try {
+        await connection.query(`ALTER TABLE users ADD INDEX idx_user_firebase_uid (firebase_uid)`);
+      } catch (e) {}
 
       await connection.query(`
         CREATE TABLE IF NOT EXISTS otps (

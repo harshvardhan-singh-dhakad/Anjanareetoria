@@ -18,7 +18,7 @@ import {
   Star,
   MessageSquare
 } from 'lucide-react';
-import { Webinar, WebinarReview } from '@/lib/db/cmsStore';
+import type { Webinar, WebinarReview } from '@/lib/db/cmsStore';
 
 export default function AdminWebinarsPage() {
   const [webinars, setWebinars] = useState<Webinar[]>([]);

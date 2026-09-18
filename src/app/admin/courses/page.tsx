@@ -19,7 +19,7 @@ import {
   ShieldCheck,
   PlusCircle
 } from 'lucide-react';
-import { Course, CourseModule, CourseLesson } from '@/lib/db/cmsStore';
+import type { Course, CourseModule, CourseLesson } from '@/lib/db/cmsStore';
 
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);

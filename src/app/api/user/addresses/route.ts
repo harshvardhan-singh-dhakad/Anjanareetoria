@@ -41,9 +41,26 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { id, fullName, phone, altPhone, streetAddress, landmark, city, state, pincode, isDefault } = body;
 
-    if (!fullName || !phone || !streetAddress || !city || !state || !pincode) {
+    const cleanPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+    const cleanPincode = String(pincode || '').replace(/\D/g, '');
+
+    if (!fullName || !streetAddress || !city || !state || !pincode) {
       return NextResponse.json(
-        { error: 'Please provide full name, phone number, street address, city, state, and pincode.' },
+        { error: 'Please provide recipient name, street address, city, state, and pincode.' },
+        { status: 400 }
+      );
+    }
+
+    if (cleanPhone.length !== 10) {
+      return NextResponse.json(
+        { error: 'Mobile number is mandatory. Please provide a valid 10-digit mobile number.' },
+        { status: 400 }
+      );
+    }
+
+    if (cleanPincode.length !== 6) {
+      return NextResponse.json(
+        { error: 'Please provide a valid 6-digit PIN code.' },
         { status: 400 }
       );
     }
@@ -51,13 +68,13 @@ export async function POST(req: NextRequest) {
     const saved = await saveUserAddressAsync(userId, {
       id,
       fullName: String(fullName).trim(),
-      phone: String(phone).replace(/\D/g, '').slice(-10),
+      phone: cleanPhone,
       altPhone: altPhone ? String(altPhone).replace(/\D/g, '').slice(-10) : undefined,
       streetAddress: String(streetAddress).trim(),
       landmark: landmark ? String(landmark).trim() : undefined,
       city: String(city).trim(),
       state: String(state).trim(),
-      pincode: String(pincode).trim(),
+      pincode: cleanPincode,
       isDefault: Boolean(isDefault),
     });
 

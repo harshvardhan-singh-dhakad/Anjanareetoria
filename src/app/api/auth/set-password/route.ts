@@ -29,26 +29,28 @@ export async function POST(req: NextRequest) {
 
     if (!targetUser) {
       return NextResponse.json(
-        { error: 'User session not found. Please verify your phone number with OTP first.' },
+        { error: 'User session not found. Please sign in to update your account.' },
         { status: 401 }
       );
     }
 
-    if (!password || password.length < 6) {
-      return NextResponse.json(
-        { error: 'Password must be at least 6 characters long.' },
-        { status: 400 }
-      );
-    }
+    if (password) {
+      if (password.length < 6) {
+        return NextResponse.json(
+          { error: 'Password must be at least 6 characters long.' },
+          { status: 400 }
+        );
+      }
 
-    if (password !== confirmPassword) {
-      return NextResponse.json(
-        { error: 'Passwords do not match. Please verify both fields.' },
-        { status: 400 }
-      );
-    }
+      if (confirmPassword && password !== confirmPassword) {
+        return NextResponse.json(
+          { error: 'Passwords do not match. Please verify both fields.' },
+          { status: 400 }
+        );
+      }
 
-    await updateUserPasswordAsync(targetUser.id, password);
+      await updateUserPasswordAsync(targetUser.id, password);
+    }
 
     // Optionally update name/email if passed
     if (name || email) {
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Password successfully updated! You can now sign in with your mobile number and password.',
+      message: 'Account details successfully updated!',
     });
   } catch (error: unknown) {
     console.error('[auth/set-password] Error:', error);

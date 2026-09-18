@@ -11,23 +11,25 @@ export async function GET(req: NextRequest) {
     const queryPhone = searchParams.get('phone');
 
     let phone = '';
+    let userId = '';
     if (cookieToken) {
       const session = verifyCustomerSessionToken(cookieToken);
       if (session?.phone) phone = session.phone;
+      if (session?.userId) userId = session.userId;
     }
     if (!phone && queryPhone) {
       phone = queryPhone;
     }
 
-    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-    if (!cleanPhone) {
+    const cleanPhone = phone ? phone.replace(/\D/g, '').slice(-10) : '';
+    if (!cleanPhone && !userId) {
       return NextResponse.json(
         { success: false, error: 'Authentication required to fetch enrolled courses.' },
         { status: 401 }
       );
     }
 
-    const enrollments = await getUserEnrollmentsAsync(cleanPhone);
+    const enrollments = await getUserEnrollmentsAsync(cleanPhone, userId);
     const allCourses = await getCoursesAsync();
 
     const enrolledList = enrollments.map((enr) => {

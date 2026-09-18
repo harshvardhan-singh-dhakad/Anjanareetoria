@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   BookMarked
 } from 'lucide-react';
-import { ExtendedBook } from '@/lib/db/cmsStore';
+import type { ExtendedBook } from '@/lib/db/cmsStore';
 
 export default function AdminBooksPage() {
   const [books, setBooks] = useState<ExtendedBook[]>([]);

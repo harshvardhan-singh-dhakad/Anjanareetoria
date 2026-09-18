@@ -59,7 +59,7 @@ export const CartDrawer: React.FC = () => {
           ) : (
             <div className="bg-blue-50/70 border-b border-blue-100 px-4 py-2 flex items-center space-x-2 text-[11px] text-[#0008c1]">
               <CheckCircle2 size={13} className="text-emerald-600 flex-shrink-0" />
-              <span className="truncate font-medium">Logged in: +91 {user?.phone} (Saved addresses active)</span>
+              <span className="truncate font-medium">Logged in: {user?.email || user?.name || 'Devotee'} (Saved addresses active)</span>
             </div>
           )}
 

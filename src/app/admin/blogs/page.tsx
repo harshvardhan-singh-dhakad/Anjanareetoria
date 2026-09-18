@@ -19,7 +19,7 @@ import {
   Layers,
   Wand2
 } from 'lucide-react';
-import { ExtendedBlogPost } from '@/lib/db/cmsStore';
+import type { ExtendedBlogPost } from '@/lib/db/cmsStore';
 
 export default function AdminBlogsPage() {
   const [blogs, setBlogs] = useState<ExtendedBlogPost[]>([]);

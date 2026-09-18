@@ -25,9 +25,12 @@ export async function GET(req: NextRequest) {
       authenticated: true,
       user: {
         id: user.id,
-        phone: user.phone,
-        name: user.name || null,
         email: user.email || null,
+        phone: user.phone || null,
+        name: user.name || null,
+        avatar: user.avatar || null,
+        role: user.role || 'customer',
+        provider: user.provider || 'email',
         hasPassword: Boolean(user.passwordHash),
       },
     });

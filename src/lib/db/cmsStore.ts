@@ -1221,15 +1221,27 @@ export async function enrollUserInCourse(userId: string, userPhone: string, cour
   return enrollment;
 }
 
-export async function getUserEnrollmentsAsync(userPhone: string): Promise<UserCourseEnrollment[]> {
+export async function getUserEnrollmentsAsync(userPhone?: string, userId?: string): Promise<UserCourseEnrollment[]> {
   const cleanPhone = (userPhone || '').replace(/\D/g, '').slice(-10);
-  if (!cleanPhone) return [];
+  if (!cleanPhone && !userId) return [];
 
   const pool = getMySQLPool();
   if (pool) {
     try {
       await initializeDatabaseTables();
-      const [rows] = await pool.query('SELECT * FROM user_course_enrollments WHERE user_phone = ?', [cleanPhone]) as [any[], any];
+      let query = 'SELECT * FROM user_course_enrollments WHERE ';
+      const params: any[] = [];
+      if (cleanPhone && userId) {
+        query += '(user_phone = ? OR user_id = ?)';
+        params.push(cleanPhone, userId);
+      } else if (cleanPhone) {
+        query += 'user_phone = ?';
+        params.push(cleanPhone);
+      } else if (userId) {
+        query += 'user_id = ?';
+        params.push(userId);
+      }
+      const [rows] = await pool.query(query, params) as [any[], any];
       if (rows && rows.length > 0) {
         return rows.map((r) => ({
           id: r.id,
@@ -1248,7 +1260,7 @@ export async function getUserEnrollmentsAsync(userPhone: string): Promise<UserCo
       console.error('[cmsStore] getUserEnrollmentsAsync error:', err);
     }
   }
-  return getEnrollments().filter((e) => e.userPhone === cleanPhone);
+  return getEnrollments().filter((e) => (cleanPhone && e.userPhone === cleanPhone) || (userId && e.userId === userId));
 }
 
 export async function updateLessonProgressAsync(

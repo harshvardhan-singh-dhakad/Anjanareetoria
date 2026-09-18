@@ -22,16 +22,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(pathname !== '/admin/login');
-
   const [adminUser, setAdminUser] = useState('40se40crore.merchandise@gmail.com');
 
-  // If on login page, don't show admin sidebar
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
-  }
-
   React.useEffect(() => {
+    // If on login page, skip authentication check
+    if (pathname === '/admin/login') {
+      setCheckingAuth(false);
+      return;
+    }
+
     let isMounted = true;
+    setCheckingAuth(true);
+
     fetch('/api/admin/auth/me')
       .then((res) => {
         if (!res.ok) throw new Error('Unauthorized');
@@ -39,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       })
       .then((data) => {
         if (data.authenticated) {
-          if (data.user) setAdminUser(data.user);
+          if (data.user && isMounted) setAdminUser(data.user);
           if (isMounted) setCheckingAuth(false);
         } else {
           router.replace('/admin/login');
@@ -53,6 +55,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       isMounted = false;
     };
   }, [pathname, router]);
+
+  // If on login page, don't show admin sidebar
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
 
   if (checkingAuth) {
     return (

@@ -251,6 +251,61 @@ export async function getAllOrdersAsync(): Promise<EbookOrder[]> {
   return getAllOrders();
 }
 
+export async function findOrdersByCustomerAsync(criteria: { email?: string; phone?: string }): Promise<EbookOrder[]> {
+  const cleanEmail = (criteria.email || '').trim().toLowerCase();
+  const cleanPhone = criteria.phone ? criteria.phone.replace(/\D/g, '').slice(-10) : '';
+  const pool = getMySQLPool();
+  if (pool && (cleanEmail || cleanPhone)) {
+    try {
+      await initializeDatabaseTables();
+      const conditions: string[] = [];
+      const params: any[] = [];
+
+      if (cleanEmail) {
+        conditions.push('LOWER(buyer_email) = ?');
+        params.push(cleanEmail);
+      }
+      if (cleanPhone) {
+        conditions.push('buyer_phone LIKE ?');
+        params.push(`%${cleanPhone}`);
+      }
+
+      const [rows] = await pool.query(
+        `SELECT * FROM orders WHERE ${conditions.join(' OR ')} ORDER BY created_at DESC`,
+        params
+      ) as [any[], any];
+
+      if (rows && rows.length > 0) {
+        return rows.map((r) => ({
+          orderId: r.order_id,
+          paymentId: r.payment_id,
+          buyerEmail: r.buyer_email,
+          buyerPhone: r.buyer_phone,
+          productId: r.product_id,
+          amount: r.amount,
+          status: r.status.toLowerCase() as any,
+          viewToken: r.view_token || undefined,
+          accessCount: r.access_count || 0,
+          firstAccessedAt: r.first_accessed_at || undefined,
+          itemType: r.item_type || 'product',
+          itemTitle: r.item_title || undefined,
+          customerName: r.customer_name || undefined,
+          shippingAddress: r.shipping_address || undefined,
+          metadata: r.metadata ? (typeof r.metadata === 'string' ? JSON.parse(r.metadata) : r.metadata) : undefined,
+          purchaseTimestamp: new Date(r.created_at).getTime(),
+        }));
+      }
+    } catch (err) {
+      console.error('[orderStore] MySQL findOrdersByCustomerAsync error:', err);
+    }
+  }
+  return getAllOrders().filter((o) => {
+    const matchEmail = cleanEmail && (o.buyerEmail || '').toLowerCase() === cleanEmail;
+    const matchPhone = cleanPhone && (o.buyerPhone || '').replace(/\D/g, '').slice(-10) === cleanPhone;
+    return matchEmail || matchPhone;
+  });
+}
+
 export async function findOrdersByPhoneAsync(phone: string): Promise<EbookOrder[]> {
   const cleanPhone = phone.replace(/\D/g, '').slice(-10);
   const pool = getMySQLPool();

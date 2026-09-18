@@ -19,8 +19,8 @@ import {
   ArrowRight,
   GraduationCap
 } from 'lucide-react';
-import { ExtendedBook } from '@/lib/db/cmsStore';
-import { EbookOrder } from '@/lib/ebook/orderStore';
+import type { ExtendedBook } from '@/lib/db/cmsStore';
+import type { EbookOrder } from '@/lib/ebook/orderStore';
 
 interface Stats {
   productsCount: number;
@@ -50,34 +50,45 @@ export default function AdminDashboardPage() {
   const fetchStats = async () => {
     setLoading(true);
     try {
+      const safeFetchJson = async (url: string) => {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) return null;
+          return await res.json();
+        } catch {
+          return null;
+        }
+      };
+
       const [resProd, resBooks, resWebinars, resBlogs, resOrders, resCourses] = await Promise.all([
-        fetch('/api/admin/products').then(r => r.json()),
-        fetch('/api/admin/books').then(r => r.json()),
-        fetch('/api/admin/webinars').then(r => r.json()),
-        fetch('/api/admin/blogs').then(r => r.json()),
-        fetch('/api/admin/orders').then(r => r.json()).catch(() => ({ success: false })),
-        fetch('/api/admin/courses').then(r => r.json()).catch(() => ({ success: false })),
+        safeFetchJson('/api/admin/products'),
+        safeFetchJson('/api/admin/books'),
+        safeFetchJson('/api/admin/webinars'),
+        safeFetchJson('/api/admin/blogs'),
+        safeFetchJson('/api/admin/orders'),
+        safeFetchJson('/api/admin/courses'),
       ]);
 
-      const prodList = resProd?.products || resProd?.data || [];
-      const booksList: ExtendedBook[] = resBooks?.books || resBooks?.data || [];
-      const webinarsList = resWebinars?.webinars || resWebinars?.data || [];
-      const blogsList = resBlogs?.blogs || resBlogs?.data || [];
-      const coursesList = resCourses?.courses || resCourses?.data || [];
+      const prodList = (resProd?.products || resProd?.data || []) as any[];
+      const booksList: ExtendedBook[] = (resBooks?.books || resBooks?.data || []) as ExtendedBook[];
+      const webinarsList = (resWebinars?.webinars || resWebinars?.data || []) as any[];
+      const blogsList = (resBlogs?.blogs || resBlogs?.data || []) as any[];
+      const coursesList = (resCourses?.courses || resCourses?.data || []) as any[];
 
-      const pdfCount = booksList.filter((b) => b.pdfSourceFile).length;
-      const ordersList: EbookOrder[] = resOrders?.success && Array.isArray(resOrders.orders) ? resOrders.orders : [];
+      const safeBooksList = Array.isArray(booksList) ? booksList : [];
+      const pdfCount = safeBooksList.filter((b) => b && b.pdfSourceFile).length;
+      const ordersList: EbookOrder[] = (resOrders?.success && Array.isArray(resOrders.orders)) ? resOrders.orders : [];
       const revenue = ordersList.reduce((acc, o) => acc + (Number(o.amount) || 0), 0);
 
       const sortedOrders = [...ordersList].sort((a, b) => (b.purchaseTimestamp || 0) - (a.purchaseTimestamp || 0));
       setRecentOrders(sortedOrders.slice(0, 5));
 
       setStats({
-        productsCount: prodList.length,
-        booksCount: booksList.length,
-        coursesCount: coursesList.length,
-        webinarsCount: webinarsList.length,
-        blogsCount: blogsList.length,
+        productsCount: Array.isArray(prodList) ? prodList.length : 0,
+        booksCount: safeBooksList.length,
+        coursesCount: Array.isArray(coursesList) ? coursesList.length : 0,
+        webinarsCount: Array.isArray(webinarsList) ? webinarsList.length : 0,
+        blogsCount: Array.isArray(blogsList) ? blogsList.length : 0,
         ebooksWithPdf: pdfCount,
         totalOrders: ordersList.length,
         totalRevenue: revenue,
