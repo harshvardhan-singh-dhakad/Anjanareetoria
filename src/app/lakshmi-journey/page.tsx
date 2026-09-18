@@ -31,47 +31,6 @@ export const metadata: Metadata = {
 export default function LakshmiJourneyPage() {
   return (
     <div className="min-h-screen bg-[#fffdfa] text-gray-900 font-sans">
-      {/* Focused Top Header for Meta Ads */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-amber-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2.5">
-            <Image
-              src="/images/logo.png"
-              alt="AR Blessings"
-              width={34}
-              height={34}
-              className="rounded-full shadow-sm"
-            />
-            <div>
-              <span className="font-serif font-black text-base sm:text-lg text-[#8b1d20] tracking-tight block leading-none">
-                AR BLESSINGS
-              </span>
-              <span className="text-[10px] text-amber-800 font-semibold tracking-wider uppercase block mt-0.5">
-                Authentic Sacred Living
-              </span>
-            </div>
-          </Link>
-
-          <div className="flex items-center space-x-3">
-            <a
-              href="https://wa.me/918433558905?text=Namaste%20Anjanaaji,%20I%20have%20a%20question%20regarding%20the%20Lakshmi%2075-Day%20Journey."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-full transition shadow-sm"
-            >
-              <MessageCircle size={14} />
-              <span className="hidden sm:inline">WhatsApp Help</span>
-            </a>
-            <Link
-              href="/reader"
-              className="text-xs font-semibold text-gray-600 hover:text-[#8b1d20] px-2 py-1"
-            >
-              E-Book Reader
-            </Link>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Headline Section */}
       <div className="bg-gradient-to-b from-[#78181a] via-[#8b1d20] to-[#5b1012] text-white py-14 sm:py-20 px-4 relative overflow-hidden text-center">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
@@ -254,14 +213,6 @@ export default function LakshmiJourneyPage() {
           </p>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-8 px-4 text-center text-xs space-y-2 border-t border-gray-800">
-        <p>© {new Date().getFullYear()} AR Blessings. All Sacred Literature &amp; Rights Reserved.</p>
-        <p className="text-[11px] text-gray-500">
-          This offering is a guided personal discipline and spiritual awareness practice.
-        </p>
-      </footer>
     </div>
   );
 }
