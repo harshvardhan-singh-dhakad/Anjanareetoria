@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   X,
+  Phone,
   Lock,
   Eye,
   EyeOff,
@@ -14,24 +15,18 @@ import {
   ShieldCheck,
   User as UserIcon,
   Mail,
-  KeyRound,
+  KeyRound
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-type ModalMode = 'LOGIN' | 'REGISTER' | 'FORGOT_PASSWORD';
+type ModalStep = 'PHONE_INPUT' | 'OTP_INPUT' | 'SET_PASSWORD' | 'PASSWORD_LOGIN';
 
 export const AuthModal: React.FC = () => {
-  const {
-    isAuthModalOpen,
-    closeAuthModal,
-    loginWithGoogle,
-    loginWithEmail,
-    registerWithEmail,
-    sendPasswordReset,
-    refreshUser,
-  } = useAuth();
+  const { isAuthModalOpen, closeAuthModal, setUser, refreshUser, loginWithGoogle } = useAuth();
 
-  const [mode, setMode] = useState<ModalMode>('LOGIN');
+  const [step, setStep] = useState<ModalStep>('PHONE_INPUT');
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,16 +35,19 @@ export const AuthModal: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [devOtpPreview, setDevOtpPreview] = useState<string | null>(null);
+  const [resendTimer, setResendTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
 
-  // Reset state when modal opens/closes
+  // Reset states on open/close
   useEffect(() => {
     if (isAuthModalOpen) {
-      setMode('LOGIN');
+      setStep('PHONE_INPUT');
       setError(null);
       setSuccessMsg(null);
+      setDevOtpPreview(null);
       setPassword('');
       setConfirmPassword('');
       setShowPassword(false);
@@ -57,71 +55,116 @@ export const AuthModal: React.FC = () => {
     }
   }, [isAuthModalOpen]);
 
+  // Resend OTP countdown
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (step === 'OTP_INPUT' && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0) {
+      setCanResend(true);
+    }
+    return () => clearInterval(interval);
+  }, [step, resendTimer]);
+
   if (!isAuthModalOpen) return null;
 
-  // Translate Firebase error codes into devotee-friendly messages
-  const formatAuthError = (err: any): string => {
-    const code = err?.code || '';
-    const message = err?.message || '';
-
-    if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
-      return 'Incorrect email or password. Please verify your details.';
-    }
-    if (code === 'auth/email-already-in-use') {
-      return 'An account already exists with this email. Please sign in instead.';
-    }
-    if (code === 'auth/weak-password') {
-      return 'Password is too weak. Please use at least 6 characters.';
-    }
-    if (code === 'auth/popup-closed-by-user') {
-      return 'Google Sign-In was cancelled before completing.';
-    }
-    if (code === 'auth/popup-blocked') {
-      return 'Popup was blocked by your browser. Please allow popups for Google Sign-In.';
-    }
-    if (code === 'auth/invalid-email') {
-      return 'Please enter a valid email address.';
-    }
-    if (code === 'auth/network-request-failed') {
-      return 'Network connection error. Please check your internet and try again.';
-    }
-    if (code === 'auth/too-many-requests') {
-      return 'Too many failed attempts. Please wait a few moments or reset your password.';
-    }
-    return message || 'Authentication failed. Please try again.';
-  };
-
-  // Handle Google Sign-In
-  const handleGoogleSignIn = async () => {
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setError(null);
     setSuccessMsg(null);
-    setGoogleLoading(true);
 
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+      setError('Please enter a valid 10-digit Indian mobile number.');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const user = await loginWithGoogle();
-      setSuccessMsg(`Welcome, ${user.name || user.email}!`);
-      setTimeout(() => {
-        closeAuthModal();
-        refreshUser();
-      }, 700);
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: cleanPhone }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to send OTP.');
+      }
+
+      setDevOtpPreview(data.devOtp || null);
+      setSuccessMsg(`OTP sent to +91 ${cleanPhone}`);
+      setStep('OTP_INPUT');
+      setResendTimer(60);
+      setCanResend(false);
     } catch (err: any) {
-      setError(formatAuthError(err));
+      setError(err.message || 'Error sending OTP. Please try again.');
     } finally {
-      setGoogleLoading(false);
+      setLoading(false);
     }
   };
 
-  // Handle Email/Password Login
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
 
-    const cleanEmail = email.trim();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
-      setError('Please enter a valid email address.');
+    if (otp.length < 4) {
+      setError('Please enter the verification code.');
       return;
     }
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: phone.replace(/\D/g, '').slice(-10),
+          otp,
+          name,
+          email,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Verification failed.');
+      }
+
+      setUser(data.user);
+
+      // If user has not set a password yet, offer to set password for convenience
+      if (!data.user.hasPassword) {
+        setStep('SET_PASSWORD');
+        setSuccessMsg('Phone verified! You can now set a password for fast login.');
+      } else {
+        setSuccessMsg('Login successful!');
+        setTimeout(() => {
+          closeAuthModal();
+          refreshUser();
+        }, 800);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Invalid OTP code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccessMsg(null);
+
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+      setError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
     if (!password) {
       setError('Please enter your password.');
       return;
@@ -129,72 +172,87 @@ export const AuthModal: React.FC = () => {
 
     setLoading(true);
     try {
-      const user = await loginWithEmail(cleanEmail, password);
-      setSuccessMsg(`Welcome back, ${user.name || user.email}!`);
+      const res = await fetch('/api/auth/login-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: cleanPhone, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Login failed.');
+      }
+
+      setUser(data.user);
+      setSuccessMsg(data.message || 'Login successful!');
       setTimeout(() => {
         closeAuthModal();
         refreshUser();
       }, 700);
     } catch (err: any) {
-      setError(formatAuthError(err));
+      setError(err.message || 'Login failed. Check your mobile number and password.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle Email/Password Registration
-  const handleEmailRegister = async (e: React.FormEvent) => {
+  const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
 
-    const cleanEmail = email.trim();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
-      setError('Please enter a valid email address.');
-      return;
-    }
     if (password.length < 6) {
       setError('Password must be at least 6 characters long.');
       return;
     }
+
     if (password !== confirmPassword) {
-      setError('Passwords do not match. Please re-check both fields.');
+      setError('Passwords do not match! Please check both fields.');
       return;
     }
 
     setLoading(true);
     try {
-      const user = await registerWithEmail(cleanEmail, password, name.trim());
-      setSuccessMsg(`Account created successfully! Welcome, ${user.name || user.email}.`);
+      const res = await fetch('/api/auth/set-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: phone.replace(/\D/g, '').slice(-10),
+          password,
+          confirmPassword,
+          name,
+          email,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to save password.');
+      }
+
+      setSuccessMsg('Account setup complete! Welcome to AR Blessings.');
       setTimeout(() => {
         closeAuthModal();
         refreshUser();
-      }, 800);
+      }, 900);
     } catch (err: any) {
-      setError(formatAuthError(err));
+      setError(err.message || 'Failed to set password.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle Forgot Password
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleSignIn = async () => {
     setError(null);
-    setSuccessMsg(null);
-
-    const cleanEmail = email.trim();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
-      setError('Please enter your registered email address.');
-      return;
-    }
-
     setLoading(true);
     try {
-      await sendPasswordReset(cleanEmail);
-      setSuccessMsg(`Password reset link sent to ${cleanEmail}! Please check your inbox and spam folder.`);
+      if (loginWithGoogle) {
+        await loginWithGoogle();
+        closeAuthModal();
+      }
     } catch (err: any) {
-      setError(formatAuthError(err));
+      console.error('Google sign in error:', err);
+      setError(err?.message || 'Google Sign-In failed. Please try with Mobile OTP.');
     } finally {
       setLoading(false);
     }
@@ -204,7 +262,7 @@ export const AuthModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-amber-100 transform transition-all">
+      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-amber-100 transform transition-all animate-scaleUp">
         {/* Top Header Graphic */}
         <div className="bg-gradient-to-r from-[#0008c1] via-[#1346af] to-[#0008c1] p-6 text-white text-center relative overflow-hidden">
           <div className="absolute -right-6 -top-6 w-24 h-24 bg-amber-400/10 rounded-full blur-xl pointer-events-none" />
@@ -221,14 +279,14 @@ export const AuthModal: React.FC = () => {
           </div>
 
           <h2 className="text-xl font-serif font-bold tracking-wide">
-            {mode === 'REGISTER'
-              ? 'Create Devotee Account'
-              : mode === 'FORGOT_PASSWORD'
-              ? 'Reset Your Password'
-              : 'Sign In to AR Blessings'}
+            {step === 'SET_PASSWORD'
+              ? 'Complete Your Account'
+              : step === 'PASSWORD_LOGIN'
+              ? 'Welcome Back'
+              : 'Sign In / Register'}
           </h2>
           <p className="text-xs text-amber-200/90 mt-1 font-sans">
-            AR Blessings Sacred Spiritual Portal
+            AR Blessings Sacred Devotee Portal
           </p>
         </div>
 
@@ -249,190 +307,176 @@ export const AuthModal: React.FC = () => {
             </div>
           )}
 
-          {/* Mode Switch Tabs (Login vs Register) */}
-          {mode !== 'FORGOT_PASSWORD' && (
-            <div className="flex border-b border-gray-100 mb-5">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode('LOGIN');
-                  setError(null);
-                  setSuccessMsg(null);
-                }}
-                className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2 ${
-                  mode === 'LOGIN'
-                    ? 'border-[#0008c1] text-[#0008c1]'
-                    : 'border-transparent text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                Sign In (लॉगिन)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode('REGISTER');
-                  setError(null);
-                  setSuccessMsg(null);
-                }}
-                className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2 ${
-                  mode === 'REGISTER'
-                    ? 'border-[#0008c1] text-[#0008c1]'
-                    : 'border-transparent text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                Register (नया खाता)
-              </button>
-            </div>
-          )}
-
-          {/* 1. GOOGLE SIGN-IN BUTTON (Always available in LOGIN and REGISTER modes) */}
-          {mode !== 'FORGOT_PASSWORD' && (
-            <div className="mb-5">
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                disabled={googleLoading || loading}
-                className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 py-2.5 px-4 rounded-xl text-xs font-bold shadow-sm hover:shadow transition disabled:opacity-50"
-              >
-                {googleLoading ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin text-[#0008c1]" />
-                    <span>Connecting with Google...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                      <path
-                        fill="#4285F4"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                      />
-                    </svg>
-                    <span>{mode === 'REGISTER' ? 'Sign up with Google' : 'Continue with Google'}</span>
-                  </>
-                )}
-              </button>
-
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200" />
-                </div>
-                <div className="relative flex justify-center text-[10px] uppercase font-bold text-gray-400">
-                  <span className="bg-white px-3 tracking-wider">or continue with email</span>
-                </div>
+          {/* Dev OTP Preview Toast (For instant hassle-free testing) */}
+          {devOtpPreview && step === 'OTP_INPUT' && (
+            <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <KeyRound size={16} className="text-amber-600" />
+                <span>Test OTP Code: <strong className="font-mono text-sm tracking-wider">{devOtpPreview}</strong></span>
               </div>
+              <button
+                type="button"
+                onClick={() => setOtp(devOtpPreview)}
+                className="text-[11px] font-semibold text-[#0008c1] underline"
+              >
+                Auto-fill
+              </button>
             </div>
           )}
 
-          {/* 2. LOGIN FORM */}
-          {mode === 'LOGIN' && (
-            <form onSubmit={handleEmailLogin} className="space-y-3.5">
+          {/* STEP 1: MOBILE NUMBER INPUT (Primary Flow) */}
+          {step === 'PHONE_INPUT' && (
+            <form onSubmit={handleSendOtp} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Email Address (ईमेल) <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Mobile Number (मोबाइल नंबर) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative flex items-center">
-                  <Mail size={16} className="absolute left-3 text-gray-400" />
+                  <span className="absolute left-3.5 text-xs font-bold text-gray-500 flex items-center gap-1.5 border-r border-gray-200 pr-2">
+                    🇮🇳 +91
+                  </span>
                   <input
-                    type="email"
-                    placeholder="devotee@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 text-xs border border-gray-300 rounded-lg outline-none focus:border-[#0008c1] focus:ring-1 focus:ring-[#0008c1]"
+                    type="tel"
+                    maxLength={10}
+                    placeholder="9876543210"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                    className="w-full pl-24 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg outline-none focus:border-[#0008c1] focus:ring-1 focus:ring-[#0008c1] tracking-wider"
                     autoFocus
                     required
                   />
                 </div>
+                <p className="text-[11px] text-gray-500 mt-1">
+                  We will send a 6-digit one-time password to verify your phone.
+                </p>
               </div>
 
+              <button
+                type="submit"
+                disabled={loading || phone.length < 10}
+                className="w-full bg-[#0008c1] hover:bg-[#1346af] disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-semibold tracking-wide flex items-center justify-center gap-2 shadow-md transition"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Sending OTP...
+                  </>
+                ) : (
+                  <>
+                    Get OTP (ओटीपी प्राप्त करें) <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+
+              <div className="pt-2 text-center border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError(null);
+                    setStep('PASSWORD_LOGIN');
+                  }}
+                  className="text-xs font-medium text-[#0008c1] hover:underline"
+                >
+                  Have a password? <strong>Sign In with Password instead</strong>
+                </button>
+              </div>
+
+              <div className="relative my-3">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase font-semibold text-gray-400">
+                  <span className="bg-white px-2">Or continue with</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+                className="w-full border border-gray-300 hover:bg-gray-50 py-2.5 rounded-lg text-xs font-semibold text-gray-700 flex items-center justify-center gap-2 transition shadow-sm hover:border-gray-400"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+                <span>Continue with Google</span>
+              </button>
+            </form>
+          )}
+
+          {/* STEP 2: OTP VERIFICATION */}
+          {step === 'OTP_INPUT' && (
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
               <div>
-                <div className="flex justify-between items-center mb-1">
+                <div className="flex justify-between items-center mb-1.5">
                   <label className="text-xs font-semibold text-gray-700">
-                    Password (पासवर्ड) <span className="text-red-500">*</span>
+                    Enter 6-Digit OTP (ओटीपी दर्ज करें)
                   </label>
                   <button
                     type="button"
                     onClick={() => {
+                      setStep('PHONE_INPUT');
                       setError(null);
-                      setSuccessMsg(null);
-                      setMode('FORGOT_PASSWORD');
                     }}
                     className="text-[11px] text-[#0008c1] hover:underline"
                   >
-                    Forgot Password?
+                    Change Phone
                   </button>
                 </div>
-                <div className="relative flex items-center">
-                  <Lock size={16} className="absolute left-3 text-gray-400" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-9 pr-10 py-2.5 text-xs border border-gray-300 rounded-lg outline-none focus:border-[#0008c1] focus:ring-1 focus:ring-[#0008c1]"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 text-gray-400 hover:text-[#0008c1] p-1"
-                    aria-label="Toggle password visibility"
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
+
+                <input
+                  type="text"
+                  maxLength={6}
+                  placeholder="• • • • • •"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  className="w-full text-center tracking-[0.5em] text-lg font-bold py-2.5 border border-gray-300 rounded-lg outline-none focus:border-[#0008c1] focus:ring-1 focus:ring-[#0008c1]"
+                  autoFocus
+                  required
+                />
+
+                <div className="flex justify-between items-center mt-2 text-[11px] text-gray-500">
+                  <span>Sent to +91 {phone}</span>
+                  {canResend ? (
+                    <button
+                      type="button"
+                      onClick={() => handleSendOtp()}
+                      className="text-[#0008c1] font-semibold hover:underline"
+                    >
+                      Resend OTP
+                    </button>
+                  ) : (
+                    <span>Resend in {resendTimer}s</span>
+                  )}
                 </div>
               </div>
 
               <button
                 type="submit"
-                disabled={loading || !email || !password}
-                className="w-full bg-[#0008c1] hover:bg-[#1346af] disabled:opacity-50 text-white py-2.5 rounded-lg text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-md transition mt-2"
+                disabled={loading || otp.length < 4}
+                className="w-full bg-[#0008c1] hover:bg-[#1346af] disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-semibold tracking-wide flex items-center justify-center gap-2 shadow-md transition"
               >
                 {loading ? (
                   <>
-                    <Loader2 size={15} className="animate-spin" /> Signing In...
+                    <Loader2 size={16} className="animate-spin" /> Verifying...
                   </>
                 ) : (
                   <>
-                    Sign In to Account <ArrowRight size={15} />
+                    Verify &amp; Continue <ShieldCheck size={16} />
                   </>
                 )}
               </button>
-
-              <div className="pt-2 text-center">
-                <span className="text-xs text-gray-500">Don&apos;t have an account yet? </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError(null);
-                    setSuccessMsg(null);
-                    setMode('REGISTER');
-                  }}
-                  className="text-xs font-semibold text-[#0008c1] hover:underline"
-                >
-                  Create Account
-                </button>
-              </div>
             </form>
           )}
 
-          {/* 3. REGISTRATION FORM */}
-          {mode === 'REGISTER' && (
-            <form onSubmit={handleEmailRegister} className="space-y-3">
+          {/* STEP 3: SET PASSWORD SCREEN (with dual Eye icons and confirmation) */}
+          {step === 'SET_PASSWORD' && (
+            <form onSubmit={handleSetPassword} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Full Name (आपका पूरा नाम)
+                  Full Name (आपका नाम - Optional)
                 </label>
                 <div className="relative flex items-center">
                   <UserIcon size={16} className="absolute left-3 text-gray-400" />
@@ -442,31 +486,30 @@ export const AuthModal: React.FC = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-lg outline-none focus:border-[#0008c1]"
-                    autoFocus
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Email Address (ईमेल) <span className="text-red-500">*</span>
+                  Email Address (ईमेल - Optional)
                 </label>
                 <div className="relative flex items-center">
                   <Mail size={16} className="absolute left-3 text-gray-400" />
                   <input
                     type="email"
-                    placeholder="devotee@example.com"
+                    placeholder="Optional for receipts and updates"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-lg outline-none focus:border-[#0008c1]"
-                    required
                   />
                 </div>
               </div>
 
+              {/* PASSWORD FIELD 1 WITH EYE ICON */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Password (पासवर्ड) <span className="text-red-500">*</span>
+                  Create Password (पासवर्ड दर्ज करें) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative flex items-center">
                   <Lock size={16} className="absolute left-3 text-gray-400" />
@@ -481,7 +524,7 @@ export const AuthModal: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 text-gray-400 hover:text-[#0008c1] p-1"
+                    className="absolute right-3 text-gray-500 hover:text-[#0008c1] transition p-1"
                     aria-label="Toggle password visibility"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -489,6 +532,7 @@ export const AuthModal: React.FC = () => {
                 </div>
               </div>
 
+              {/* PASSWORD FIELD 2: CONFIRMATION WITH EYE ICON */}
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <label className="text-xs font-semibold text-gray-700">
@@ -504,7 +548,7 @@ export const AuthModal: React.FC = () => {
                   <Lock size={16} className="absolute left-3 text-gray-400" />
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder="Re-enter password"
+                    placeholder="Re-enter same password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className={`w-full pl-9 pr-10 py-2 text-xs border rounded-lg outline-none ${
@@ -519,7 +563,7 @@ export const AuthModal: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 text-gray-400 hover:text-[#0008c1] p-1"
+                    className="absolute right-3 text-gray-500 hover:text-[#0008c1] transition p-1"
                     aria-label="Toggle confirm password visibility"
                   >
                     {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -527,96 +571,124 @@ export const AuthModal: React.FC = () => {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading || !email || password.length < 6 || !passwordsMatch}
-                className="w-full bg-[#0008c1] hover:bg-[#1346af] disabled:opacity-50 text-white py-2.5 rounded-lg text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-md transition mt-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={15} className="animate-spin" /> Creating Account...
-                  </>
-                ) : (
-                  <>
-                    Create Devotee Account <CheckCircle2 size={15} />
-                  </>
-                )}
-              </button>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={loading || !passwordsMatch || password.length < 6}
+                  className="w-full bg-[#0008c1] hover:bg-[#1346af] disabled:opacity-50 text-white py-2.5 rounded-lg text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-md transition"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 size={15} className="animate-spin" /> Saving Password...
+                    </>
+                  ) : (
+                    <>
+                      Save &amp; Complete Setup <CheckCircle2 size={15} />
+                    </>
+                  )}
+                </button>
 
-              <div className="pt-2 text-center">
-                <span className="text-xs text-gray-500">Already registered? </span>
                 <button
                   type="button"
                   onClick={() => {
-                    setError(null);
-                    setSuccessMsg(null);
-                    setMode('LOGIN');
+                    closeAuthModal();
+                    refreshUser();
                   }}
-                  className="text-xs font-semibold text-[#0008c1] hover:underline"
+                  className="w-full mt-2 text-center text-[11px] text-gray-500 hover:underline"
                 >
-                  Sign In
+                  Skip for now (I will set password later)
                 </button>
               </div>
             </form>
           )}
 
-          {/* 4. FORGOT PASSWORD FORM */}
-          {mode === 'FORGOT_PASSWORD' && (
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div className="text-center py-1">
-                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-50 border border-amber-200 text-amber-600 mb-2">
-                  <KeyRound size={20} />
-                </div>
-                <p className="text-xs text-gray-600">
-                  Enter your registered email and we will send you a secure link to reset your password.
-                </p>
-              </div>
-
+          {/* STEP 4: PASSWORD LOGIN SCREEN */}
+          {step === 'PASSWORD_LOGIN' && (
+            <form onSubmit={handlePasswordLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Registered Email Address <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Mobile Number (मोबाइल नंबर) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative flex items-center">
-                  <Mail size={16} className="absolute left-3 text-gray-400" />
+                  <span className="absolute left-3.5 text-xs font-bold text-gray-500 flex items-center gap-1.5 border-r border-gray-200 pr-2">
+                    🇮🇳 +91
+                  </span>
                   <input
-                    type="email"
-                    placeholder="devotee@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 text-xs border border-gray-300 rounded-lg outline-none focus:border-[#0008c1] focus:ring-1 focus:ring-[#0008c1]"
+                    type="tel"
+                    maxLength={10}
+                    placeholder="9876543210"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                    className="w-full pl-24 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg outline-none focus:border-[#0008c1] tracking-wider"
                     autoFocus
                     required
                   />
                 </div>
               </div>
 
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="text-xs font-semibold text-gray-700">
+                    Password (पासवर्ड) <span className="text-red-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setError(null);
+                      setStep('PHONE_INPUT');
+                    }}
+                    className="text-[11px] text-[#0008c1] hover:underline"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+                <div className="relative flex items-center">
+                  <Lock size={16} className="absolute left-3 text-gray-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-9 pr-10 py-2.5 text-sm border border-gray-300 rounded-lg outline-none focus:border-[#0008c1]"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 text-gray-500 hover:text-[#0008c1] transition p-1"
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
               <button
                 type="submit"
-                disabled={loading || !email}
-                className="w-full bg-[#0008c1] hover:bg-[#1346af] disabled:opacity-50 text-white py-2.5 rounded-lg text-xs font-semibold tracking-wide flex items-center justify-center gap-2 shadow-md transition"
+                disabled={loading || phone.length < 10 || !password}
+                className="w-full bg-[#0008c1] hover:bg-[#1346af] disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-semibold tracking-wide flex items-center justify-center gap-2 shadow-md transition"
               >
                 {loading ? (
                   <>
-                    <Loader2 size={15} className="animate-spin" /> Sending Reset Link...
+                    <Loader2 size={16} className="animate-spin" /> Signing In...
                   </>
                 ) : (
                   <>
-                    Send Password Reset Link <ArrowRight size={15} />
+                    Sign In with Password <ArrowRight size={16} />
                   </>
                 )}
               </button>
 
-              <div className="pt-2 text-center">
+              <div className="pt-2 text-center border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => {
                     setError(null);
-                    setSuccessMsg(null);
-                    setMode('LOGIN');
+                    setStep('PHONE_INPUT');
                   }}
-                  className="text-xs font-semibold text-[#0008c1] hover:underline"
+                  className="text-xs font-medium text-[#0008c1] hover:underline"
                 >
-                  ← Back to Sign In
+                  Prefer instant OTP? <strong>Login via Mobile OTP instead</strong>
                 </button>
               </div>
             </form>

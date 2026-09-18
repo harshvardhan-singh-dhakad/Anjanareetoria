@@ -25,7 +25,7 @@ import {
   Clock
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { UserAddress } from '@/lib/auth/userStore';
+import type { UserAddress } from '@/lib/auth/userStore';
 
 export default function AccountPage() {
   const { user, isLoggedIn, isLoading, openAuthModal, logout, refreshUser } = useAuth();
@@ -138,6 +138,7 @@ export default function AccountPage() {
   };
 
   const fetchOrders = async () => {
+    if (!user?.phone) return;
     try {
       setLoadingData(true);
       const res = await fetch(`/api/ebook/abuse-logs`);
@@ -211,27 +212,17 @@ export default function AccountPage() {
 
   const handleSaveAddress = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanPhone = addrPhone.replace(/\D/g, '').slice(-10);
-    if (cleanPhone.length !== 10) {
-      setAddrError('Mobile number is mandatory. Please enter a valid 10-digit mobile number.');
-      setAddrSaving(false);
-      return;
-    }
-    const cleanPin = addrPincode.replace(/\D/g, '');
-    if (cleanPin.length !== 6) {
-      setAddrError('Please enter a valid 6-digit PIN code.');
-      setAddrSaving(false);
-      return;
-    }
+    setAddrError(null);
+    setAddrSaving(true);
 
     try {
       const res = await fetch('/api/user/addresses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fullName: addrFullName.trim(),
-          phone: cleanPhone,
-          altPhone: addrAltPhone ? addrAltPhone.replace(/\D/g, '').slice(-10) : undefined,
+          fullName: addrFullName,
+          phone: addrPhone,
+          altPhone: addrAltPhone,
           streetAddress: addrStreet,
           landmark: addrLandmark,
           city: addrCity,
@@ -290,13 +281,13 @@ export default function AccountPage() {
           Devotee Account Portal
         </h1>
         <p className="text-gray-600 max-w-md mx-auto mb-8 text-sm leading-relaxed">
-          Sign in with your Google or Email account to view past orders, access your library of eBooks, and manage your delivery addresses.
+          Sign in with your mobile number to view past orders, access watermarked eBooks, and manage your delivery addresses.
         </p>
         <button
           onClick={openAuthModal}
           className="bg-[#0008c1] hover:bg-[#1346af] text-white px-8 py-3 rounded-full font-semibold text-sm shadow-lg hover:shadow-xl transition inline-flex items-center gap-2"
         >
-          Sign In with Google / Email <ArrowRight size={16} />
+          Sign In with Mobile OTP / Password <ArrowRight size={16} />
         </button>
       </div>
     );
@@ -316,7 +307,7 @@ export default function AccountPage() {
             Namaste, {user?.name || 'Blessed Devotee'}
           </h1>
           <p className="text-xs text-amber-100/80 mt-1">
-            Account Email: {user?.email || (user?.phone ? `+91 ${user.phone}` : 'Active')}
+            Registered Mobile: +91 {user?.phone}
           </p>
         </div>
         <button
@@ -413,17 +404,14 @@ export default function AccountPage() {
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Registered Email Address (खाता ईमेल - प्राथमिक)
+                  Mobile Number (स्थिर)
                 </label>
                 <input
-                  type="email"
-                  value={user?.email || emailInput || ''}
+                  type="text"
+                  value={`+91 ${user?.phone}`}
                   disabled
-                  className="w-full px-3 py-2 text-xs bg-gray-100 border border-gray-200 rounded-lg text-gray-600 font-medium cursor-not-allowed"
+                  className="w-full px-3 py-2 text-xs bg-gray-100 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed"
                 />
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Verified via {user?.provider === 'google.com' || user?.provider === 'google' ? 'Google Sign-In' : 'Firebase Authentication'}
-                </p>
               </div>
 
               <div>
@@ -435,6 +423,19 @@ export default function AccountPage() {
                   placeholder="e.g. Aacharya Rajeev"
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg outline-none focus:border-[#0008c1]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Email Address (वैकल्पिक - Optional)
+                </label>
+                <input
+                  type="email"
+                  placeholder="Optional for receipts"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg outline-none focus:border-[#0008c1]"
                 />
               </div>
