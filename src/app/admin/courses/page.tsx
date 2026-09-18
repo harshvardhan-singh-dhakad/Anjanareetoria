@@ -20,6 +20,7 @@ import {
   PlusCircle
 } from 'lucide-react';
 import type { Course, CourseModule, CourseLesson } from '@/lib/db/cmsStore';
+import { adminFetch } from '@/lib/admin/adminClient';
 
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -69,7 +70,7 @@ export default function AdminCoursesPage() {
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/courses');
+      const res = await adminFetch('/api/admin/courses');
       const data = await res.json();
       if (data.success) {
         const list = Array.isArray(data.courses) ? data.courses : Array.isArray(data.data) ? data.data : [];
@@ -251,7 +252,7 @@ export default function AdminCoursesPage() {
     };
 
     try {
-      const res = await fetch('/api/admin/courses', {
+      const res = await adminFetch('/api/admin/courses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -272,7 +273,7 @@ export default function AdminCoursesPage() {
   const handleDeleteCourse = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to delete course "${name}"?`)) return;
     try {
-      const res = await fetch(`/api/admin/courses?id=${id}`, { method: 'DELETE' });
+      const res = await adminFetch(`/api/admin/courses?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         fetchCourses();

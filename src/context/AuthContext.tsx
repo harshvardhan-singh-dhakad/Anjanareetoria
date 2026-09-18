@@ -64,6 +64,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       const data = await res.json();
       if (data.success && data.user) {
+        if (data.token && typeof window !== 'undefined') {
+          localStorage.setItem('customer_token', data.token);
+        }
         setUser(data.user);
         return data.user;
       }
@@ -75,7 +78,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUser = useCallback(async () => {
     try {
-      const res = await fetch('/api/auth/me', { cache: 'no-store' });
+      const token = typeof window !== 'undefined' ? localStorage.getItem('customer_token') : null;
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch('/api/auth/me', {
+        headers,
+        cache: 'no-store',
+        credentials: 'include',
+      });
       const data = await res.json();
       if (data.authenticated && data.user) {
         setUser(data.user);
@@ -156,6 +169,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await signOut(auth);
       await fetch('/api/auth/logout', { method: 'POST' });
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('customer_token');
+      }
       setUser(null);
       setFirebaseUser(null);
       window.location.reload();

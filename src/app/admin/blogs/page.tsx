@@ -20,6 +20,7 @@ import {
   Wand2
 } from 'lucide-react';
 import type { ExtendedBlogPost } from '@/lib/db/cmsStore';
+import { adminFetch } from '@/lib/admin/adminClient';
 
 export default function AdminBlogsPage() {
   const [blogs, setBlogs] = useState<ExtendedBlogPost[]>([]);
@@ -54,7 +55,7 @@ export default function AdminBlogsPage() {
   const loadBlogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/blogs');
+      const res = await adminFetch('/api/admin/blogs');
       const data = await res.json();
       if (data.success) {
         const list = Array.isArray(data.blogs) ? data.blogs : Array.isArray(data.data) ? data.data : [];
@@ -207,7 +208,7 @@ export default function AdminBlogsPage() {
     fd.append('file', file);
 
     try {
-      const res = await fetch('/api/admin/upload-image', {
+      const res = await adminFetch('/api/admin/upload-image', {
         method: 'POST',
         body: fd,
       });
@@ -282,7 +283,7 @@ export default function AdminBlogsPage() {
     };
 
     try {
-      const res = await fetch('/api/admin/blogs', {
+      const res = await adminFetch('/api/admin/blogs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -305,7 +306,7 @@ export default function AdminBlogsPage() {
     if (!confirm(`Are you sure you want to delete article "${title}"?`)) return;
 
     try {
-      const res = await fetch(`/api/admin/blogs?id=${encodeURIComponent(id)}`, {
+      const res = await adminFetch(`/api/admin/blogs?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
       });
       const data = await res.json();

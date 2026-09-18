@@ -19,6 +19,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import type { Webinar, WebinarReview } from '@/lib/db/cmsStore';
+import { adminFetch } from '@/lib/admin/adminClient';
 
 export default function AdminWebinarsPage() {
   const [webinars, setWebinars] = useState<Webinar[]>([]);
@@ -63,7 +64,7 @@ export default function AdminWebinarsPage() {
   const loadWebinars = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/webinars');
+      const res = await adminFetch('/api/admin/webinars');
       const data = await res.json();
       if (data.success) {
         const list = Array.isArray(data.webinars)
@@ -156,7 +157,7 @@ export default function AdminWebinarsPage() {
     fd.append('file', file);
 
     try {
-      const res = await fetch('/api/admin/upload-image', {
+      const res = await adminFetch('/api/admin/upload-image', {
         method: 'POST',
         body: fd,
       });
@@ -182,7 +183,7 @@ export default function AdminWebinarsPage() {
     fd.append('file', file);
 
     try {
-      const res = await fetch('/api/admin/upload-image', {
+      const res = await adminFetch('/api/admin/upload-image', {
         method: 'POST',
         body: fd,
       });
@@ -276,7 +277,7 @@ export default function AdminWebinarsPage() {
     };
 
     try {
-      const res = await fetch('/api/admin/webinars', {
+      const res = await adminFetch('/api/admin/webinars', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -299,7 +300,7 @@ export default function AdminWebinarsPage() {
     if (!confirm(`Are you sure you want to delete webinar "${title}"?`)) return;
 
     try {
-      const res = await fetch(`/api/admin/webinars?id=${encodeURIComponent(id)}`, {
+      const res = await adminFetch(`/api/admin/webinars?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
       });
       const data = await res.json();

@@ -79,6 +79,9 @@ export const AuthModal: React.FC = () => {
     if (code === 'auth/popup-blocked') {
       return 'Popup was blocked by your browser. Please allow popups for Google Sign-In.';
     }
+    if (code === 'auth/unauthorized-domain') {
+      return 'This domain is not yet authorized in your Firebase Console. Please add it under Firebase Console > Authentication > Settings > Authorized domains.';
+    }
     if (code === 'auth/invalid-email') {
       return 'Please enter a valid email address.';
     }

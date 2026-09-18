@@ -16,6 +16,7 @@ import {
   X,
   GraduationCap
 } from 'lucide-react';
+import { adminFetch, adminLogout } from '@/lib/admin/adminClient';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -34,7 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     let isMounted = true;
     setCheckingAuth(true);
 
-    fetch('/api/admin/auth/me')
+    adminFetch('/api/admin/auth/me')
       .then((res) => {
         if (!res.ok) throw new Error('Unauthorized');
         return res.json();
@@ -44,17 +45,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           if (data.user && isMounted) setAdminUser(data.user);
           if (isMounted) setCheckingAuth(false);
         } else {
-          router.replace('/admin/login');
+          if (typeof window !== 'undefined') window.location.href = '/admin/login';
         }
       })
       .catch(() => {
-        router.replace('/admin/login');
+        if (typeof window !== 'undefined') window.location.href = '/admin/login';
       });
 
     return () => {
       isMounted = false;
     };
-  }, [pathname, router]);
+  }, [pathname]);
 
   // If on login page, don't show admin sidebar
   if (pathname === '/admin/login') {
@@ -71,12 +72,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const handleLogout = async () => {
-    try {
-      await fetch('/api/admin/auth/logout', { method: 'POST' });
-      router.push('/admin/login');
-    } catch {
-      router.push('/admin/login');
-    }
+    await adminLogout();
   };
 
   const navItems = [

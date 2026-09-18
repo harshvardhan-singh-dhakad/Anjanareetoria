@@ -7,11 +7,15 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const sessionCookie = req.cookies.get('customer_session')?.value;
-    if (!sessionCookie) {
+    const authHeader = req.headers.get('authorization');
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+    const token = sessionCookie || bearerToken;
+
+    if (!token) {
       return NextResponse.json({ authenticated: false, user: null });
     }
 
-    const session = verifyCustomerSessionToken(sessionCookie);
+    const session = verifyCustomerSessionToken(token);
     if (!session) {
       return NextResponse.json({ authenticated: false, user: null });
     }

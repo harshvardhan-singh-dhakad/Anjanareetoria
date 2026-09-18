@@ -21,6 +21,7 @@ import {
   Calendar
 } from 'lucide-react';
 import type { EbookOrder } from '@/lib/ebook/orderStore';
+import { adminFetch } from '@/lib/admin/adminClient';
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<EbookOrder[]>([]);
@@ -32,7 +33,7 @@ export default function AdminOrdersPage() {
   const loadOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/orders');
+      const res = await adminFetch('/api/admin/orders');
       const data = await res.json();
       const raw = Array.isArray(data.orders) ? data.orders : Array.isArray(data.data) ? data.data : [];
       if (data.success) {

@@ -13,10 +13,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const file = formData.get('image') as File | null;
+    const file = (formData.get('file') || formData.get('image')) as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: 'No image file uploaded.' }, { status: 400 });
+      return NextResponse.json({ error: 'No image file uploaded. Please select a file.' }, { status: 400 });
     }
 
     const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif'];

@@ -1,0 +1,79 @@
+# AR Blessings — Full Context & Knowledge Graph
+
+## Brand Mission & Essence
+AR Blessings (https://arblessings.com) is India's consecrated spiritual platform dedicated to harmonizing ancient Vedic principles with everyday contemporary prosperity. Our mission is rooted in the Purusharthas (Dharma, Artha, Kama, Moksha), acknowledging that conscious abundance and clean wealth creation are natural expressions of divine alignment.
+
+Every consecrated product, sacred text, and video masterclass is crafted, blessed, and energized through authentic Vedic ritual protocols, mantra transmissions, and sacred geometry.
+
+---
+
+## 1. Spiritual Video Courses & LMS Architecture
+Platform Route: https://arblessings.com/courses
+
+### Course 1: Brahma Muhurta Manifestation & Wealth Frequency Mastery
+- Slug: /courses/brahma-muhurta-manifestation-mastery
+- Instructor: Acharya Rajesh Shastri (Vedic Master & Energy Guide)
+- Duration: 4.5 Hours (8 Structured Lessons, 2 Modules)
+- Price: Complimentary / Free Enrollment
+- Key Teachings:
+  1. The Metaphysics of Brahma Muhurta (3:45 AM - 5:15 AM) when zero-resistance cosmic intention is highest.
+  2. Kara Darshana: Activating the divine Lakshmi-Saraswati palm chakras at the moment of awakening.
+  3. Sacred Water Energization with the Gayatri and Kuber Beej Mantras.
+  4. Subconscious Financial Fear Clearing utilizing sacred copper energetic vessels.
+  5. The Daily Sacred Geometry Journaling Method for steady abundance.
+
+### Course 2: Vedic Vastu & Spatial Energy Calibration
+- Slug: /courses/vedic-vastu-masterclass
+- Instructor: Acharya Rajesh Shastri
+- Duration: 6.0 Hours (10 Lessons, 2 Modules)
+- Price: ?999 (Original ?4,999)
+- Key Teachings:
+  1. The 16 Cardinal Zones & Pancha Tattva (Five Elemental Cycles).
+  2. Zero-Demolition Cures: Using copper/brass thresholds, mirrors, and geometric yantras.
+  3. Identifying and rectifying cash liquidity blockages in the South-East (Agni) zone.
+  4. North-East (Ishanya) purity protocols for intuitive clarity and mental peace.
+
+---
+
+## 2. Books & Sacred Literature
+Platform Route: https://arblessings.com/books
+
+- **Karodon Ka Rahasya** (ISBN: 978-81-965412-1-2)
+  - Format: Instant Watermarked PDF, EPUB, and Physical Hardcover
+  - Price: ?499 (Digital) / ?899 (Physical)
+  - Core Focus: Ancient laws of Lakshmi manifestation, sacred morning alignment, and subconscious wealth reprograming.
+
+- **Vastu For Miracles** (ISBN: 978-81-965412-2-9)
+  - Format: Physical Hardcover and Digital eBook
+  - Price: ?399
+  - Core Focus: Practical handbook for home and workplace energetic harmony.
+
+- **Daily Vedic Mantras & 90-Day Manifestation Journal** (ISBN: 978-81-965412-3-6)
+  - Format: Physical Spiral Journal & Downloadable PDF
+  - Price: ?449
+  - Core Focus: Daily chanting, beej mantra repetitions, and gratitude tracking.
+
+---
+
+## 3. Consecrated Sacred Merchandise & Essentials
+Platform Route: https://arblessings.com/product/[slug]
+
+- **Karodon Ka Dollar**: Consecrated sacred item featuring Sri Yantra geometry and abundance symbols designed to tune personal aura to wealth frequency (?888).
+- **Karodon Ka Wallet**: Handcrafted genuine leather wallet constructed with sacred geometric proportions to preserve energetic purity of currency (?4,000).
+- **Karodon Ki Khushboo & Perfume (????)**: Divine attar distilled from pure natural botanicals used for morning space consecration and meditation (?6,000 - ?8,000).
+- **Karodon Ka Pani**: Consecrated copper-energized sacred water for house and altar purification (?200).
+
+---
+
+## 4. Live Webinars & Spiritual Masterclasses
+Platform Route: https://arblessings.com/webinars
+
+- Interactive live transmissions hosted via Google Meet / Zoom with spiritual luminary Acharya Rajesh Shastri.
+- Features live Q&A, customized horary energetic consultations, and live mantra chanting.
+
+---
+
+## 5. Contact & Devotee Support
+- Official Domain: https://arblessings.com
+- Support Email: support@arblessings.com
+- Administrative Head: 40se40crore.merchandise@gmail.com

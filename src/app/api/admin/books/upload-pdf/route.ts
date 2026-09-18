@@ -15,11 +15,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const file = formData.get('pdf') as File | null;
-    const bookId = formData.get('bookId') as string | null;
+    const file = (formData.get('pdf') || formData.get('file')) as File | null;
+    const bookId = (formData.get('bookId') || formData.get('id')) as string | null;
 
     if (!file) {
-      return NextResponse.json({ error: 'No PDF file uploaded.' }, { status: 400 });
+      return NextResponse.json({ error: 'No PDF file uploaded. Please select a PDF file.' }, { status: 400 });
     }
 
     if (!file.name.toLowerCase().endsWith('.pdf')) {

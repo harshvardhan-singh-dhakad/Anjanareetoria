@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import type { ExtendedBook } from '@/lib/db/cmsStore';
 import type { EbookOrder } from '@/lib/ebook/orderStore';
+import { adminFetch } from '@/lib/admin/adminClient';
 
 interface Stats {
   productsCount: number;
@@ -52,7 +53,7 @@ export default function AdminDashboardPage() {
     try {
       const safeFetchJson = async (url: string) => {
         try {
-          const res = await fetch(url);
+          const res = await adminFetch(url);
           if (!res.ok) return null;
           return await res.json();
         } catch {

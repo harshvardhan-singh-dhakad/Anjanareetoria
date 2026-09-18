@@ -25,7 +25,7 @@ import {
   Clock
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { UserAddress } from '@/lib/auth/userStore';
+import type { UserAddress } from '@/lib/auth/userStore';
 
 export default function AccountPage() {
   const { user, isLoggedIn, isLoading, openAuthModal, logout, refreshUser } = useAuth();

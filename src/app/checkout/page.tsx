@@ -55,8 +55,14 @@ export default function CheckoutPage() {
       }
       await refreshUser();
     } catch (err: any) {
-      if (err?.code !== 'auth/popup-closed-by-user') {
-        setErrorMessage('Google Sign-In was cancelled. You can continue filling details as guest.');
+      if (err?.code === 'auth/popup-closed-by-user') {
+        // User closed popup, don't show an intrusive error
+      } else if (err?.code === 'auth/popup-blocked') {
+        setErrorMessage('Google Sign-In popup was blocked by your browser. Please allow popups for this site.');
+      } else if (err?.code === 'auth/unauthorized-domain') {
+        setErrorMessage('This domain is not yet authorized in Firebase Console (Authentication > Settings > Authorized domains).');
+      } else {
+        setErrorMessage(err?.message || 'Google Sign-In could not be completed. You can continue as guest.');
       }
     } finally {
       setQuickGoogleLoading(false);

@@ -32,9 +32,12 @@ export async function POST(req: NextRequest) {
     });
 
     const token = createCustomerSessionToken(user);
+    const isHttps = req.nextUrl.protocol === 'https:' || req.headers.get('x-forwarded-proto') === 'https';
+
     const response = NextResponse.json({
       success: true,
       message: `Welcome, ${user.name || user.email || 'Devotee'}!`,
+      token,
       user: {
         id: user.id,
         email: user.email || null,
@@ -50,7 +53,7 @@ export async function POST(req: NextRequest) {
       name: 'customer_session',
       value: token,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isHttps,
       sameSite: 'lax',
       path: '/',
       maxAge: 30 * 24 * 60 * 60, // 30 days

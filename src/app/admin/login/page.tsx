@@ -29,7 +29,11 @@ export default function AdminLoginPage() {
         throw new Error(data.error || 'Invalid credentials.');
       }
 
-      router.push('/admin');
+      if (data.token && typeof window !== 'undefined') {
+        localStorage.setItem('admin_token', data.token);
+      }
+
+      window.location.href = '/admin';
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Login failed.';
       setError(msg);

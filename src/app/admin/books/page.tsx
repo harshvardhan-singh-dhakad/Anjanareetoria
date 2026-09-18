@@ -18,6 +18,7 @@ import {
   BookMarked
 } from 'lucide-react';
 import type { ExtendedBook } from '@/lib/db/cmsStore';
+import { adminFetch } from '@/lib/admin/adminClient';
 
 export default function AdminBooksPage() {
   const [books, setBooks] = useState<ExtendedBook[]>([]);
@@ -63,7 +64,7 @@ export default function AdminBooksPage() {
   const loadBooks = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/books');
+      const res = await adminFetch('/api/admin/books');
       const data = await res.json();
       if (data.success) {
         const list = Array.isArray(data.books) ? data.books : Array.isArray(data.data) ? data.data : [];
@@ -172,7 +173,7 @@ export default function AdminBooksPage() {
     fd.append('file', file);
 
     try {
-      const res = await fetch('/api/admin/upload-image', {
+      const res = await adminFetch('/api/admin/upload-image', {
         method: 'POST',
         body: fd,
       });
@@ -207,7 +208,7 @@ export default function AdminBooksPage() {
     }
 
     try {
-      const res = await fetch('/api/admin/books/upload-pdf', {
+      const res = await adminFetch('/api/admin/books/upload-pdf', {
         method: 'POST',
         body: fd,
       });
@@ -270,7 +271,7 @@ export default function AdminBooksPage() {
     };
 
     try {
-      const res = await fetch('/api/admin/books', {
+      const res = await adminFetch('/api/admin/books', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -293,7 +294,7 @@ export default function AdminBooksPage() {
     if (!confirm(`Are you sure you want to delete book "${name}"?`)) return;
 
     try {
-      const res = await fetch(`/api/admin/books?id=${encodeURIComponent(id)}`, {
+      const res = await adminFetch(`/api/admin/books?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
       });
       const data = await res.json();

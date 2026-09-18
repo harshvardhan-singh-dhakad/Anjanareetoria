@@ -16,6 +16,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { Product } from '@/data/products';
+import { adminFetch } from '@/lib/admin/adminClient';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -49,7 +50,7 @@ export default function AdminProductsPage() {
   const loadProducts = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/products');
+      const res = await adminFetch('/api/admin/products');
       const data = await res.json();
       if (data.success) {
         const list = Array.isArray(data.products)
@@ -143,7 +144,7 @@ export default function AdminProductsPage() {
     fd.append('file', file);
 
     try {
-      const res = await fetch('/api/admin/upload-image', {
+      const res = await adminFetch('/api/admin/upload-image', {
         method: 'POST',
         body: fd,
       });
@@ -187,7 +188,7 @@ export default function AdminProductsPage() {
     };
 
     try {
-      const res = await fetch('/api/admin/products', {
+      const res = await adminFetch('/api/admin/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -210,7 +211,7 @@ export default function AdminProductsPage() {
     if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
 
     try {
-      const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
+      const res = await adminFetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
       });
       const data = await res.json();
