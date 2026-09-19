@@ -821,6 +821,187 @@ export function saveBook(book: ExtendedBook): void {
   writeJson(BOOKS_FILE, list);
 }
 
+// ---------------- STRICT MYSQL BOOKS CRUD ----------------
+// Admin writes use these functions so a database outage/SQL error can never
+// silently fall back to the writable runtime filesystem and look successful.
+export async function getBooksFromMySQLAsync(): Promise<ExtendedBook[]> {
+  const pool = getMySQLPool();
+  if (!pool) {
+    throw new Error('MYSQL_NOT_CONFIGURED');
+  }
+
+  const initialized = await initializeDatabaseTables();
+  if (!initialized) {
+    throw new Error('MYSQL_INITIALIZATION_FAILED');
+  }
+
+  try {
+    const [rows] = await pool.query('SELECT * FROM books ORDER BY created_at DESC') as [any[], any];
+    return rows.map((r) => {
+      const base = initialBooks.find((b) => b.id === r.id || b.slug === r.slug);
+      const desc = r.description ?? base?.description ?? '';
+      return {
+        ...(base || {}),
+        id: r.id,
+        slug: r.slug,
+        name: r.title || r.name || base?.name || 'Untitled Book',
+        title: r.title || r.name || base?.name || 'Untitled Book',
+        subtitle: r.subtitle ?? (base as any)?.subtitle ?? '',
+        description: desc,
+        shortDescription:
+          r.short_description ??
+          base?.shortDescription ??
+          (desc.length > 120 ? desc.slice(0, 117) + '...' : desc),
+        author: r.author || base?.author || 'AR Blessings Council',
+        price: r.price !== null && r.price !== undefined ? Number(r.price) : 499,
+        originalPrice: r.original_price != null ? Number(r.original_price) : base?.originalPrice,
+        discountPercent: r.discount_percent != null ? Number(r.discount_percent) : base?.discountPercent,
+        ebookPrice: r.ebook_price != null ? Number(r.ebook_price) : (base?.ebookPrice || base?.price || 499),
+        physicalPrice: r.physical_price != null ? Number(r.physical_price) : base?.physicalPrice,
+        image: r.cover_image || base?.image || '/images/books/karodon-ka-rahasya.svg',
+        coverImage: r.cover_image || base?.image || '/images/books/karodon-ka-rahasya.svg',
+        pdfSourceFile: r.pdf_source_file || undefined,
+        rating: r.rating != null ? Number(r.rating) : (base?.rating || 5.0),
+        reviewCount: r.reviews_count != null ? Number(r.reviews_count) : (base?.reviewCount || 0),
+        category: r.category || base?.category || 'Books & E-Books',
+        formatType: r.format_type || base?.formatType || 'both',
+        inStock: r.in_stock !== undefined ? Boolean(r.in_stock) : true,
+        pages: r.pages != null ? Number(r.pages) : (base?.pages || 100),
+        language: r.language || base?.language || 'Hindi & English',
+        publishedYear: r.published_year != null ? Number(r.published_year) : (base?.publishedYear || new Date().getFullYear()),
+        isbn: r.isbn ?? base?.isbn,
+        downloadFormat: r.download_format ?? base?.downloadFormat,
+        badge: r.badge ?? base?.badge,
+        features: safeJsonParse(r.features, base?.features || []),
+        tableOfContents: safeJsonParse(r.table_of_contents, base?.tableOfContents || []),
+        sampleExcerpt: safeJsonParse(
+          r.sample_excerpt,
+          base?.sampleExcerpt || { chapterTitle: 'Introduction', paragraphs: [] }
+        ),
+        previewPages: safeJsonParse(r.preview_pages, base?.previewPages || []),
+        keyTakeaways: safeJsonParse(r.key_takeaways, base?.keyTakeaways || []),
+      } as ExtendedBook;
+    });
+  } catch (err) {
+    console.error('[cmsStore] getBooksFromMySQLAsync error:', err);
+    throw err;
+  }
+}
+
+export async function saveBookToMySQLAsync(book: ExtendedBook): Promise<ExtendedBook> {
+  const pool = getMySQLPool();
+  if (!pool) throw new Error('MYSQL_NOT_CONFIGURED');
+
+  const initialized = await initializeDatabaseTables();
+  if (!initialized) throw new Error('MYSQL_INITIALIZATION_FAILED');
+
+  const query = `
+    INSERT INTO books (
+      id, slug, title, subtitle, description, short_description, author,
+      price, original_price, discount_percent, ebook_price, physical_price,
+      cover_image, pdf_source_file, rating, reviews_count, category, format_type,
+      in_stock, pages, language, published_year, isbn, download_format, badge,
+      features, table_of_contents, sample_excerpt, preview_pages, key_takeaways
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+      slug = VALUES(slug),
+      title = VALUES(title),
+      subtitle = VALUES(subtitle),
+      description = VALUES(description),
+      short_description = VALUES(short_description),
+      author = VALUES(author),
+      price = VALUES(price),
+      original_price = VALUES(original_price),
+      discount_percent = VALUES(discount_percent),
+      ebook_price = VALUES(ebook_price),
+      physical_price = VALUES(physical_price),
+      cover_image = VALUES(cover_image),
+      pdf_source_file = VALUES(pdf_source_file),
+      rating = VALUES(rating),
+      reviews_count = VALUES(reviews_count),
+      category = VALUES(category),
+      format_type = VALUES(format_type),
+      in_stock = VALUES(in_stock),
+      pages = VALUES(pages),
+      language = VALUES(language),
+      published_year = VALUES(published_year),
+      isbn = VALUES(isbn),
+      download_format = VALUES(download_format),
+      badge = VALUES(badge),
+      features = VALUES(features),
+      table_of_contents = VALUES(table_of_contents),
+      sample_excerpt = VALUES(sample_excerpt),
+      preview_pages = VALUES(preview_pages),
+      key_takeaways = VALUES(key_takeaways);
+  `;
+
+  const title = (book as any).title || (book as any).name || 'Book';
+  const cover = book.coverImage || book.image || '';
+  const author = typeof book.author === 'string'
+    ? book.author
+    : (book.author as any)?.name || 'AR Blessings Council';
+
+  await pool.query(query, [
+    book.id,
+    book.slug,
+    title,
+    book.subtitle || '',
+    book.description || '',
+    book.shortDescription || '',
+    author,
+    Number(book.price) || 0,
+    book.originalPrice != null ? Number(book.originalPrice) : null,
+    book.discountPercent != null ? Number(book.discountPercent) : null,
+    book.ebookPrice != null ? Number(book.ebookPrice) : (Number(book.price) || 0),
+    book.physicalPrice != null ? Number(book.physicalPrice) : null,
+    cover,
+    book.pdfSourceFile || null,
+    book.rating != null ? Number(book.rating) : 5.0,
+    book.reviewCount != null ? Number(book.reviewCount) : ((book as any).reviewsCount || 0),
+    book.category || 'Books & E-Books',
+    book.formatType || 'both',
+    book.inStock ? 1 : 0,
+    Number(book.pages) || 100,
+    book.language || 'Hindi & English',
+    book.publishedYear != null ? Number(book.publishedYear) : null,
+    book.isbn || null,
+    book.downloadFormat || null,
+    book.badge || null,
+    JSON.stringify(book.features || []),
+    JSON.stringify(book.tableOfContents || []),
+    JSON.stringify(book.sampleExcerpt || null),
+    JSON.stringify((book as any).previewPages || []),
+    JSON.stringify((book as any).keyTakeaways || []),
+  ]);
+
+  const saved = (await getBooksFromMySQLAsync()).find((b) => b.id === book.id);
+  if (!saved) throw new Error('BOOK_SAVE_VERIFICATION_FAILED');
+  return saved;
+}
+
+export async function deleteBookFromMySQLAsync(idOrSlug: string): Promise<void> {
+  const pool = getMySQLPool();
+  if (!pool) throw new Error('MYSQL_NOT_CONFIGURED');
+
+  const initialized = await initializeDatabaseTables();
+  if (!initialized) throw new Error('MYSQL_INITIALIZATION_FAILED');
+
+  const [result] = await pool.query(
+    'DELETE FROM books WHERE id = ? OR slug = ?',
+    [idOrSlug, idOrSlug]
+  ) as [any, any];
+
+  if (!result || Number(result.affectedRows || 0) === 0) {
+    throw new Error('BOOK_NOT_FOUND');
+  }
+
+  const remaining = await getBooksFromMySQLAsync();
+  if (remaining.some((b) => b.id === idOrSlug || b.slug === idOrSlug)) {
+    throw new Error('BOOK_DELETE_VERIFICATION_FAILED');
+  }
+}
+
 export async function saveBookAsync(book: ExtendedBook): Promise<void> {
   saveBook(book);
   const pool = getMySQLPool();
