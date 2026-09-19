@@ -945,8 +945,8 @@ export async function getBooksAsync(): Promise<ExtendedBook[]> {
               r.sample_excerpt,
               base?.sampleExcerpt || { chapterTitle: 'Introduction', paragraphs: [] }
             ),
-            previewPages: safeJsonParse(r.preview_pages, base?.previewPages || []),
-            keyTakeaways: safeJsonParse(r.key_takeaways, base?.keyTakeaways || []),
+            previewPages: safeJsonParse(r.preview_pages, (base as ExtendedBook | undefined)?.previewPages || []),
+            keyTakeaways: safeJsonParse(r.key_takeaways, (base as ExtendedBook | undefined)?.keyTakeaways || []),
           } as ExtendedBook;
         });
 
