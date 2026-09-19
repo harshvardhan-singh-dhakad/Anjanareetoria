@@ -124,6 +124,17 @@ const COURSES_FILE = path.join(DATA_DIR, 'courses.json');
 const ENROLLMENTS_FILE = path.join(DATA_DIR, 'course_enrollments.json');
 const LAKSHMI_SPECIAL_SECTION_FILE = path.join(DATA_DIR, 'lakshmi_special_section.json');
 
+async function markMySQLResourceSeeded(resource: string): Promise<void> {
+  const pool = getMySQLPool();
+  if (!pool) return;
+  await pool.query(
+    `INSERT INTO cms_seed_state (resource, seeded)
+     VALUES (?, TRUE)
+     ON DUPLICATE KEY UPDATE seeded = TRUE`,
+    [resource]
+  );
+}
+
 async function seedMySQLResourceOnce<T>(
   resource: string,
   items: T[],
@@ -617,6 +628,8 @@ export async function getProductsAsync(): Promise<Product[]> {
             specifications: safeJsonParse(r.specifications, {}),
           } as Product;
         });
+      }
+        await markMySQLResourceSeeded('products');
       }
       const didSeed = await seedMySQLResourceOnce(
         'products',
@@ -1330,6 +1343,8 @@ export async function getBlogsAsync(): Promise<ExtendedBlogPost[]> {
           } as ExtendedBlogPost;
         });
       }
+        await markMySQLResourceSeeded('blogs');
+      }
       const didSeed = await seedMySQLResourceOnce(
         'blogs',
         initialBlogs,
@@ -1473,6 +1488,8 @@ export async function getWebinarsAsync(): Promise<Webinar[]> {
           });
         }
         return webinars;
+      }
+        await markMySQLResourceSeeded('webinars');
       }
       const didSeed = await seedMySQLResourceOnce(
         'webinars',
@@ -1642,6 +1659,8 @@ export async function getCoursesAsync(): Promise<Course[]> {
           status: r.status || 'published',
           modules: safeJsonParse(r.modules, []),
         }));
+      }
+        await markMySQLResourceSeeded('courses');
       }
       const didSeed = await seedMySQLResourceOnce(
         'courses',
