@@ -6,9 +6,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
   const cleanId = String(id || '').trim();
 
   if (!cleanId || cleanId.length > 120) {
