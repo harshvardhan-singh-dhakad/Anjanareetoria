@@ -164,6 +164,14 @@ export async function initializeDatabaseTables(): Promise<boolean> {
       `);
 
       await connection.query(`
+        CREATE TABLE IF NOT EXISTS site_settings (
+          setting_key VARCHAR(191) PRIMARY KEY,
+          setting_value LONGTEXT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
+      await connection.query(`
         CREATE TABLE IF NOT EXISTS special_sections (
           id VARCHAR(100) PRIMARY KEY,
           section_type VARCHAR(100) NOT NULL,
