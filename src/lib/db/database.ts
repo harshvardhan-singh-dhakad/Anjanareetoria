@@ -263,6 +263,29 @@ export async function initializeDatabaseTables(): Promise<boolean> {
         await connection.query('ALTER TABLE orders ADD INDEX idx_payment_id (payment_id)');
       } catch (e) {}
       
+      // One-time cleanup of development/demo orders that must never appear in production reporting.
+      try {
+        const [cleanupState] = await connection.query(
+          'SELECT seeded FROM cms_seed_state WHERE resource = ? LIMIT 1',
+          ['demo-orders-cleanup-v1']
+        ) as [any[], any];
+        if (!cleanupState || cleanupState.length === 0 || !Boolean(cleanupState[0].seeded)) {
+          await connection.query(
+            `DELETE FROM orders
+             WHERE order_id IN ('ARB-88991', 'ARB-50021')
+                OR payment_id IN ('pay_demo_88991', 'pay_demo_50021')`
+          );
+          await connection.query(
+            `INSERT INTO cms_seed_state (resource, seeded)
+             VALUES (?, TRUE)
+             ON DUPLICATE KEY UPDATE seeded = TRUE`,
+            ['demo-orders-cleanup-v1']
+          );
+        }
+      } catch (cleanupError) {
+        console.warn('[database] Demo-order cleanup note:', cleanupError);
+      }
+
       // Ensure orders table columns exist for unified e-commerce & webinar payments
       const orderColNames = ['item_type', 'item_title', 'customer_name', 'shipping_address', 'metadata'];
       for (const col of orderColNames) {
