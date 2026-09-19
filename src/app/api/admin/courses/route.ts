@@ -5,6 +5,9 @@ import { isAuthorizedAdmin } from '@/lib/admin/adminAuth';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+  if (!isAuthorizedAdmin(req)) {
+    return NextResponse.json({ success: false, error: 'Unauthorized admin access.' }, { status: 401 });
+  }
   try {
     const courses = await getCoursesAsync();
     return NextResponse.json({ success: true, data: courses, courses });
