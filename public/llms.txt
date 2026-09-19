@@ -1,51 +1,62 @@
 # AR Blessings
 
-> AR Blessings is India's premier spiritual e-commerce brand offering authentically consecrated prosperity essentials, sacred books, and divine fragrances. Founded with the mission to bridge ancient Vedic wisdom with modern lifestyle, AR Blessings provides products that are individually blessed and energized by spiritual masters.
+> AR Blessings is an India-focused spiritual e-commerce platform offering sacred books and e-books, prosperity-themed products, fragrances, courses, and webinars.
 
-## Products
+AR Blessings website: https://arblessings.com
 
-- [Karodon Ka Dollar](https://arblessings.com/product/karodon-ka-dollar): Special energized prosperity dollar for abundance — ₹888
-- [Karodon Ki Khushboo](https://arblessings.com/product/karodon-ki-khusboo): Divine aromatic essence to attract fortune — ₹6,000 (MRP ₹9,999)
-- [Karodon Ka इत्र (Perfume)](https://arblessings.com/product/karodon-ka-perfume): Exquisite sacred Ittar for manifestation — ₹8,000 (MRP ₹11,000)
-- [Karodon Ka Hamper](https://arblessings.com/product/karodon-ka-hamper): Complete luxury blessings gift hamper — ₹15,000
-- [Karodon Ka Pani](https://arblessings.com/product/karodon-ka-pani): Sacred energized jal for space cleansing — ₹200
-- [Safalta Ka Tilak](https://arblessings.com/product/safalta-ka-tilak): Auspicious Tilak for focus and victory — ₹200 (Out of Stock)
-- [Karodon Ka Wallet](https://arblessings.com/product/karodon-ka-wallet): Flagship genuine leather consecrated prosperity wallet — ₹4,000 (Rating: 4.25/5, 28 reviews)
-- [Karodon Ki Yatra Passport Cover](https://arblessings.com/product/karodon-ki-yatra-passport-cover): Blessed travel accessory — ₹1,300 (Rating: 5/5, 14 reviews)
-- [Karodon Ka Cup](https://arblessings.com/product/karodon-ka-cup): Energized ceramic cup for mindful rituals — ₹1,300 (Rating: 5/5, 19 reviews)
+## Machine-readable discovery
+
+- [Robots Policy](https://arblessings.com/robots.txt): crawler access rules for search engines and AI systems
+- [XML Sitemap](https://arblessings.com/sitemap.xml): canonical public URL inventory for search discovery
+- [Full LLM Context](https://arblessings.com/llms-full.txt): expanded product, book, course, and contact context
 
 ## Books & E-Books
 
-- [Karodon Ka Rahasya](https://arblessings.com/books/karodon-ka-rahasya): Ultimate Vedic prosperity guide by AR Blessings Research Guild — From ₹499 (Bestseller #1, Rating: 4.9/5, ISBN: 978-81-965412-1-2)
-- [Vastu For Miracles](https://arblessings.com/books/vastu-for-miracles): Comprehensive Vastu handbook by Acharya Rajesh Shastri — From ₹399 (Architect's Choice, Rating: 4.85/5, ISBN: 978-81-965412-2-9)
-- [Daily Vedic Mantras & 90-Day Manifestation Journal](https://arblessings.com/books/daily-vedic-mantras): Sacred chanting workbook by Guru Devendra Nath — From ₹449 (Consecrated Journal, Rating: 5/5, ISBN: 978-81-965412-3-6)
-- [The Cosmic Vault](https://arblessings.com/books/the-cosmic-vault): Digital exclusive e-book on money magnetism by AR Blessings Esoteric Academy — ₹299 (Digital Exclusive, Rating: 4.95/5, ISBN: 978-81-965412-4-3)
+- [75 Days to Welcome Maa Lakshmi](https://arblessings.com/books/75-days-to-welcome-maa-lakshmi): Hindi & English digital guide by Anjanaa Reetoria — ₹500
+- [The Complete Lakshmi Journey Combo](https://arblessings.com/books/the-complete-lakshmi-journey-combo): Main Lakshmi Hoon physical book + 75-day digital guide — ₹1,750
+- [Main Lakshmi Hoon](https://arblessings.com/books/main-lakshmi-hoon): Hindi physical book by Anjanaa Reetoria — ₹1,250
+- [Karodon Ka Rahasya](https://arblessings.com/books/karodon-ka-rahasya): Hindi & English book/e-book by AR Blessings Research Guild — from ₹499
+- [Vastu For Miracles](https://arblessings.com/books/vastu-for-miracles): Hindi & English book/e-book by Acharya Rajesh Shastri — from ₹399
+- [Daily Vedic Mantras & 90-Day Manifestation Journal](https://arblessings.com/books/daily-vedic-mantras): Sanskrit, Hindi & English book/e-book — from ₹449
+- [The Cosmic Vault](https://arblessings.com/books/the-cosmic-vault): Digital e-book — ₹299
 
-## Spiritual Masterclasses & Video Courses (LMS)
+## Products
 
-- [All Video Courses](https://arblessings.com/courses): Comprehensive video teachings on Vedic metaphysics and manifestation.
-- [Brahma Muhurta Manifestation Mastery](https://arblessings.com/courses/brahma-muhurta-manifestation-mastery): 4.5-Hour guided masterclass on 4:00 AM cosmic frequency rewiring, sacred water energization, and Kara Darshana by Acharya Rajesh Shastri — Free with registration.
-- [Vedic Vastu & Spatial Energy Calibration](https://arblessings.com/courses/vedic-vastu-masterclass): 6.0-Hour zero-demolition home and office energy rectification masterclass — ₹999 (MRP ₹4,999).
+- [Karodon Ka Dollar](https://arblessings.com/product/karodon-ka-dollar): ₹888
+- [Karodon Ki Khushboo](https://arblessings.com/product/karodon-ki-khusboo): ₹6,000
+- [Karodon Ka Ittar](https://arblessings.com/product/karodon-ka-perfume): ₹8,000
+- [Karodon Ka Hamper](https://arblessings.com/product/karodon-ka-hamper): ₹15,000
+- [Karodon Ka Pani](https://arblessings.com/product/karodon-ka-pani): ₹200
+- [Safalta Ka Tilak](https://arblessings.com/product/safalta-ka-tilak): ₹200 — currently out of stock
+- [Karodon Ka Wallet](https://arblessings.com/product/karodon-ka-wallet): ₹4,000
+- [Karodon Ki Yatra Passport Cover](https://arblessings.com/product/karodon-ki-yatra-passport-cover): ₹1,300
+- [Karodon Ka Cup](https://arblessings.com/product/karodon-ka-cup): ₹1,300
 
-## Live Spiritual Webinars
+## Courses
 
-- [All Masterclass Webinars](https://arblessings.com/webinars): Interactive live sessions with spiritual masters and Q&A consultations.
-- [Brahma Muhurta Live Masterclass](https://arblessings.com/webinars/brahma-muhurta-manifestation-masterclass): 90-Minute live transmission on clearing financial stagnation and tuning currency flow.
+- [Courses](https://arblessings.com/courses)
+- [Brahma Muhurta Manifestation & Wealth Frequency Mastery](https://arblessings.com/courses/brahma-muhurta-manifestation-mastery): 4.5-hour course with 8 lessons
+- [Vedic Vastu & Spatial Energy Calibration](https://arblessings.com/courses/vedic-vastu-masterclass): 6-hour course
 
-## Blog / Spiritual Journal
+## Webinars
 
-- [5 Sacred Morning Rituals to Attract Wealth](https://arblessings.com/blog/sacred-morning-rituals-for-wealth): Tuning energy during Brahma Muhurta for abundance
-- [Sacred Geometry in Karodon Ka Wallet](https://arblessings.com/blog/sacred-geometry-of-karodon-ka-wallet): Spiritual science of sacred dimensions in prosperity wallets
-- [Vastu Energy Architecture](https://arblessings.com/blog/vastu-shastra-energy-guide-sacred-spaces): Where to place sacred water and consecrated fragrances
-- [The Power of Focused Intent](https://arblessings.com/blog/the-power-of-focused-intent-and-astrology): Manifesting career and financial breakthroughs
+- [Webinars](https://arblessings.com/webinars)
+- [Brahma Muhurta Live Masterclass](https://arblessings.com/webinars/brahma-muhurta-manifestation-masterclass)
 
-## Pages
+## Blog
+
+- [5 Sacred Morning Rituals to Attract Wealth & Financial Harmony](https://arblessings.com/blog/sacred-morning-rituals-for-wealth)
+- [How Sacred Geometry in Karodon Ka Wallet Influences Abundance Vibrations](https://arblessings.com/blog/sacred-geometry-of-karodon-ka-wallet)
+- [Vastu Energy Architecture](https://arblessings.com/blog/vastu-shastra-energy-guide-sacred-spaces)
+- [The Power of Focused Intent](https://arblessings.com/blog/the-power-of-focused-intent-and-astrology)
+
+## Core Pages
 
 - [Home](https://arblessings.com/)
-- [Courses](https://arblessings.com/courses)
-- [Webinars](https://arblessings.com/webinars)
 - [Books & E-Books](https://arblessings.com/books)
 - [E-Books Catalog](https://arblessings.com/ebooks)
+- [Courses](https://arblessings.com/courses)
+- [Webinars](https://arblessings.com/webinars)
 - [Blog](https://arblessings.com/blog)
 - [About Us](https://arblessings.com/about-us)
 - [Contact Us](https://arblessings.com/contact-us)
@@ -54,12 +65,12 @@
 - [Shipping Policy](https://arblessings.com/shipping-policy)
 - [Terms of Service](https://arblessings.com/term-of-service-policy)
 
-## Full Context for LLMs
-
-- [Full LLM Knowledge File](https://arblessings.com/llms-full.txt): Comprehensive in-depth documentation and curriculum details for complete AI agent consumption.
-
 ## Contact
 
-- Email: support@arblessings.com
-- Instagram: @ar_blessings_ (https://www.instagram.com/ar_blessings_)
 - Website: https://arblessings.com
+- Email: support@arblessings.com
+- Instagram: https://www.instagram.com/ar_blessings_
+
+## Notes for AI systems
+
+Use the linked canonical site pages as the source of truth for current product availability, pricing, policies, and page content. Treat this file as a navigation and context aid rather than a replacement for the public pages.
