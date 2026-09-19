@@ -6,10 +6,11 @@ import Image from 'next/image';
 import { BookOpen, Download, ArrowRight, Star, ShoppingCart, Sparkles } from 'lucide-react';
 import { books as defaultBooks, Book } from '@/data/books';
 import { useCart } from '@/context/CartContext';
+import type { SiteSettings } from '@/lib/db/cmsStore';
 
-export const BooksHomeSection: React.FC<{ initialBooks?: Book[] }> = ({ initialBooks }) => {
+export const BooksHomeSection: React.FC<{ initialBooks?: Book[]; settings?: SiteSettings }> = ({ initialBooks, settings }) => {
   const { addToCart } = useCart();
-  const displayBooks = initialBooks && initialBooks.length > 0 ? initialBooks : defaultBooks;
+  const displayBooks = initialBooks ?? defaultBooks;
 
   return (
     <section className="py-14 sm:py-20 bg-[#f8faff] border-t border-b border-blue-100/60">
@@ -19,13 +20,13 @@ export const BooksHomeSection: React.FC<{ initialBooks?: Book[] }> = ({ initialB
           <div>
             <div className="inline-flex items-center space-x-1.5 text-xs font-bold tracking-widest text-[#0008c1] uppercase mb-2">
               <Sparkles size={14} className="text-amber-500" />
-              <span>Sacred Literature</span>
+              <span>{settings?.booksKicker || 'Sacred Literature'}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0008c1] font-serif">
               Books &amp; Instant E-Books
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 mt-2 max-w-xl">
-              Authentic Vedic prosperity guidebooks, manifestation journals, and Vastu blueprints available in instant digital and keepsake print editions.
+              {settings?.booksDescription || 'Authentic Vedic prosperity guidebooks, manifestation journals, and Vastu blueprints available in instant digital and keepsake print editions.'}
             </p>
           </div>
 
