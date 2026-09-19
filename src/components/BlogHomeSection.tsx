@@ -5,7 +5,7 @@ import { Calendar, Clock, ArrowRight, Sparkles } from 'lucide-react';
 import { blogs as defaultBlogs, BlogPost } from '@/data/blogs';
 
 export const BlogHomeSection: React.FC<{ initialBlogs?: BlogPost[] }> = ({ initialBlogs }) => {
-  const displayBlogs = initialBlogs && initialBlogs.length > 0 ? initialBlogs : defaultBlogs;
+  const displayBlogs = initialBlogs ?? defaultBlogs;
   return (
     <section className="py-14 sm:py-20 bg-white">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
