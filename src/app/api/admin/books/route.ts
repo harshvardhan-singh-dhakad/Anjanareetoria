@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthorizedAdmin } from '@/lib/admin/adminAuth';
-import { getBooksAsync, saveBookAsync, deleteBookAsync, ExtendedBook } from '@/lib/db/cmsStore';
+import {
+  getBooksFromMySQLAsync,
+  saveBookToMySQLAsync,
+  deleteBookFromMySQLAsync,
+  ExtendedBook,
+} from '@/lib/db/cmsStore';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,7 +15,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized admin access.' }, { status: 401 });
   }
 
-  const books = await getBooksAsync();
+  const books = await getBooksFromMySQLAsync();
   return NextResponse.json({ success: true, books, data: books });
 }
 
@@ -59,27 +64,13 @@ export async function POST(req: NextRequest) {
       pdfSourceFile: body.pdfSourceFile || 'karodon-ka-rahasya.pdf',
     };
 
-    await saveBookAsync(book);
-
-    // Verify the saved record through the same source the public /books page reads.
-    // This prevents the admin UI from reporting success when MySQL rejected the write.
-    const savedBooks = await getBooksAsync();
-    const saved = savedBooks.find((b) => b.id === book.id);
-    if (!saved) {
-      return NextResponse.json(
-        { error: 'Book was not persisted. Please check the database connection.' },
-        { status: 500 }
-      );
-    }
-
-    if (book.image && saved.image !== book.image) {
-      return NextResponse.json(
-        { error: 'Book was saved but the cover image did not persist. Please retry the image upload and save again.' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ success: true, message: 'Book saved successfully.', book: saved });
+    const saved = await saveBookToMySQLAsync(book);
+    return NextResponse.json({
+      success: true,
+      message: 'Book saved successfully in MySQL.',
+      book: saved,
+      storage: 'mysql',
+    });
   } catch (err: unknown) {
     console.error('[admin/books] Error:', err);
     return NextResponse.json({ error: 'Failed to save book.' }, { status: 500 });
@@ -98,15 +89,15 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Book ID required.' }, { status: 400 });
   }
 
-  const before = await getBooksAsync();
+  const before = await getBooksFromMySQLAsync();
   const target = before.find((b) => b.id === id || b.slug === id);
   if (!target) {
     return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
   }
 
-  await deleteBookAsync(id);
+  await deleteBookFromMySQLAsync(id);
 
-  const after = await getBooksAsync();
+  const after = await getBooksFromMySQLAsync();
   const stillExists = after.some((b) => b.id === id || b.slug === id);
   if (stillExists) {
     return NextResponse.json(
