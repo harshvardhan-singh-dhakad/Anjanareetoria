@@ -55,7 +55,71 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Generate unique internal AR Blessings Order ID
+    // 2. Confirm the payment directly with Razorpay. Never trust the browser-supplied amount.
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const gatewayAuth = keyId && keySecret
+      ? 'Basic ' + Buffer.from(`${keyId}:${keySecret}`).toString('base64')
+      : '';
+
+    if (!gatewayAuth) {
+      return NextResponse.json({ error: 'Razorpay server configuration is incomplete.' }, { status: 500 });
+    }
+
+    const paymentResponse = await fetch(
+      `https://api.razorpay.com/v1/payments/${encodeURIComponent(razorpay_payment_id)}`,
+      {
+        headers: { Authorization: gatewayAuth },
+        cache: 'no-store',
+      }
+    );
+
+    if (!paymentResponse.ok) {
+      const raw = await paymentResponse.text();
+      console.error('[razorpay/verify-payment] Razorpay payment lookup failed:', raw);
+      return NextResponse.json({ error: 'Unable to confirm payment with Razorpay.' }, { status: 502 });
+    }
+
+    const paymentEntity = await paymentResponse.json();
+    if (
+      paymentEntity?.id !== razorpay_payment_id ||
+      paymentEntity?.order_id !== razorpay_order_id ||
+      !['captured', 'authorized'].includes(String(paymentEntity?.status || '').toLowerCase())
+    ) {
+      return NextResponse.json({ error: 'Razorpay payment is not in a verified captured state.' }, { status: 400 });
+    }
+
+    const gatewayAmountInInr = Number(paymentEntity.amount || 0) / 100;
+    if (gatewayAmountInInr <= 0) {
+      return NextResponse.json({ error: 'Verified payment amount is invalid.' }, { status: 400 });
+    }
+
+    // Idempotency: a payment can only create one AR Blessings order.
+    const existingOrders = await (async () => {
+      const { getMySQLPool, initializeDatabaseTables } = await import('@/lib/db/database');
+      const pool = getMySQLPool();
+      if (!pool) throw new Error('MYSQL_NOT_CONFIGURED');
+      if (!(await initializeDatabaseTables())) throw new Error('MYSQL_INITIALIZATION_FAILED');
+      const [rows] = await pool.query(
+        'SELECT * FROM orders WHERE payment_id = ? ORDER BY created_at DESC LIMIT 1',
+        [razorpay_payment_id]
+      ) as [any[], any];
+      return rows || [];
+    })();
+
+    if (existingOrders.length > 0) {
+      const existing = existingOrders[0];
+      return NextResponse.json({
+        success: true,
+        message: 'Payment already verified; existing order returned.',
+        orderId: existing.order_id,
+        paymentId: existing.payment_id,
+        readerUrl: existing.status === 'PAID' && String(existing.item_type || '').toLowerCase() === 'book'
+          ? `/reader?phone=${encodeURIComponent(existing.buyer_phone)}&orderId=${encodeURIComponent(existing.order_id)}`
+          : null,
+      });
+    }
+
+    // 3. Generate unique internal AR Blessings Order ID
     const internalOrderId = `ARB-${Date.now().toString().slice(-5)}${Math.floor(10 + Math.random() * 90)}`;
     const cleanPhone = String(customer?.phone || '').replace(/\D/g, '').slice(-10);
     const buyerEmail = customer?.email?.trim() || `${cleanPhone || 'devotee'}@arblessings.com`;
@@ -108,7 +172,7 @@ export async function POST(req: NextRequest) {
             String(it.name || '').toLowerCase().includes('digital')
         ));
 
-    // 3. Persist order record into MySQL orders table
+    // 4. Persist order record into MySQL orders table
     const orderRecord = {
       orderId: internalOrderId,
       paymentId: razorpay_payment_id,
@@ -116,7 +180,7 @@ export async function POST(req: NextRequest) {
       buyerEmail,
       productId: String(itemId || (items?.[0]?.productId || 'cart-checkout')),
       purchaseTimestamp: Date.now(),
-      amount: Number(amount) || 0,
+      amount: gatewayAmountInInr,
       status: 'paid' as const,
       itemType: (crmTag?.includes('book') ? 'book' : hasDigitalEbook ? 'book' : (type || 'product')) as any,
       itemTitle: itemTitle || `${type ? type.toUpperCase() : 'PRODUCT'} Purchase`,
@@ -137,7 +201,7 @@ export async function POST(req: NextRequest) {
 
     await saveOrderAsync(orderRecord);
 
-    // 4. If eBook, pre-warm watermarked PDF and return reader & download URLs
+    // 5. If eBook, pre-warm watermarked PDF and return reader & download URLs
     let readerUrl = null;
     let downloadUrl = null;
     if (hasDigitalEbook) {
