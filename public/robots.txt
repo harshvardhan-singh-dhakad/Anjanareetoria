@@ -1,0 +1,53 @@
+# AR Blessings crawler policy
+# Public pages and assets are crawlable for search engines and AI systems.
+# Private/admin/application endpoints remain crawl-restricted.
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /reader
+Disallow: /login
+
+# OpenAI search and ads crawlers: explicitly allowed for public content.
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /reader
+Disallow: /login
+
+User-agent: OAI-AdsBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /reader
+Disallow: /login
+
+# OpenAI training crawler: public content allowed.
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /reader
+Disallow: /login
+
+# Google AI systems product token.
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /reader
+Disallow: /login
+
+Sitemap: https://arblessings.com/sitemap.xml
