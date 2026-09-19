@@ -394,7 +394,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({
                   <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">Save ₹{comboOriginalPrice && comboOriginalPrice > comboPrice ? (comboOriginalPrice - comboPrice).toLocaleString('en-IN') : 0}</span>
                 </div>
                 <p className="text-[11px] text-gray-600 font-medium">
-                  Includes ₹150 physical-book delivery charge across India
+                  Final price is controlled by the Books CMS.
                 </p>
 
                 {/* Main Positioning */}
@@ -476,7 +476,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({
                     <span className="text-xs text-gray-500 line-through">₹{physicalOriginalPrice?.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="text-[11px] text-gray-600 bg-gray-50 px-2.5 py-1 rounded-md border border-gray-200 inline-block">
-                    ₹1,100 Direct Price + ₹150 Delivery = <span className="font-bold text-gray-800">Total ₹{physicalPrice.toLocaleString('en-IN')}</span>
+                    Final Price: <span className="font-bold text-gray-800">₹{physicalPrice.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
 
