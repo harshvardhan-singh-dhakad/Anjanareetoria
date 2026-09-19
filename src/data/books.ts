@@ -25,6 +25,7 @@ export interface Book extends Product {
   };
   downloadFormat?: string;
   badge?: string;
+  amazonPurchaseUrl?: string;
   // Optional CMS-managed enhancements loaded from MySQL.
   previewPages?: string[];
   keyTakeaways?: string[];
