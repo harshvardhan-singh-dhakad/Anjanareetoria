@@ -5,7 +5,10 @@ import { getBlogsAsync, saveBlogAsync, deleteBlogAsync, ExtendedBlogPost } from 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (!isAuthorizedAdmin(req)) {
+    return NextResponse.json({ error: 'Unauthorized admin access.' }, { status: 401 });
+  }
   const blogs = await getBlogsAsync();
   return NextResponse.json({ success: true, blogs, data: blogs });
 }
