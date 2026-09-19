@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { Play, X } from 'lucide-react';
+import type { SiteSettings } from '@/lib/db/cmsStore';
 
 interface VideoItem {
   id: string;
@@ -12,7 +13,7 @@ interface VideoItem {
   sources: string[];
 }
 
-const videos: VideoItem[] = [
+const defaultVideos: VideoItem[] = [
   {
     id: "1",
     title: "Karodon Ki Yatra",
@@ -51,7 +52,8 @@ const videos: VideoItem[] = [
   },
 ];
 
-export const VideoSection: React.FC = () => {
+export const VideoSection: React.FC<{ settings: SiteSettings }> = ({ settings }) => {
+  const videos: VideoItem[] = (settings.videos?.length ? settings.videos.filter(v => v.enabled !== false) : defaultVideos) as VideoItem[];
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
 
   return (
@@ -60,10 +62,10 @@ export const VideoSection: React.FC = () => {
         {/* Section Headers */}
         <div className="text-center mb-10">
           <h3 className="text-sm font-bold tracking-widest text-[#0008c1] uppercase mb-2">
-            Visualized Insights
+            {settings.videosKicker || 'Visualized Insights'}
           </h3>
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0008c1] font-serif">
-            Understanding Concepts and Ideas through Video Explanations
+            {settings.videosTitle || 'Understanding Concepts and Ideas through Video Explanations'}
           </h2>
         </div>
 
