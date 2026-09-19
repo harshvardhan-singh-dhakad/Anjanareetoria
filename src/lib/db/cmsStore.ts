@@ -644,7 +644,6 @@ export function saveProduct(product: Product): void {
 }
 
 export async function saveProductAsync(product: Product): Promise<void> {
-  saveProduct(product);
   const pool = getMySQLPool();
   if (pool) {
     try {
@@ -684,8 +683,11 @@ export async function saveProductAsync(product: Product): Promise<void> {
         JSON.stringify((product as any).specifications || {}),
       ]);
     } catch (err) {
-      console.error('[cmsStore] MySQL saveProduct error:', err);
+      throw err;
     }
+  }
+  if (!pool) {
+    saveProduct(product);
   }
 }
 
@@ -695,15 +697,17 @@ export function deleteProduct(idOrSlug: string): void {
 }
 
 export async function deleteProductAsync(idOrSlug: string): Promise<void> {
-  deleteProduct(idOrSlug);
   const pool = getMySQLPool();
   if (pool) {
     try {
       await initializeDatabaseTables();
       await pool.query('DELETE FROM products WHERE id = ? OR slug = ?', [idOrSlug, idOrSlug]);
     } catch (err) {
-      console.error('[cmsStore] MySQL deleteProduct error:', err);
+      throw err;
     }
+  }
+  if (!pool) {
+    deleteProduct(idOrSlug);
   }
 }
 
@@ -1352,7 +1356,6 @@ export function saveBlog(blog: ExtendedBlogPost): void {
 }
 
 export async function saveBlogAsync(blog: ExtendedBlogPost): Promise<void> {
-  saveBlog(blog);
   const pool = getMySQLPool();
   if (pool) {
     try {
@@ -1394,8 +1397,11 @@ export async function saveBlogAsync(blog: ExtendedBlogPost): Promise<void> {
         JSON.stringify(blog.relatedBookSlugs || []),
       ]);
     } catch (err) {
-      console.error('[cmsStore] MySQL saveBlog error:', err);
+      throw err;
     }
+  }
+  if (!pool) {
+    saveBlog(blog);
   }
 }
 
@@ -1405,15 +1411,17 @@ export function deleteBlog(idOrSlug: string): void {
 }
 
 export async function deleteBlogAsync(idOrSlug: string): Promise<void> {
-  deleteBlog(idOrSlug);
   const pool = getMySQLPool();
   if (pool) {
     try {
       await initializeDatabaseTables();
       await pool.query('DELETE FROM blogs WHERE id = ? OR slug = ?', [idOrSlug, idOrSlug]);
     } catch (err) {
-      console.error('[cmsStore] MySQL deleteBlog error:', err);
+      throw err;
     }
+  }
+  if (!pool) {
+    deleteBlog(idOrSlug);
   }
 }
 
@@ -1492,7 +1500,6 @@ export function saveWebinar(webinar: Webinar): void {
 }
 
 export async function saveWebinarAsync(webinar: Webinar): Promise<void> {
-  saveWebinar(webinar);
   const pool = getMySQLPool();
   if (pool) {
     try {
@@ -1560,8 +1567,11 @@ export async function saveWebinarAsync(webinar: Webinar): Promise<void> {
         }
       }
     } catch (err) {
-      console.error('[cmsStore] MySQL saveWebinar error:', err);
+      throw err;
     }
+  }
+  if (!pool) {
+    saveWebinar(webinar);
   }
 }
 
@@ -1571,7 +1581,6 @@ export function deleteWebinar(idOrSlug: string): void {
 }
 
 export async function deleteWebinarAsync(idOrSlug: string): Promise<void> {
-  deleteWebinar(idOrSlug);
   const pool = getMySQLPool();
   if (pool) {
     try {
@@ -1579,8 +1588,11 @@ export async function deleteWebinarAsync(idOrSlug: string): Promise<void> {
       await pool.query('DELETE FROM webinar_reviews WHERE webinar_id IN (SELECT id FROM webinars WHERE id = ? OR slug = ?)', [idOrSlug, idOrSlug]);
       await pool.query('DELETE FROM webinars WHERE id = ? OR slug = ?', [idOrSlug, idOrSlug]);
     } catch (err) {
-      console.error('[cmsStore] MySQL deleteWebinar error:', err);
+      throw err;
     }
+  }
+  if (!pool) {
+    deleteWebinar(idOrSlug);
   }
 }
 
@@ -1666,7 +1678,6 @@ export function saveCourse(course: Course): void {
 }
 
 export async function saveCourseAsync(course: Course): Promise<void> {
-  saveCourse(course);
   const pool = getMySQLPool();
   if (pool) {
     try {
@@ -1730,8 +1741,11 @@ export async function saveCourseAsync(course: Course): Promise<void> {
         JSON.stringify(course.modules || []),
       ]);
     } catch (err) {
-      console.error('[cmsStore] MySQL saveCourse error:', err);
+      throw err;
     }
+  }
+  if (!pool) {
+    saveCourse(course);
   }
 }
 
@@ -1741,15 +1755,17 @@ export function deleteCourse(idOrSlug: string): void {
 }
 
 export async function deleteCourseAsync(idOrSlug: string): Promise<void> {
-  deleteCourse(idOrSlug);
   const pool = getMySQLPool();
   if (pool) {
     try {
       await initializeDatabaseTables();
       await pool.query('DELETE FROM courses WHERE id = ? OR slug = ?', [idOrSlug, idOrSlug]);
     } catch (err) {
-      console.error('[cmsStore] MySQL deleteCourse error:', err);
+      throw err;
     }
+  }
+  if (!pool) {
+    deleteCourse(idOrSlug);
   }
 }
 
