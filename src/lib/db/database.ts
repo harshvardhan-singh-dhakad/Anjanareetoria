@@ -149,6 +149,15 @@ export async function initializeDatabaseTables(): Promise<boolean> {
       `);
 
       await connection.query(`
+        CREATE TABLE IF NOT EXISTS cms_seed_state (
+          resource VARCHAR(100) PRIMARY KEY,
+          seeded BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
+      await connection.query(`
         CREATE TABLE IF NOT EXISTS special_sections (
           id VARCHAR(100) PRIMARY KEY,
           section_type VARCHAR(100) NOT NULL,
