@@ -14,12 +14,15 @@ import {
   LocalBusinessSchema,
   FAQSchema,
 } from '@/components/SchemaMarkup';
+import { getSiteSettingsAsync } from '@/lib/db/cmsStore';
 
 const poppins = Poppins({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   display: 'swap',
 });
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://arblessings.com'),
@@ -70,11 +73,13 @@ export const metadata: Metadata = {
   verification: {},
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const siteSettings = await getSiteSettingsAsync();
+
   return (
     <html lang="en" className={poppins.className}>
       <head>
@@ -87,12 +92,12 @@ export default function RootLayout({
         <FAQSchema />
         <AuthProvider>
           <CartProvider>
-            <Header />
+            <Header settings={siteSettings} />
             <CartDrawer />
             <AuthModal />
             <main className="flex-1">{children}</main>
             <WhatsAppButton />
-            <Footer />
+            <Footer settings={siteSettings} />
           </CartProvider>
         </AuthProvider>
       </body>
