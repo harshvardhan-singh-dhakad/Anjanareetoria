@@ -3,10 +3,16 @@ import mysql from 'mysql2/promise';
 let pool: mysql.Pool | null = null;
 let tablesInitialized = false;
 
+const MYSQL_HOST = process.env.MYSQL_HOST || process.env.DB_HOST || process.env.MYSQLHOST || '';
+const MYSQL_PORT = process.env.MYSQL_PORT || process.env.DB_PORT || process.env.MYSQLPORT || '';
+const MYSQL_USER = process.env.MYSQL_USER || process.env.DB_USER || process.env.DB_USERNAME || process.env.MYSQLUSER || '';
+const MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || '';
+const MYSQL_DATABASE = process.env.MYSQL_DATABASE || process.env.DB_DATABASE || process.env.DB_NAME || process.env.MYSQL_DATABASE_NAME || '';
+
 export function isMySQLConfigured(): boolean {
   return Boolean(
     process.env.DATABASE_URL ||
-    (process.env.MYSQL_HOST && process.env.MYSQL_USER && process.env.MYSQL_DATABASE)
+    (MYSQL_HOST && MYSQL_USER && MYSQL_DATABASE)
   );
 }
 
@@ -27,11 +33,11 @@ export function getMySQLPool(): mysql.Pool | null {
       });
     } else {
       pool = mysql.createPool({
-        host: process.env.MYSQL_HOST || 'localhost',
-        port: Number(process.env.MYSQL_PORT) || 3306,
-        user: process.env.MYSQL_USER,
-        password: process.env.MYSQL_PASSWORD || '',
-        database: process.env.MYSQL_DATABASE,
+        host: MYSQL_HOST || 'localhost',
+        port: Number(MYSQL_PORT) || 3306,
+        user: MYSQL_USER,
+        password: MYSQL_PASSWORD,
+        database: MYSQL_DATABASE,
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
