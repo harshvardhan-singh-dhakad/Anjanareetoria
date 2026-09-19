@@ -74,6 +74,7 @@ export default function AdminBooksPage() {
     pdfSourceFile: '',
     inStock: true,
     badge: 'Bestseller',
+    amazonPurchaseUrl: '',
     shortDescription: '',
     description: '',
     featuresText: '',
@@ -189,6 +190,7 @@ export default function AdminBooksPage() {
       pdfSourceFile: '',
       inStock: true,
       badge: 'New Release',
+      amazonPurchaseUrl: '',
       shortDescription: 'Sacred literature revealing ancient prosperity laws and energetic alignment.',
       description: 'Comprehensive guide uniting ancient spiritual teachings with modern manifestation principles.',
       featuresText: 'Instant PDF / EPUB Watermarked Access\nHigh-definition typography\nIncludes 21-Day Abundance Plan',
@@ -221,6 +223,7 @@ export default function AdminBooksPage() {
       pdfSourceFile: b.pdfSourceFile || '',
       inStock: b.inStock ?? true,
       badge: b.badge || '',
+      amazonPurchaseUrl: b.amazonPurchaseUrl || '',
       shortDescription: b.shortDescription || '',
       description: b.description || '',
       featuresText: Array.isArray(b.features) ? b.features.join('\n') : '',
@@ -382,6 +385,7 @@ export default function AdminBooksPage() {
       pdfSourceFile: formData.pdfSourceFile || undefined,
       inStock: formData.inStock,
       badge: formData.badge || undefined,
+      amazonPurchaseUrl: formData.amazonPurchaseUrl.trim() || undefined,
       shortDescription: formData.shortDescription,
       description: formData.description,
       features,
@@ -989,6 +993,25 @@ export default function AdminBooksPage() {
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
                   />
                 </div>
+              </div>
+
+              {/* Amazon Purchase Link */}
+              <div className="space-y-2 rounded-2xl border border-orange-200 bg-orange-50/50 p-4">
+                <div className="flex items-center gap-2">
+                  <ExternalLink size={16} className="text-orange-700" />
+                  <label className="font-semibold text-slate-700">Amazon Purchase Link</label>
+                </div>
+                <input
+                  type="url"
+                  inputMode="url"
+                  value={formData.amazonPurchaseUrl}
+                  onChange={(e) => setFormData({ ...formData, amazonPurchaseUrl: e.target.value })}
+                  placeholder="https://www.amazon.in/dp/XXXXXXXXXX"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-orange-200 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                />
+                <p className="text-[11px] text-orange-800/80">
+                  Optional. Save an Amazon product URL here. The public book page will automatically show a “Purchase on Amazon” button.
+                </p>
               </div>
 
               {/* Cover Image */}
