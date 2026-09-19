@@ -7,6 +7,7 @@ import { Search, BookOpen, Download, Package, Star, ShoppingCart, Eye, Sparkles 
 import { books as defaultBooks, Book } from '@/data/books';
 import { useCart } from '@/context/CartContext';
 import { LakshmiJourneySection } from '@/components/books/LakshmiJourneySection';
+import { BookListSchema } from '@/components/SchemaMarkup';
 import type { LakshmiSpecialSectionConfig } from '@/lib/db/cmsStore';
 
 export const BooksCatalogClient: React.FC<{
@@ -41,6 +42,7 @@ export const BooksCatalogClient: React.FC<{
 
   return (
     <div className="w-full bg-[#fafbfc] min-h-screen pb-16">
+      <BookListSchema books={books} />
       {/* Hero Header Section */}
       <div className="bg-gradient-to-b from-[#0008c1] to-[#0a1b80] text-white py-14 sm:py-20 px-4 sm:px-6 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
