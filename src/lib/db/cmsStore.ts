@@ -124,6 +124,36 @@ const COURSES_FILE = path.join(DATA_DIR, 'courses.json');
 const ENROLLMENTS_FILE = path.join(DATA_DIR, 'course_enrollments.json');
 const LAKSHMI_SPECIAL_SECTION_FILE = path.join(DATA_DIR, 'lakshmi_special_section.json');
 
+async function seedMySQLResourceOnce<T>(
+  resource: string,
+  items: T[],
+  saveItem: (item: T) => Promise<void>
+): Promise<boolean> {
+  const pool = getMySQLPool();
+  if (!pool) return false;
+
+  const [rows] = await pool.query(
+    'SELECT seeded FROM cms_seed_state WHERE resource = ? LIMIT 1',
+    [resource]
+  ) as [any[], any];
+
+  if (rows && rows.length > 0 && Boolean(rows[0].seeded)) {
+    return false;
+  }
+
+  for (const item of items) {
+    await saveItem(item);
+  }
+
+  await pool.query(
+    `INSERT INTO cms_seed_state (resource, seeded)
+     VALUES (?, TRUE)
+     ON DUPLICATE KEY UPDATE seeded = TRUE`,
+    [resource]
+  );
+  return true;
+}
+
 export interface LakshmiSpecialSectionConfig {
   id: string;
   enabled: boolean;
@@ -588,12 +618,15 @@ export async function getProductsAsync(): Promise<Product[]> {
           } as Product;
         });
       }
-      // Seed MySQL with initial products if table is empty
-      for (const p of initialProducts) {
-        await saveProductAsync(p);
-      }
+      const didSeed = await seedMySQLResourceOnce(
+        'products',
+        initialProducts,
+        async (item) => await saveProductAsync(item as any)
+      );
+      return didSeed ? initialProducts : [];
     } catch (err) {
-      console.error('[cmsStore] MySQL getProducts error, falling back to disk:', err);
+      console.error('[cmsStore] getProductsAsync MySQL error:', err);
+      throw err;
     }
   }
   return getProducts();
@@ -1293,11 +1326,15 @@ export async function getBlogsAsync(): Promise<ExtendedBlogPost[]> {
           } as ExtendedBlogPost;
         });
       }
-      for (const b of initialBlogs) {
-        await saveBlogAsync(b);
-      }
+      const didSeed = await seedMySQLResourceOnce(
+        'blogs',
+        initialBlogs,
+        async (item) => await saveBlogAsync(item as any)
+      );
+      return didSeed ? initialBlogs : [];
     } catch (err) {
-      console.error('[cmsStore] MySQL getBlogs error, falling back to disk:', err);
+      console.error('[cmsStore] getBlogsAsync MySQL error:', err);
+      throw err;
     }
   }
   return getBlogs();
@@ -1429,11 +1466,15 @@ export async function getWebinarsAsync(): Promise<Webinar[]> {
         }
         return webinars;
       }
-      for (const w of INITIAL_WEBINARS) {
-        await saveWebinarAsync(w);
-      }
+      const didSeed = await seedMySQLResourceOnce(
+        'webinars',
+        INITIAL_WEBINARS,
+        async (item) => await saveWebinarAsync(item as any)
+      );
+      return didSeed ? INITIAL_WEBINARS : [];
     } catch (err) {
-      console.error('[cmsStore] MySQL getWebinars error, falling back to disk:', err);
+      console.error('[cmsStore] getWebinarsAsync MySQL error:', err);
+      throw err;
     }
   }
   return getWebinars();
@@ -1590,11 +1631,15 @@ export async function getCoursesAsync(): Promise<Course[]> {
           modules: safeJsonParse(r.modules, []),
         }));
       }
-      for (const c of INITIAL_COURSES) {
-        await saveCourseAsync(c);
-      }
+      const didSeed = await seedMySQLResourceOnce(
+        'courses',
+        INITIAL_COURSES,
+        async (item) => await saveCourseAsync(item as any)
+      );
+      return didSeed ? INITIAL_COURSES : [];
     } catch (err) {
-      console.error('[cmsStore] MySQL getCourses error, falling back to disk:', err);
+      console.error('[cmsStore] getCoursesAsync MySQL error:', err);
+      throw err;
     }
   }
   return getCourses();
