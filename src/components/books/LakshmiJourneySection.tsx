@@ -26,11 +26,26 @@ import type { LakshmiSpecialSectionConfig } from '@/lib/db/cmsStore';
 export interface LakshmiJourneySectionProps {
   isLandingPage?: boolean;
   config?: LakshmiSpecialSectionConfig;
+  pricing?: {
+    digital: { price: number; originalPrice?: number };
+    combo: { price: number; originalPrice?: number };
+    physical: { price: number; originalPrice?: number };
+  };
 }
 
 type SelectedTier = 'digital' | 'combo' | 'physical' | null;
 
-export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ isLandingPage = false, config }) => {
+export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({
+  isLandingPage = false,
+  config,
+  pricing,
+}) => {
+  const digitalPrice = pricing?.digital.price ?? 500;
+  const digitalOriginalPrice = pricing?.digital.originalPrice;
+  const comboPrice = pricing?.combo.price ?? 1750;
+  const comboOriginalPrice = pricing?.combo.originalPrice;
+  const physicalPrice = pricing?.physical.price ?? 1250;
+  const physicalOriginalPrice = pricing?.physical.originalPrice;
   const { user } = useAuth();
   const isEnabled = config?.enabled ?? true;
 
@@ -91,11 +106,11 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
     setCreatedOrderInfo(null);
 
     if (tier === 'digital') {
-      trackLakshmiEvent('Booklet Click', { tier: 'digital_500', price: 500 });
+      trackLakshmiEvent('Booklet Click', { tier: 'digital', price: digitalPrice });
     } else if (tier === 'combo') {
-      trackLakshmiEvent('Combo Click', { tier: 'combo_1750', price: 1750 });
+      trackLakshmiEvent('Combo Click', { tier: 'combo', price: comboPrice });
     } else if (tier === 'physical') {
-      trackLakshmiEvent('Book Click', { tier: 'physical_1250', price: 1250 });
+      trackLakshmiEvent('Book Click', { tier: 'physical', price: physicalPrice });
     }
   };
 
@@ -154,18 +169,18 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
 
     let itemId = 'bk-lakshmi-75';
     let format: 'ebook' | 'physical' = 'ebook';
-    let amount = 500;
+    let amount = digitalPrice;
     let itemTitle = '75 Days to Welcome Maa Lakshmi (75-Day Digital Guide)';
 
     if (activeTier === 'combo') {
       itemId = 'prod-lakshmi-combo';
       format = 'physical';
-      amount = 1750;
+      amount = comboPrice;
       itemTitle = 'The Complete Lakshmi Journey (Book + 75-Day Digital Guide Combo)';
     } else if (activeTier === 'physical') {
       itemId = 'bk-main-lakshmi-hoon';
       format = 'physical';
-      amount = 1250;
+      amount = physicalPrice;
       itemTitle = 'Main Lakshmi Hoon (Physical Book Edition)';
     }
 
@@ -282,9 +297,9 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
 
                 {/* Price Display */}
                 <div className="pt-2 pb-1 flex items-baseline space-x-2">
-                  <span className="text-3xl font-extrabold text-[#8b1d20]">₹500</span>
-                  <span className="text-xs text-gray-500 line-through">₹999</span>
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">50% OFF</span>
+                  <span className="text-3xl font-extrabold text-[#8b1d20]">₹{digitalPrice.toLocaleString('en-IN')}</span>
+                  <span className="text-xs text-gray-500 line-through">₹{digitalOriginalPrice?.toLocaleString('en-IN')}</span>
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">{digitalOriginalPrice && digitalOriginalPrice > digitalPrice ? Math.round(((digitalOriginalPrice - digitalPrice) / digitalOriginalPrice) * 100) : 0}% OFF</span>
                 </div>
 
                 {/* Short Copy */}
@@ -327,7 +342,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
                 onClick={() => handleOpenCheckout('digital')}
                 className="w-full bg-[#8b1d20] hover:bg-[#701618] text-white font-bold py-3.5 px-4 rounded-xl text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2 cursor-pointer"
               >
-                <span>START MY 75 DAYS — ₹500</span>
+                <span>START MY 75 DAYS — ₹{digitalPrice.toLocaleString('en-IN')}</span>
                 <ArrowRight size={16} />
               </button>
               <p className="text-[10px] text-center text-gray-500 mt-2">
@@ -374,9 +389,9 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
 
                 {/* Price Display */}
                 <div className="pt-2 pb-1 flex items-baseline space-x-2">
-                  <span className="text-3xl font-black text-[#8b1d20]">₹1,750</span>
-                  <span className="text-xs text-gray-500 line-through">₹2,150</span>
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">Save ₹400</span>
+                  <span className="text-3xl font-black text-[#8b1d20]">₹{comboPrice.toLocaleString('en-IN')}</span>
+                  <span className="text-xs text-gray-500 line-through">₹{comboOriginalPrice?.toLocaleString('en-IN')}</span>
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">Save ₹{comboOriginalPrice && comboOriginalPrice > comboPrice ? (comboOriginalPrice - comboPrice).toLocaleString('en-IN') : 0}</span>
                 </div>
                 <p className="text-[11px] text-gray-600 font-medium">
                   Includes ₹150 physical-book delivery charge across India
@@ -414,7 +429,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
                 onClick={() => handleOpenCheckout('combo')}
                 className="w-full bg-gradient-to-r from-[#8b1d20] via-[#a32226] to-[#8b1d20] hover:from-[#701618] hover:to-[#701618] text-white font-extrabold py-4 px-4 rounded-xl text-sm transition-all shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 cursor-pointer border border-amber-400/40"
               >
-                <span>GET BOTH — ₹1,750</span>
+                <span>GET BOTH — ₹{comboPrice.toLocaleString('en-IN')}</span>
                 <ArrowRight size={16} className="text-amber-300" />
               </button>
               <p className="text-[10px] text-center text-amber-900 font-medium mt-2">
@@ -457,11 +472,11 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
                 {/* Price Breakdown */}
                 <div className="pt-2 pb-1 space-y-1">
                   <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#8b1d20]">₹1,250</span>
-                    <span className="text-xs text-gray-500 line-through">₹1,400</span>
+                    <span className="text-3xl font-extrabold text-[#8b1d20]">₹{physicalPrice.toLocaleString('en-IN')}</span>
+                    <span className="text-xs text-gray-500 line-through">₹{physicalOriginalPrice?.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="text-[11px] text-gray-600 bg-gray-50 px-2.5 py-1 rounded-md border border-gray-200 inline-block">
-                    ₹1,100 Direct Price + ₹150 Delivery = <span className="font-bold text-gray-800">Total ₹1,250</span>
+                    ₹1,100 Direct Price + ₹150 Delivery = <span className="font-bold text-gray-800">Total ₹{physicalPrice.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
 
@@ -498,7 +513,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
                 onClick={() => handleOpenCheckout('physical')}
                 className="w-full bg-[#8b1d20] hover:bg-[#701618] text-white font-bold py-3.5 px-4 rounded-xl text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2 cursor-pointer"
               >
-                <span>ORDER THE BOOK — ₹1,250</span>
+                <span>ORDER THE BOOK — ₹{physicalPrice.toLocaleString('en-IN')}</span>
                 <ArrowRight size={16} />
               </button>
               <p className="text-[10px] text-center text-gray-500 mt-2">
@@ -629,7 +644,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
                     {activeTier === 'physical' && 'Main Lakshmi Hoon Book'}
                   </h3>
                   <div className="text-sm font-extrabold text-[#8b1d20] mt-0.5">
-                    Total: ₹{activeTier === 'digital' ? '500' : activeTier === 'combo' ? '1,750' : '1,250'}
+                    Total: ₹{activeTier === 'digital' ? digitalPrice.toLocaleString('en-IN') : activeTier === 'combo' ? comboPrice.toLocaleString('en-IN') : physicalPrice.toLocaleString('en-IN')}
                   </div>
                 </div>
 
@@ -755,7 +770,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
                       </>
                     ) : (
                       <>
-                        <span>Proceed to Pay ₹{activeTier === 'digital' ? '500' : activeTier === 'combo' ? '1,750' : '1,250'}</span>
+                        <span>Proceed to Pay ₹{activeTier === 'digital' ? digitalPrice.toLocaleString('en-IN') : activeTier === 'combo' ? comboPrice.toLocaleString('en-IN') : physicalPrice.toLocaleString('en-IN')}</span>
                         <ArrowRight size={16} />
                       </>
                     )}
