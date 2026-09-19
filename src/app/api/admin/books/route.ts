@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
       isbn: body.isbn,
       downloadFormat: body.downloadFormat || 'Instant PDF & EPUB',
       badge: body.badge,
+      amazonPurchaseUrl: body.amazonPurchaseUrl || undefined,
       shortDescription: body.shortDescription || '',
       description: body.description || '',
       features: Array.isArray(body.features) ? body.features : [],
