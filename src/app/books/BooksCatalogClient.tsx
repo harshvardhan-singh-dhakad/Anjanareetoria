@@ -18,6 +18,29 @@ export const BooksCatalogClient: React.FC<{
   // can be intentional after an admin deletes all books; falling back to hardcoded
   // defaults would make deleted books appear "alive" on the public site.
   const books = initialBooks ?? defaultBooks;
+  const findBook = (id: string, slug: string) =>
+    books.find((book) => book.id === id || book.slug === slug);
+
+  const lakshmi75 = findBook('bk-lakshmi-75', '75-days-to-welcome-maa-lakshmi');
+  const lakshmiCombo = findBook('prod-lakshmi-combo', 'the-complete-lakshmi-journey-combo');
+  const mainLakshmi = findBook('bk-main-lakshmi-hoon', 'main-lakshmi-hoon');
+
+  const lakshmiPricing = {
+    digital: {
+      price: Number(lakshmi75?.ebookPrice ?? lakshmi75?.price ?? 500),
+      originalPrice: lakshmi75?.originalPrice ? Number(lakshmi75.originalPrice) : undefined,
+    },
+    combo: {
+      price: Number(lakshmiCombo?.price ?? 1750),
+      originalPrice: lakshmiCombo?.originalPrice ? Number(lakshmiCombo.originalPrice) : undefined,
+    },
+    physical: {
+      price: Number(mainLakshmi?.physicalPrice ?? mainLakshmi?.price ?? 1250),
+      originalPrice: mainLakshmi?.originalPrice ? Number(mainLakshmi.originalPrice) : undefined,
+    },
+  };
+
+
   const { addToCart } = useCart();
   const [selectedTab, setSelectedTab] = useState<'all' | 'ebook' | 'physical'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,7 +122,7 @@ export const BooksCatalogClient: React.FC<{
       </div>
 
       {/* Featured Section: BEGIN YOUR LAKSHMI JOURNEY */}
-      <LakshmiJourneySection config={lakshmiSpecialSection} />
+      <LakshmiJourneySection config={lakshmiSpecialSection} pricing={lakshmiPricing} />
 
       {/* Main Catalog Controls */}
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 pt-4 relative z-20">
