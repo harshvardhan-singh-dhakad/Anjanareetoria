@@ -5,7 +5,10 @@ import { getWebinarsAsync, saveWebinarAsync, deleteWebinarAsync, Webinar } from 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (!isAuthorizedAdmin(req)) {
+    return NextResponse.json({ error: 'Unauthorized admin access.' }, { status: 401 });
+  }
   const webinars = await getWebinarsAsync();
   return NextResponse.json({ success: true, webinars, data: webinars });
 }
