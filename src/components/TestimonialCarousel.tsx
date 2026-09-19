@@ -6,11 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { SiteSettings } from '@/lib/db/cmsStore';
 
 export const TestimonialCarousel: React.FC<{ settings: SiteSettings }> = ({ settings }) => {
-  const testimonials = (settings.testimonials?.length ? settings.testimonials.filter(t => t.enabled !== false) : Array.from({ length: 18 }, (_, i) => ({
-    id: String(i + 1),
-    src: `/images/testimonials/review-${i + 1}.png`,
-    alt: `Client Review ${i + 1}`,
-  })));
+  const testimonials = (settings.testimonials || []).filter(t => t.enabled !== false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Responsive items per view: 3 desktop, 2 tablet, 1 mobile
