@@ -57,7 +57,11 @@ export async function POST(req: NextRequest) {
           storage: 'mysql',
         });
       } catch (dbErr) {
-        console.error('[admin/upload-image] MySQL media storage failed; using filesystem fallback:', dbErr);
+        console.error('[admin/upload-image] MySQL media storage failed:', dbErr);
+        return NextResponse.json(
+          { error: 'Image could not be saved to persistent media storage. Please retry.' },
+          { status: 500 }
+        );
       }
     }
 
