@@ -35,6 +35,12 @@ export default function AdminBooksPage() {
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [pdfSuccessMessage, setPdfSuccessMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [backendStatus, setBackendStatus] = useState<{
+    status: 'checking' | 'connected' | 'error';
+    message?: string;
+    books?: number;
+    media?: number;
+  }>({ status: 'checking' });
 
   // Lakshmi / Diwali special section state (independent from normal book covers)
   const [specialConfig, setSpecialConfig] = useState({
@@ -72,6 +78,31 @@ export default function AdminBooksPage() {
     description: '',
     featuresText: '',
   });
+
+  const checkBackendHealth = async () => {
+    setBackendStatus({ status: 'checking' });
+    try {
+      const res = await adminFetch('/api/admin/books/health');
+      const data = await res.json();
+      if (res.ok && data.success && data.status === 'connected') {
+        setBackendStatus({
+          status: 'connected',
+          books: data.storage?.books ?? 0,
+          media: data.storage?.media ?? 0,
+        });
+      } else {
+        setBackendStatus({
+          status: 'error',
+          message: data.message || 'Live MySQL CMS is not available.',
+        });
+      }
+    } catch {
+      setBackendStatus({
+        status: 'error',
+        message: 'Could not reach the live Books CMS backend.',
+      });
+    }
+  };
 
   const loadBooks = async () => {
     setLoading(true);
@@ -115,6 +146,7 @@ export default function AdminBooksPage() {
   useEffect(() => {
     loadBooks();
     loadSpecialSection();
+    checkBackendHealth();
   }, []);
 
   const filteredBooks = useMemo(() => {
@@ -433,6 +465,49 @@ export default function AdminBooksPage() {
           >
             <Plus size={16} />
             <span>Add New Book</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Live CMS Database Status */}
+      <div className={"rounded-2xl border px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 " + (
+        backendStatus.status === 'connected'
+          ? 'bg-emerald-50 border-emerald-200'
+          : backendStatus.status === 'error'
+          ? 'bg-rose-50 border-rose-200'
+          : 'bg-slate-50 border-slate-200'
+      )}>
+        <div className="flex items-center gap-2">
+          <span className={"h-2.5 w-2.5 rounded-full " + (
+            backendStatus.status === 'connected'
+              ? 'bg-emerald-500'
+              : backendStatus.status === 'error'
+              ? 'bg-rose-500'
+              : 'bg-slate-400 animate-pulse'
+          )} />
+          <span className="text-xs font-semibold text-slate-800">
+            {backendStatus.status === 'connected'
+              ? 'LIVE MYSQL CMS CONNECTED'
+              : backendStatus.status === 'error'
+              ? 'BOOKS BACKEND NOT CONNECTED'
+              : 'CHECKING LIVE BOOKS BACKEND...'}
+          </span>
+          {backendStatus.status === 'connected' && (
+            <span className="text-[11px] text-slate-500">
+              {backendStatus.books ?? 0} books • {backendStatus.media ?? 0} stored images
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          {backendStatus.status === 'error' && (
+            <span className="text-[11px] text-rose-700">{backendStatus.message}</span>
+          )}
+          <button
+            type="button"
+            onClick={checkBackendHealth}
+            className="text-[11px] font-semibold underline text-slate-700"
+          >
+            Check Again
           </button>
         </div>
       </div>
