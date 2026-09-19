@@ -601,6 +601,9 @@ export function getProducts(): Product[] {
 
 export async function getProductsAsync(): Promise<Product[]> {
   const pool = getMySQLPool();
+  if (!pool && process.env.NODE_ENV === 'production') {
+    throw new Error('MYSQL_NOT_CONFIGURED');
+  }
   if (pool) {
     try {
       await initializeDatabaseTables();
@@ -870,6 +873,9 @@ export function getBooks(): ExtendedBook[] {
 
 export async function getBooksAsync(): Promise<ExtendedBook[]> {
   const pool = getMySQLPool();
+  if (!pool && process.env.NODE_ENV === 'production') {
+    throw new Error('MYSQL_NOT_CONFIGURED');
+  }
   if (pool) {
     try {
       await initializeDatabaseTables();
@@ -1315,6 +1321,9 @@ export function getBlogs(): ExtendedBlogPost[] {
 
 export async function getBlogsAsync(): Promise<ExtendedBlogPost[]> {
   const pool = getMySQLPool();
+  if (!pool && process.env.NODE_ENV === 'production') {
+    throw new Error('MYSQL_NOT_CONFIGURED');
+  }
   if (pool) {
     try {
       await initializeDatabaseTables();
@@ -1447,6 +1456,9 @@ export function getWebinars(): Webinar[] {
 
 export async function getWebinarsAsync(): Promise<Webinar[]> {
   const pool = getMySQLPool();
+  if (!pool && process.env.NODE_ENV === 'production') {
+    throw new Error('MYSQL_NOT_CONFIGURED');
+  }
   if (pool) {
     try {
       await initializeDatabaseTables();
@@ -1625,6 +1637,9 @@ export function getCourses(): Course[] {
 
 export async function getCoursesAsync(): Promise<Course[]> {
   const pool = getMySQLPool();
+  if (!pool && process.env.NODE_ENV === 'production') {
+    throw new Error('MYSQL_NOT_CONFIGURED');
+  }
   if (pool) {
     try {
       await initializeDatabaseTables();
@@ -1937,7 +1952,12 @@ export async function updateLessonProgressAsync(
 
 export async function getSiteSettingsAsync(): Promise<SiteSettings> {
   const pool = getMySQLPool();
-  if (!pool) return DEFAULT_SITE_SETTINGS;
+  if (!pool) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('MYSQL_NOT_CONFIGURED');
+    }
+    return DEFAULT_SITE_SETTINGS;
+  }
 
   const initialized = await initializeDatabaseTables();
   if (!initialized) throw new Error('MYSQL_INITIALIZATION_FAILED');
