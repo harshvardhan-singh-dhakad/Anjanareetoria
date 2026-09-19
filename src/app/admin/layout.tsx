@@ -14,7 +14,8 @@ import {
   LogOut,
   Menu,
   X,
-  GraduationCap
+  GraduationCap,
+  Settings
 } from 'lucide-react';
 import { adminFetch, adminLogout } from '@/lib/admin/adminClient';
 
@@ -83,6 +84,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: 'Books & E-Books', href: '/admin/books', icon: BookOpen },
     { label: 'Webinars', href: '/admin/webinars', icon: Video },
     { label: 'Blog CMS', href: '/admin/blogs', icon: FileEdit },
+    { label: 'Site Content & Media', href: '/admin/site-settings', icon: Settings },
   ];
 
   return (
