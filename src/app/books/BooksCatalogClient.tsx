@@ -7,8 +7,12 @@ import { Search, BookOpen, Download, Package, Star, ShoppingCart, Eye, Sparkles 
 import { books as defaultBooks, Book } from '@/data/books';
 import { useCart } from '@/context/CartContext';
 import { LakshmiJourneySection } from '@/components/books/LakshmiJourneySection';
+import type { LakshmiSpecialSectionConfig } from '@/lib/db/cmsStore';
 
-export const BooksCatalogClient: React.FC<{ initialBooks?: Book[] }> = ({ initialBooks }) => {
+export const BooksCatalogClient: React.FC<{
+  initialBooks?: Book[];
+  lakshmiSpecialSection?: LakshmiSpecialSectionConfig;
+}> = ({ initialBooks, lakshmiSpecialSection }) => {
   const books = initialBooks && initialBooks.length > 0 ? initialBooks : defaultBooks;
   const { addToCart } = useCart();
   const [selectedTab, setSelectedTab] = useState<'all' | 'ebook' | 'physical'>('all');
@@ -90,7 +94,7 @@ export const BooksCatalogClient: React.FC<{ initialBooks?: Book[] }> = ({ initia
       </div>
 
       {/* Featured Section: BEGIN YOUR LAKSHMI JOURNEY */}
-      <LakshmiJourneySection />
+      <LakshmiJourneySection config={lakshmiSpecialSection} />
 
       {/* Main Catalog Controls */}
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 pt-4 relative z-20">
