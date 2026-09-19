@@ -947,6 +947,7 @@ export async function getBooksAsync(): Promise<ExtendedBook[]> {
             ),
             previewPages: safeJsonParse(r.preview_pages, (base as ExtendedBook | undefined)?.previewPages || []),
             keyTakeaways: safeJsonParse(r.key_takeaways, (base as ExtendedBook | undefined)?.keyTakeaways || []),
+            amazonPurchaseUrl: r.amazon_purchase_url ?? (base as ExtendedBook | undefined)?.amazonPurchaseUrl,
           } as ExtendedBook;
         });
 
@@ -1087,6 +1088,7 @@ export async function getBooksFromMySQLAsync(): Promise<ExtendedBook[]> {
         ),
         previewPages: safeJsonParse(r.preview_pages, base?.previewPages || []),
         keyTakeaways: safeJsonParse(r.key_takeaways, base?.keyTakeaways || []),
+        amazonPurchaseUrl: r.amazon_purchase_url ?? (base as ExtendedBook | undefined)?.amazonPurchaseUrl,
       } as ExtendedBook;
     });
   } catch (err) {
@@ -1108,9 +1110,9 @@ export async function saveBookToMySQLAsync(book: ExtendedBook): Promise<Extended
       price, original_price, discount_percent, ebook_price, physical_price,
       cover_image, pdf_source_file, rating, reviews_count, category, format_type,
       in_stock, pages, language, published_year, isbn, download_format, badge,
-      features, table_of_contents, sample_excerpt, preview_pages, key_takeaways
+      features, table_of_contents, sample_excerpt, preview_pages, key_takeaways, amazon_purchase_url
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
       slug = VALUES(slug),
       title = VALUES(title),
@@ -1140,7 +1142,8 @@ export async function saveBookToMySQLAsync(book: ExtendedBook): Promise<Extended
       table_of_contents = VALUES(table_of_contents),
       sample_excerpt = VALUES(sample_excerpt),
       preview_pages = VALUES(preview_pages),
-      key_takeaways = VALUES(key_takeaways);
+      key_takeaways = VALUES(key_takeaways),
+      amazon_purchase_url = VALUES(amazon_purchase_url);
   `;
 
   const title = (book as any).title || (book as any).name || 'Book';
@@ -1180,6 +1183,7 @@ export async function saveBookToMySQLAsync(book: ExtendedBook): Promise<Extended
     JSON.stringify(book.sampleExcerpt || null),
     JSON.stringify((book as any).previewPages || []),
     JSON.stringify((book as any).keyTakeaways || []),
+    book.amazonPurchaseUrl || null,
   ]);
 
   const saved = (await getBooksFromMySQLAsync()).find((b) => b.id === book.id);
