@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { BooksCatalogClient } from './BooksCatalogClient';
-import { getBooksAsync } from '@/lib/db/cmsStore';
+import { getBooksAsync, getLakshmiSpecialSectionAsync } from '@/lib/db/cmsStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +11,14 @@ export const metadata: Metadata = {
 };
 
 export default async function BooksPage() {
-  const books = await getBooksAsync();
-  return <BooksCatalogClient initialBooks={books} />;
+  const [books, lakshmiSpecialSection] = await Promise.all([
+    getBooksAsync(),
+    getLakshmiSpecialSectionAsync(),
+  ]);
+  return (
+    <BooksCatalogClient
+      initialBooks={books}
+      lakshmiSpecialSection={lakshmiSpecialSection}
+    />
+  );
 }
