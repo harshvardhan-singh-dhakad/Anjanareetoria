@@ -79,21 +79,72 @@ export async function initializeDatabaseTables(): Promise<boolean> {
           title VARCHAR(255) NOT NULL,
           subtitle VARCHAR(255),
           description TEXT,
+          short_description TEXT,
           author VARCHAR(255),
           price INT NOT NULL,
+          original_price INT,
+          discount_percent INT,
           ebook_price INT NOT NULL,
+          physical_price INT,
           cover_image VARCHAR(500),
           pdf_source_file VARCHAR(500),
           rating FLOAT DEFAULT 5.0,
           reviews_count INT DEFAULT 0,
           category VARCHAR(100),
+          format_type VARCHAR(20) DEFAULT 'both',
           in_stock BOOLEAN DEFAULT TRUE,
           pages INT DEFAULT 100,
-          language VARCHAR(50) DEFAULT 'Hindi & English',
+          language VARCHAR(100) DEFAULT 'Hindi & English',
+          published_year INT,
+          isbn VARCHAR(100),
+          download_format VARCHAR(255),
+          badge VARCHAR(255),
+          features JSON,
+          table_of_contents JSON,
+          sample_excerpt JSON,
           preview_pages JSON,
           key_takeaways JSON,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
+      // Backward-compatible migration for existing Books tables.
+      // The admin Books screen is intended to be the source of truth, so every editable
+      // book field must persist in MySQL instead of falling back to hardcoded defaults.
+      const bookColDefs: Record<string, string> = {
+        short_description: 'TEXT NULL',
+        original_price: 'INT NULL',
+        discount_percent: 'INT NULL',
+        physical_price: 'INT NULL',
+        format_type: "VARCHAR(20) DEFAULT 'both'",
+        published_year: 'INT NULL',
+        isbn: 'VARCHAR(100) NULL',
+        download_format: 'VARCHAR(255) NULL',
+        badge: 'VARCHAR(255) NULL',
+        features: 'JSON NULL',
+        table_of_contents: 'JSON NULL',
+        sample_excerpt: 'JSON NULL',
+      };
+      for (const [col, colDef] of Object.entries(bookColDefs)) {
+        try {
+          const [check] = await connection.query('SHOW COLUMNS FROM books LIKE ?', [col]) as [any[], any];
+          if (!check || check.length === 0) {
+            await connection.query(`ALTER TABLE books ADD COLUMN ${col} ${colDef}`);
+          }
+        } catch (colErr) {
+          console.warn(`[database] Note on books column ${col}:`, colErr);
+        }
+      }
+
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS media_assets (
+          id VARCHAR(100) PRIMARY KEY,
+          original_name VARCHAR(255),
+          mime_type VARCHAR(100) NOT NULL,
+          byte_size INT NOT NULL DEFAULT 0,
+          data LONGBLOB NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
 
