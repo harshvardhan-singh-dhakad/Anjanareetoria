@@ -40,6 +40,7 @@ export async function adminFetch(input: RequestInfo | URL, init?: RequestInit): 
     ...init,
     headers,
     credentials: 'include',
+    cache: init?.cache || 'no-store',
   });
 
   if (response.status === 401) {
