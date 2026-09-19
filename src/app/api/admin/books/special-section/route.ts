@@ -3,7 +3,8 @@ import { isAuthorizedAdmin } from '@/lib/admin/adminAuth';
 import {
   DEFAULT_LAKSHMI_SPECIAL_SECTION,
   getLakshmiSpecialSectionAsync,
-  saveLakshmiSpecialSectionAsync,
+  getLakshmiSpecialSectionFromMySQLAsync,
+  saveLakshmiSpecialSectionToMySQLAsync,
 } from '@/lib/db/cmsStore';
 
 export const runtime = 'nodejs';
@@ -44,9 +45,7 @@ export async function POST(req: NextRequest) {
           : DEFAULT_LAKSHMI_SPECIAL_SECTION.physicalImage,
     };
 
-    await saveLakshmiSpecialSectionAsync(config);
-
-    const saved = await getLakshmiSpecialSectionAsync();
+    const saved = await saveLakshmiSpecialSectionToMySQLAsync(config);
     if (
       saved.enabled !== config.enabled ||
       saved.digitalImage !== config.digitalImage ||
