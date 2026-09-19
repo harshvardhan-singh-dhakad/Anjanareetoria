@@ -837,6 +837,30 @@ export async function getBooksFromMySQLAsync(): Promise<ExtendedBook[]> {
 
   try {
     const [rows] = await pool.query('SELECT * FROM books ORDER BY created_at DESC') as [any[], any];
+
+    // Fresh database bootstrap: seed the catalog once, but never after an admin
+    // has previously seeded/deleted records intentionally.
+    if (!rows || rows.length === 0) {
+      const [seedRows] = await pool.query(
+        'SELECT seeded FROM cms_seed_state WHERE resource = ? LIMIT 1',
+        ['books']
+      ) as [any[], any];
+
+      const hasSeedState = Boolean(seedRows && seedRows.length > 0 && seedRows[0].seeded);
+      if (!hasSeedState) {
+        for (const b of initialBooks) {
+          await saveBookToMySQLAsync(b as ExtendedBook);
+        }
+        await pool.query(
+          `INSERT INTO cms_seed_state (resource, seeded)
+           VALUES (?, TRUE)
+           ON DUPLICATE KEY UPDATE seeded = TRUE`,
+          ['books']
+        );
+        return await getBooksFromMySQLAsync();
+      }
+    }
+
     return rows.map((r) => {
       const base = initialBooks.find((b) => b.id === r.id || b.slug === r.slug);
       const desc = r.description ?? base?.description ?? '';
