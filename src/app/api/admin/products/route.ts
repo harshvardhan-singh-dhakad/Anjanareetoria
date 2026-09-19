@@ -5,7 +5,10 @@ import { getProductsAsync, saveProductAsync, deleteProductAsync } from '@/lib/db
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (!isAuthorizedAdmin(req)) {
+    return NextResponse.json({ error: 'Unauthorized admin access.' }, { status: 401 });
+  }
   const products = await getProductsAsync();
   return NextResponse.json({ success: true, products, data: products });
 }
