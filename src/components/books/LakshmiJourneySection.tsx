@@ -32,8 +32,7 @@ type SelectedTier = 'digital' | 'combo' | 'physical' | null;
 
 export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ isLandingPage = false, config }) => {
   const { user } = useAuth();
-
-  if (config && !config.enabled) return null;
+  const isEnabled = config?.enabled ?? true;
 
   const digitalImage = config?.digitalImage || '/images/books/lakshmi-75-days.jpg';
   const comboImage = config?.comboImage || '/images/books/lakshmi-combo.jpg';
@@ -212,6 +211,8 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
       },
     });
   };
+
+  if (!isEnabled) return null;
 
   return (
     <section id="lakshmi-journey" className="w-full py-12 sm:py-16 px-4 sm:px-6 relative overflow-hidden bg-[#fffdf9]">
