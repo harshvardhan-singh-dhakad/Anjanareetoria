@@ -9,8 +9,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { type, itemId, format, quantity = 1, items, customer } = body;
 
-    const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_live_TbuYX4YgUTCsbk';
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || '3E9iWs70Mr74tsVOYa87gb9x';
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
     if (!keyId || !keySecret) {
       console.error('[razorpay/create-order] Missing Razorpay credentials in environment.');
@@ -45,53 +45,8 @@ export async function POST(req: NextRequest) {
         });
       }
     } else if (type === 'book') {
-      let book: any = null;
-      try {
-        const books = await getBooksAsync();
-        book = books.find((b) => b.id === itemId || b.slug === itemId);
-      } catch (e) {
-        console.warn('[razorpay/create-order] getBooksAsync fallback to static books:', e);
-      }
-
-      if (!book) {
-        const { books: staticBooks } = await import('@/data/books');
-        book = staticBooks.find((b) => b.id === itemId || b.slug === itemId) as any;
-      }
-
-      // Explicit fail-safe for Lakshmi Journey offerings
-      if (!book) {
-        if (itemId === 'bk-lakshmi-75' || itemId === '75-days-to-welcome-maa-lakshmi') {
-          book = {
-            id: 'bk-lakshmi-75',
-            slug: '75-days-to-welcome-maa-lakshmi',
-            name: '75 Days to Welcome Maa Lakshmi',
-            title: '75 Days to Welcome Maa Lakshmi',
-            price: 500,
-            ebookPrice: 500,
-            formatType: 'ebook',
-          } as any;
-        } else if (itemId === 'prod-lakshmi-combo' || itemId === 'the-complete-lakshmi-journey-combo') {
-          book = {
-            id: 'prod-lakshmi-combo',
-            slug: 'the-complete-lakshmi-journey-combo',
-            name: 'The Complete Lakshmi Journey (Book + 75-Day Digital Guide Combo)',
-            title: 'The Complete Lakshmi Journey (Book + 75-Day Digital Guide Combo)',
-            price: 1750,
-            physicalPrice: 1750,
-            formatType: 'both',
-          } as any;
-        } else if (itemId === 'bk-main-lakshmi-hoon' || itemId === 'main-lakshmi-hoon') {
-          book = {
-            id: 'bk-main-lakshmi-hoon',
-            slug: 'main-lakshmi-hoon',
-            name: 'Main Lakshmi Hoon (Physical Book Edition)',
-            title: 'Main Lakshmi Hoon (Physical Book Edition)',
-            price: 1250,
-            physicalPrice: 1250,
-            formatType: 'physical',
-          } as any;
-        }
-      }
+      const books = await getBooksAsync();
+      const book: any = books.find((b) => b.id === itemId || b.slug === itemId);
 
       if (!book) {
         return NextResponse.json({ error: 'Book publication not found.' }, { status: 404 });
@@ -100,21 +55,10 @@ export async function POST(req: NextRequest) {
       let unitPrice = 0;
       const isEbook = format === 'ebook' || book.formatType === 'ebook';
 
-      if (book.id === 'bk-lakshmi-75' || book.slug === '75-days-to-welcome-maa-lakshmi') {
-        unitPrice = 500;
-        itemTitle = '75 Days to Welcome Maa Lakshmi (75-Day Digital Guide)';
-      } else if (book.id === 'prod-lakshmi-combo' || book.slug === 'the-complete-lakshmi-journey-combo') {
-        unitPrice = 1750;
-        itemTitle = 'The Complete Lakshmi Journey (Book + 75-Day Digital Guide Combo)';
-      } else if (book.id === 'bk-main-lakshmi-hoon' || book.slug === 'main-lakshmi-hoon') {
-        unitPrice = 1250;
-        itemTitle = 'Main Lakshmi Hoon (Physical Book Edition)';
-      } else {
-        unitPrice = isEbook
-          ? (book.ebookPrice || book.price)
-          : (book.physicalPrice || (book.price + 200));
-        itemTitle = `${book.name || (book as any).title} (${isEbook ? 'Digital E-Book' : 'Printed Edition'})`;
-      }
+      unitPrice = isEbook
+        ? (book.ebookPrice || book.price)
+        : (book.physicalPrice || book.price);
+      itemTitle = `${book.name || (book as any).title} (${isEbook ? 'Digital E-Book' : 'Printed Edition'})`;
 
       const qty = Math.max(1, Number(quantity) || 1);
       calculatedAmount = unitPrice * qty;
