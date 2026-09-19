@@ -18,7 +18,8 @@ import {
   ArrowRight,
   CreditCard,
   Lock,
-  X
+  X,
+  ExternalLink
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Book } from '@/data/books';
@@ -395,6 +396,18 @@ export const BookDetailClient: React.FC<BookDetailClientProps> = ({
                 <span>WhatsApp</span>
               </a>
             </div>
+
+            {book.amazonPurchaseUrl && (
+              <a
+                href={book.amazonPurchaseUrl}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#ff9900] hover:bg-[#e68a00] text-white text-sm font-bold py-3.5 px-6 rounded-full transition shadow-md"
+              >
+                <ExternalLink size={18} />
+                <span>Purchase on Amazon</span>
+              </a>
+            )}
           </div>
 
           {/* Navigation Tabs (Overview / Chapters / Specs) */}
