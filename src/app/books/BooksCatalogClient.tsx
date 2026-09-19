@@ -14,7 +14,10 @@ export const BooksCatalogClient: React.FC<{
   initialBooks?: Book[];
   lakshmiSpecialSection?: LakshmiSpecialSectionConfig;
 }> = ({ initialBooks, lakshmiSpecialSection }) => {
-  const books = initialBooks && initialBooks.length > 0 ? initialBooks : defaultBooks;
+  // When the CMS returns an empty list, keep it empty. An empty MySQL catalog
+  // can be intentional after an admin deletes all books; falling back to hardcoded
+  // defaults would make deleted books appear "alive" on the public site.
+  const books = initialBooks ?? defaultBooks;
   const { addToCart } = useCart();
   const [selectedTab, setSelectedTab] = useState<'all' | 'ebook' | 'physical'>('all');
   const [searchQuery, setSearchQuery] = useState('');
