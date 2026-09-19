@@ -227,6 +227,7 @@ export default function AdminBooksPage() {
     });
     setPdfSuccessMessage(null);
     setStatusMessage(null);
+    setImageUploadMessage(null);
     setIsModalOpen(true);
   };
 
@@ -405,7 +406,10 @@ export default function AdminBooksPage() {
         setIsModalOpen(false);
         loadBooks();
       } else {
-        setStatusMessage({ type: 'error', text: data.error || 'Failed to save book' });
+        setStatusMessage({
+          type: 'error',
+          text: data.error ? (data.code ? data.error + ' [' + data.code + ']' : data.error) : 'Failed to save book',
+        });
       }
     } catch {
       setStatusMessage({ type: 'error', text: 'Network error saving book' });
