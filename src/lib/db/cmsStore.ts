@@ -770,14 +770,39 @@ export async function getBooksAsync(): Promise<ExtendedBook[]> {
 
         // Once MySQL has been initialized, it is the CMS source of truth.
         // Do not auto-recreate a book that an admin intentionally deleted.
-        // Fresh databases are seeded below when the table is completely empty.
-
+        // Mark the catalog as seeded the first time we see existing records.
+        await pool.query(
+          `INSERT INTO cms_seed_state (resource, seeded)
+           VALUES (?, TRUE)
+           ON DUPLICATE KEY UPDATE seeded = TRUE`,
+          ['books']
+        );
         return dbBooks;
       }
-      // Seed MySQL with initial books if table is empty
-      for (const b of initialBooks) {
-        await saveBookAsync(b);
+
+      // Fresh database: seed the initial catalog exactly once.
+      // After that, an admin can intentionally delete every book without the
+      // defaults silently coming back.
+      const [seedRows] = await pool.query(
+        'SELECT seeded FROM cms_seed_state WHERE resource = ? LIMIT 1',
+        ['books']
+      ) as [any[], any];
+
+      if (seedRows && seedRows.length > 0 && Boolean(seedRows[0].seeded)) {
+        return [];
       }
+
+      for (const b of initialBooks) {
+        await saveBookAsync(b as ExtendedBook);
+      }
+
+      await pool.query(
+        `INSERT INTO cms_seed_state (resource, seeded)
+         VALUES (?, TRUE)
+         ON DUPLICATE KEY UPDATE seeded = TRUE`,
+        ['books']
+      );
+      return initialBooks as ExtendedBook[];
     } catch (err) {
       console.error('[cmsStore] MySQL getBooks error, falling back to disk:', err);
     }
