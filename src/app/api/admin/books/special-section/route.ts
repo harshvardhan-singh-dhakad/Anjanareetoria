@@ -46,10 +46,23 @@ export async function POST(req: NextRequest) {
 
     await saveLakshmiSpecialSectionAsync(config);
 
+    const saved = await getLakshmiSpecialSectionAsync();
+    if (
+      saved.enabled !== config.enabled ||
+      saved.digitalImage !== config.digitalImage ||
+      saved.comboImage !== config.comboImage ||
+      saved.physicalImage !== config.physicalImage
+    ) {
+      return NextResponse.json(
+        { error: 'Special section settings were not persisted. Please check the database connection.' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Lakshmi special section updated successfully.',
-      config,
+      config: saved,
     });
   } catch (err) {
     console.error('[admin/books/special-section] Error:', err);
