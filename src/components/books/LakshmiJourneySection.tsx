@@ -21,15 +21,23 @@ import {
 import { initiateRazorpayPayment } from '@/lib/payment/razorpayClient';
 import { trackLakshmiEvent } from '@/lib/tracking/events';
 import { useAuth } from '@/context/AuthContext';
+import type { LakshmiSpecialSectionConfig } from '@/lib/db/cmsStore';
 
 export interface LakshmiJourneySectionProps {
   isLandingPage?: boolean;
+  config?: LakshmiSpecialSectionConfig;
 }
 
 type SelectedTier = 'digital' | 'combo' | 'physical' | null;
 
-export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ isLandingPage = false }) => {
+export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ isLandingPage = false, config }) => {
   const { user } = useAuth();
+
+  if (config && !config.enabled) return null;
+
+  const digitalImage = config?.digitalImage || '/images/books/lakshmi-75-days.jpg';
+  const comboImage = config?.comboImage || '/images/books/lakshmi-combo.jpg';
+  const physicalImage = config?.physicalImage || '/images/books/main-lakshmi-hoon.jpg';
 
   // Modal Checkout State
   const [activeTier, setActiveTier] = useState<SelectedTier>(null);
@@ -254,7 +262,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
               {/* Product Visual */}
               <div className="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden bg-amber-50/50 mb-5 border border-amber-100">
                 <Image
-                  src="/images/books/lakshmi-75-days.jpg"
+                  src={digitalImage}
                   alt="75 Days to Welcome Maa Lakshmi - Digital Guide"
                   fill
                   className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
@@ -347,7 +355,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
               {/* Product Visual */}
               <div className="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden bg-gradient-to-tr from-amber-100/40 to-white mb-5 border border-amber-200">
                 <Image
-                  src="/images/books/lakshmi-combo.jpg"
+                  src={comboImage}
                   alt="The Complete Lakshmi Journey Combo - Book + 75-Day Digital Guide"
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -429,7 +437,7 @@ export const LakshmiJourneySection: React.FC<LakshmiJourneySectionProps> = ({ is
               {/* Product Visual */}
               <div className="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden bg-rose-50/40 mb-5 border border-rose-100">
                 <Image
-                  src="/images/books/main-lakshmi-hoon.jpg"
+                  src={physicalImage}
                   alt="Main Lakshmi Hoon by Anjanaa Reetoria - Hardcover Book"
                   fill
                   className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
