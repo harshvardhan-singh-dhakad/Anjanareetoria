@@ -39,7 +39,7 @@ export default async function WebinarDetailPage({ params }: { params: { slug: st
     notFound();
   }
 
-  const recommendations = getCrossRecommendations({
+  const recommendations = await getCrossRecommendations({
     currentType: 'webinar',
     currentSlug: webinar.slug,
     limitBooks: 3,
