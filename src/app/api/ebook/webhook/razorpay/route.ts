@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { saveOrderAsync } from '@/lib/ebook/orderStore';
 import { watermarkAndCache } from '@/lib/ebook/watermark';
 
@@ -6,62 +7,96 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
- * Handles Razorpay payment webhook (e.g. payment.captured, order.paid)
- * and generates the per-buyer watermarked PDF copy immediately.
+ * Razorpay webhook endpoint.
+ * Raw-body signature validation is mandatory; simulated/manual payloads are rejected.
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-
-    // Support both raw Razorpay webhook format and custom manual test triggers
-    let orderId: string;
-    let buyerPhone: string;
-    let buyerEmail: string;
-    let paymentId: string;
-    let amount: number;
-
-    if (body.event && body.payload?.payment?.entity) {
-      // Standard Razorpay Webhook structure
-      const payment = body.payload.payment.entity;
-      orderId = payment.order_id || `ORD-${Date.now().toString().slice(-6)}`;
-      buyerPhone = payment.contact || '9876543210';
-      buyerEmail = payment.email || 'customer@example.com';
-      paymentId = payment.id;
-      amount = (payment.amount || 50000) / 100;
-    } else {
-      // Direct simulation payload
-      orderId = body.orderId || `ARB-${Date.now().toString().slice(-5)}`;
-      buyerPhone = body.buyerPhone || '9876543210';
-      buyerEmail = body.buyerEmail || 'buyer@example.com';
-      paymentId = body.paymentId || `pay_sim_${Date.now().toString().slice(-6)}`;
-      amount = body.amount || 500;
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      console.error('[webhook/razorpay] Missing RAZORPAY_WEBHOOK_SECRET.');
+      return NextResponse.json({ error: 'Webhook configuration error.' }, { status: 500 });
     }
 
-    // 1. Create and persist the order record
+    const rawBody = await req.text();
+    const receivedSignature = req.headers.get('x-razorpay-signature') || '';
+    if (!receivedSignature) {
+      return NextResponse.json({ error: 'Missing Razorpay webhook signature.' }, { status: 400 });
+    }
+
+    const generatedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(rawBody)
+      .digest('hex');
+
+    if (!crypto.timingSafeEqual(
+      Buffer.from(generatedSignature, 'utf8'),
+      Buffer.from(receivedSignature, 'utf8')
+    )) {
+      console.error('[webhook/razorpay] Signature verification failed.');
+      return NextResponse.json({ error: 'Invalid webhook signature.' }, { status: 400 });
+    }
+
+    const body = JSON.parse(rawBody);
+    const event = String(body?.event || '');
+
+    if (!['payment.captured', 'order.paid'].includes(event)) {
+      return NextResponse.json({ success: true, ignored: true, event });
+    }
+
+    const payment = body?.payload?.payment?.entity;
+    const orderEntity = body?.payload?.order?.entity;
+    if (!payment && !orderEntity) {
+      return NextResponse.json({ error: 'Invalid Razorpay webhook payload.' }, { status: 400 });
+    }
+
+    const entity = payment || {};
+    const notes = entity.notes || orderEntity?.notes || {};
+
+    const orderId = String(entity.order_id || orderEntity?.id || '').toUpperCase();
+    const paymentId = String(entity.id || '');
+    const buyerPhone = String(entity.contact || notes.customerPhone || '').replace(/\D/g, '').slice(-10);
+    const buyerEmail = String(entity.email || notes.customerEmail || '').trim();
+    const amount = Number(entity.amount || orderEntity?.amount || 0) / 100;
+
+    if (!orderId || !paymentId || amount <= 0) {
+      return NextResponse.json({ error: 'Webhook payment data is incomplete.' }, { status: 400 });
+    }
+
     const newOrder = {
-      orderId: orderId.toUpperCase(),
+      orderId,
       buyerPhone,
       buyerEmail,
-      productId: body.productId || 'bk-101',
+      productId: String(notes.itemId || ''),
       paymentId,
       purchaseTimestamp: Date.now(),
       amount,
       status: 'paid' as const,
+      itemType: (notes.type || 'product') as any,
+      itemTitle: notes.description || undefined,
+      customerName: notes.customerName || undefined,
+      metadata: {
+        source: 'razorpay_webhook',
+        event,
+        razorpayOrderId: orderId,
+        razorpayPaymentId: paymentId,
+        notes,
+      },
     };
 
     await saveOrderAsync(newOrder);
 
-    // 2. Pre-generate and cache the watermarked PDF in background
     try {
-      await watermarkAndCache(newOrder.orderId);
+      if (newOrder.itemType === 'book') {
+        await watermarkAndCache(newOrder.orderId);
+      }
     } catch (wmError) {
-      console.error('[webhook/razorpay] Background watermarking error:', wmError);
-      // Even if background pre-generation fails, order is saved and view-token will retry on demand
+      console.error('[webhook/razorpay] Watermark pre-generation error:', wmError);
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Payment received, order recorded, and watermarked copy generated.',
+      message: 'Razorpay webhook verified and order recorded.',
       order: newOrder,
     });
   } catch (error: unknown) {
