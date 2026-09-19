@@ -259,6 +259,10 @@ export async function initializeDatabaseTables(): Promise<boolean> {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
 
+      try {
+        await connection.query('ALTER TABLE orders ADD INDEX idx_payment_id (payment_id)');
+      } catch (e) {}
+      
       // Ensure orders table columns exist for unified e-commerce & webinar payments
       const orderColNames = ['item_type', 'item_title', 'customer_name', 'shipping_address', 'metadata'];
       for (const col of orderColNames) {
