@@ -113,6 +113,46 @@ export const BreadcrumbSchema: React.FC<{ items: BreadcrumbItem[] }> = ({ items 
 };
 
 // ─────────────────────────────────────────────────────────────────
+// 3A. BOOK CATALOG SCHEMA — Helps search/AI systems understand a collection page
+// ─────────────────────────────────────────────────────────────────
+export const BookListSchema: React.FC<{ books: Book[] }> = ({ books }) => {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "AR Blessings Books & E-Books",
+    "description": "Sacred books, e-books, and guided spiritual literature from AR Blessings.",
+    "url": "https://arblessings.com/books",
+    "numberOfItems": books.length,
+    "itemListElement": books.map((book, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "name": book.name,
+      "url": `https://arblessings.com/books/${book.slug}`,
+      "image": `https://arblessings.com${book.image}`,
+      "item": {
+        "@type": "Book",
+        "name": book.name,
+        "url": `https://arblessings.com/books/${book.slug}`,
+        "author": {
+          "@type": "Person",
+          "name": book.author
+        },
+        ...(book.isbn ? { "isbn": book.isbn } : {}),
+        ...(book.pages ? { "numberOfPages": book.pages } : {}),
+        "inLanguage": book.language,
+      },
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────
 // 4. PRODUCT SCHEMA — For individual product pages
 // ─────────────────────────────────────────────────────────────────
 export const ProductSchema: React.FC<{ product: Product }> = ({ product }) => {
