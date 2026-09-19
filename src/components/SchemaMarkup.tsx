@@ -22,6 +22,17 @@ export const OrganizationSchema: React.FC = () => {
     "sameAs": [
       "https://www.instagram.com/ar_blessings_"
     ],
+    "areaServed": {
+      "@type": "Country",
+      "name": "India"
+    },
+    "knowsAbout": [
+      "Spiritual books and e-books",
+      "Vedic literature",
+      "Vastu",
+      "Spiritual courses and webinars",
+      "Sacred lifestyle products"
+    ],
     "contactPoint": {
       "@type": "ContactPoint",
       "email": "support@arblessings.com",
@@ -62,12 +73,7 @@ export const WebSiteSchema: React.FC = () => {
         "url": "https://arblessings.com/images/logo.png"
       }
     },
-    "inLanguage": ["en", "hi"],
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://arblessings.com/?s={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
+    "inLanguage": ["en", "hi"]
   };
 
   return (
@@ -303,6 +309,10 @@ export const LocalBusinessSchema: React.FC = () => {
     "priceRange": "₹200 - ₹15,000",
     "currenciesAccepted": "INR",
     "paymentAccepted": "UPI, Credit Card, Debit Card, Net Banking",
+    "areaServed": {
+      "@type": "Country",
+      "name": "India"
+    },
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "IN"
