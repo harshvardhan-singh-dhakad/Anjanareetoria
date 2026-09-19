@@ -5,23 +5,24 @@ import { BooksHomeSection } from '@/components/BooksHomeSection';
 import { BlogHomeSection } from '@/components/BlogHomeSection';
 import { VideoSection } from '@/components/VideoSection';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
-import { getProductsAsync, getBooksAsync, getBlogsAsync } from '@/lib/db/cmsStore';
+import { getProductsAsync, getBooksAsync, getBlogsAsync, getSiteSettingsAsync } from '@/lib/db/cmsStore';
 import { ProductListSchema } from '@/components/SchemaMarkup';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const [products, books, blogs] = await Promise.all([
+  const [products, books, blogs, siteSettings] = await Promise.all([
     getProductsAsync(),
     getBooksAsync(),
     getBlogsAsync(),
+    getSiteSettingsAsync(),
   ]);
 
   return (
     <div className="w-full">
       <ProductListSchema products={products} />
       {/* Hero Banner Section */}
-      <HeroBanner />
+      <HeroBanner settings={siteSettings} />
 
       {/* Products Catalog Section */}
       <section id="products" className="py-12 sm:py-16 bg-white">
@@ -29,10 +30,10 @@ export default async function HomePage() {
           {/* Section Headers */}
           <div className="text-center mb-10">
             <h3 className="text-sm font-bold tracking-widest text-[#0008c1] uppercase mb-2">
-              Our Products
+              {siteSettings.productsKicker}
             </h3>
             <h2 className="text-2xl sm:text-3xl font-bold text-[#0008c1] font-serif">
-              Uniquely Designed Gems
+              {siteSettings.productsTitle}
             </h2>
           </div>
 
@@ -46,13 +47,13 @@ export default async function HomePage() {
       </section>
 
       {/* Sacred Books & E-Books Showcase */}
-      <BooksHomeSection initialBooks={books} />
+      <BooksHomeSection initialBooks={books} settings={siteSettings} />
 
       {/* Video Insights Section */}
-      <VideoSection />
+      <VideoSection settings={siteSettings} />
 
       {/* Accomplishment Sagas / Reviews */}
-      <TestimonialCarousel />
+      <TestimonialCarousel settings={siteSettings} />
 
       {/* Spiritual Journal & Blog Section */}
       <BlogHomeSection initialBlogs={blogs} />
