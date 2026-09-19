@@ -17,6 +17,7 @@ import {
   Star
 } from 'lucide-react';
 import { LakshmiJourneySection } from '@/components/books/LakshmiJourneySection';
+import { getBooksAsync } from '@/lib/db/cmsStore';
 
 export const metadata: Metadata = {
   title: '75 Days to Welcome Maa Lakshmi & The Complete Lakshmi Journey | AR Blessings',
@@ -28,7 +29,28 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LakshmiJourneyPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function LakshmiJourneyPage() {
+  const books = await getBooksAsync();
+  const findBook = (id: string, slug: string) => books.find((book) => book.id === id || book.slug === slug);
+  const lakshmi75 = findBook('bk-lakshmi-75', '75-days-to-welcome-maa-lakshmi');
+  const lakshmiCombo = findBook('prod-lakshmi-combo', 'the-complete-lakshmi-journey-combo');
+  const mainLakshmi = findBook('bk-main-lakshmi-hoon', 'main-lakshmi-hoon');
+  const lakshmiPricing = {
+    digital: {
+      price: Number(lakshmi75?.ebookPrice ?? lakshmi75?.price ?? 500),
+      originalPrice: lakshmi75?.originalPrice ? Number(lakshmi75.originalPrice) : undefined,
+    },
+    combo: {
+      price: Number(lakshmiCombo?.price ?? 1750),
+      originalPrice: lakshmiCombo?.originalPrice ? Number(lakshmiCombo.originalPrice) : undefined,
+    },
+    physical: {
+      price: Number(mainLakshmi?.physicalPrice ?? mainLakshmi?.price ?? 1250),
+      originalPrice: mainLakshmi?.originalPrice ? Number(mainLakshmi.originalPrice) : undefined,
+    },
+  };
   return (
     <div className="min-h-screen bg-[#fffdfa] text-gray-900 font-sans">
       {/* Hero Headline Section */}
@@ -70,7 +92,7 @@ export default function LakshmiJourneyPage() {
       </div>
 
       {/* Main 3 Products Section */}
-      <LakshmiJourneySection isLandingPage={true} />
+      <LakshmiJourneySection isLandingPage={true} pricing={lakshmiPricing} />
 
       {/* Deep-Dive: What is the 75-Day Journey? */}
       <section className="py-14 sm:py-20 px-4 sm:px-6 bg-amber-50/50 border-t border-b border-amber-200/60">
