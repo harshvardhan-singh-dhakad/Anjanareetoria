@@ -31,6 +31,7 @@ export default function AdminBooksPage() {
   const [editingBook, setEditingBook] = useState<ExtendedBook | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageUploadMessage, setImageUploadMessage] = useState<string | null>(null);
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [pdfSuccessMessage, setPdfSuccessMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -162,6 +163,7 @@ export default function AdminBooksPage() {
     });
     setPdfSuccessMessage(null);
     setStatusMessage(null);
+    setImageUploadMessage(null);
     setIsModalOpen(true);
   };
 
@@ -210,8 +212,9 @@ export default function AdminBooksPage() {
         body: fd,
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.url) {
         setFormData(prev => ({ ...prev, image: data.url }));
+        setImageUploadMessage('Cover uploaded successfully. Click “Create Book” / “Update Book Details” to publish this cover.');
       } else {
         alert(data.error || 'Failed to upload image');
       }
@@ -911,26 +914,56 @@ export default function AdminBooksPage() {
 
               {/* Cover Image */}
               <div className="space-y-2">
-                <label className="font-semibold text-slate-700">Book Cover Image</label>
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="text"
-                    value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    placeholder="/images/books/... or https://..."
-                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
-                  />
-                  <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center space-x-1.5 transition">
-                    <UploadCloud size={16} />
-                    <span>{uploadingImage ? 'Uploading...' : 'Upload Cover'}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      disabled={uploadingImage}
-                      className="hidden"
-                    />
-                  </label>
+                <div className="flex items-center justify-between gap-3">
+                  <label className="font-semibold text-slate-700">Book Cover Image</label>
+                  <span className="text-[10px] text-slate-400">Database-backed uploads stay available after code deployment.</span>
+                </div>
+
+                <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+                  <div className="w-20 h-28 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center flex-shrink-0">
+                    {formData.image ? (
+                      <Image
+                        src={formData.image}
+                        alt="Book cover preview"
+                        width={80}
+                        height={112}
+                        className="w-full h-full object-contain"
+                        unoptimized
+                      />
+                    ) : (
+                      <BookOpen size={22} className="text-slate-300" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 w-full space-y-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <input
+                        type="text"
+                        value={formData.image}
+                        onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                        placeholder="/images/books/... or https://..."
+                        className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
+                      />
+                      <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition">
+                        <UploadCloud size={16} />
+                        <span>{uploadingImage ? 'Uploading...' : 'Upload Cover'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          disabled={uploadingImage}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    {imageUploadMessage && (
+                      <p className="text-[11px] text-emerald-700 font-medium">{imageUploadMessage}</p>
+                    )}
+                    <p className="text-[11px] text-slate-400">
+                      The preview changes immediately. The public /books page changes after you save the book.
+                    </p>
+                  </div>
                 </div>
               </div>
 
