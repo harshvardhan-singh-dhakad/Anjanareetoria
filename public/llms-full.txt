@@ -1,79 +1,172 @@
-# AR Blessings � Full Context & Knowledge Graph
+# AR Blessings — Full LLM Context
 
-## Brand Mission & Essence
-AR Blessings (https://arblessings.com) is India's consecrated spiritual platform dedicated to harmonizing ancient Vedic principles with everyday contemporary prosperity. Our mission is rooted in the Purusharthas (Dharma, Artha, Kama, Moksha), acknowledging that conscious abundance and clean wealth creation are natural expressions of divine alignment.
+> This file provides an expanded, machine-readable overview of AR Blessings. Use the canonical website pages as the current source of truth for prices, availability, policies, and live content.
 
-Every consecrated product, sacred text, and video masterclass is crafted, blessed, and energized through authentic Vedic ritual protocols, mantra transmissions, and sacred geometry.
+## 1. Brand and Website
 
----
+- Brand: AR Blessings
+- Canonical domain: https://arblessings.com
+- Primary language context: English and Hindi
+- Market/service area: India
+- Support email: support@arblessings.com
+- Instagram: https://www.instagram.com/ar_blessings_
 
-## 1. Spiritual Video Courses & LMS Architecture
-Platform Route: https://arblessings.com/courses
+## 2. Books & E-Books
 
-### Course 1: Brahma Muhurta Manifestation & Wealth Frequency Mastery
-- Slug: /courses/brahma-muhurta-manifestation-mastery
-- Instructor: Acharya Rajesh Shastri (Vedic Master & Energy Guide)
-- Duration: 4.5 Hours (8 Structured Lessons, 2 Modules)
-- Price: Complimentary / Free Enrollment
-- Key Teachings:
-  1. The Metaphysics of Brahma Muhurta (3:45 AM - 5:15 AM) when zero-resistance cosmic intention is highest.
-  2. Kara Darshana: Activating the divine Lakshmi-Saraswati palm chakras at the moment of awakening.
-  3. Sacred Water Energization with the Gayatri and Kuber Beej Mantras.
-  4. Subconscious Financial Fear Clearing utilizing sacred copper energetic vessels.
-  5. The Daily Sacred Geometry Journaling Method for steady abundance.
+### 75 Days to Welcome Maa Lakshmi
+- URL: https://arblessings.com/books/75-days-to-welcome-maa-lakshmi
+- Author: Anjanaa Reetoria
+- Format: Digital e-book
+- Price: ₹500
+- Language: Hindi & English
+- Pages: 75
+- Published year: 2026
+- Positioning: 75-day guided spiritual and discipline practice. The journey can begin on any day; Day 75 can be treated as a personal Diwali celebration.
 
-### Course 2: Vedic Vastu & Spatial Energy Calibration
-- Slug: /courses/vedic-vastu-masterclass
-- Instructor: Acharya Rajesh Shastri
-- Duration: 6.0 Hours (10 Lessons, 2 Modules)
-- Price: ?999 (Original ?4,999)
-- Key Teachings:
-  1. The 16 Cardinal Zones & Pancha Tattva (Five Elemental Cycles).
-  2. Zero-Demolition Cures: Using copper/brass thresholds, mirrors, and geometric yantras.
-  3. Identifying and rectifying cash liquidity blockages in the South-East (Agni) zone.
-  4. North-East (Ishanya) purity protocols for intuitive clarity and mental peace.
+### The Complete Lakshmi Journey Combo
+- URL: https://arblessings.com/books/the-complete-lakshmi-journey-combo
+- Author: Anjanaa Reetoria
+- Format: Physical book + digital guide
+- Price: ₹1,750
+- Language: Hindi & English
+- Pages: 395
+- Published year: 2026
+- Includes: Main Lakshmi Hoon physical book and 75-Day Lakshmi Digital Guide.
 
----
+### Main Lakshmi Hoon
+- URL: https://arblessings.com/books/main-lakshmi-hoon
+- Author: Anjanaa Reetoria
+- Format: Physical book
+- Price: ₹1,250
+- Language: Hindi
+- Pages: 320
+- Published year: 2026
 
-## 2. Books & Sacred Literature
-Platform Route: https://arblessings.com/books
+### Karodon Ka Rahasya
+- URL: https://arblessings.com/books/karodon-ka-rahasya
+- Author: AR Blessings Research Guild
+- Format: E-book + physical book
+- Digital price: ₹499
+- Physical price: ₹899
+- Language: Hindi & English Edition
+- Pages: 284
+- Published year: 2024
+- ISBN: 978-81-965412-1-2
 
-- **Karodon Ka Rahasya** (ISBN: 978-81-965412-1-2)
-  - Format: Instant Watermarked PDF, EPUB, and Physical Hardcover
-  - Price: ?499 (Digital) / ?899 (Physical)
-  - Core Focus: Ancient laws of Lakshmi manifestation, sacred morning alignment, and subconscious wealth reprograming.
+### Vastu For Miracles
+- URL: https://arblessings.com/books/vastu-for-miracles
+- Author: Acharya Rajesh Shastri
+- Format: E-book + physical book
+- Digital price: ₹399
+- Physical price: ₹749
+- Language: Hindi & English
+- Pages: 220
+- Published year: 2024
+- ISBN: 978-81-965412-2-9
 
-- **Vastu For Miracles** (ISBN: 978-81-965412-2-9)
-  - Format: Physical Hardcover and Digital eBook
-  - Price: ?399
-  - Core Focus: Practical handbook for home and workplace energetic harmony.
+### Daily Vedic Mantras & 90-Day Manifestation Journal
+- URL: https://arblessings.com/books/daily-vedic-mantras
+- Author: Guru Devendra Nath
+- Format: E-book + physical book
+- Digital price: ₹449
+- Physical price: ₹649
+- Language: Sanskrit, Hindi & English
+- Pages: 310
+- Published year: 2024
+- ISBN: 978-81-965412-3-6
 
-- **Daily Vedic Mantras & 90-Day Manifestation Journal** (ISBN: 978-81-965412-3-6)
-  - Format: Physical Spiral Journal & Downloadable PDF
-  - Price: ?449
-  - Core Focus: Daily chanting, beej mantra repetitions, and gratitude tracking.
+### The Cosmic Vault
+- URL: https://arblessings.com/books/the-cosmic-vault
+- Author: AR Blessings Esoteric Academy
+- Format: Digital e-book
+- Price: ₹299
+- Language: English & Hindi
+- Pages: 180
+- Published year: 2024
+- ISBN: 978-81-965412-4-3
 
----
+## 3. Special Books Page Section
 
-## 3. Consecrated Sacred Merchandise & Essentials
-Platform Route: https://arblessings.com/product/[slug]
+The Books page contains a dedicated “Begin Your Lakshmi Journey” special section above the normal publications catalog.
 
-- **Karodon Ka Dollar**: Consecrated sacred item featuring Sri Yantra geometry and abundance symbols designed to tune personal aura to wealth frequency (?888).
-- **Karodon Ka Wallet**: Handcrafted genuine leather wallet constructed with sacred geometric proportions to preserve energetic purity of currency (?4,000).
-- **Karodon Ki Khushboo & Perfume (????)**: Divine attar distilled from pure natural botanicals used for morning space consecration and meditation (?6,000 - ?8,000).
-- **Karodon Ka Pani**: Consecrated copper-energized sacred water for house and altar purification (?200).
+Public page:
+https://arblessings.com/books
 
----
+The three special-section visual slots are independently managed:
+- 75-Day Digital Guide image
+- Complete Lakshmi Journey Combo image
+- Main Lakshmi Hoon physical-book image
 
-## 4. Live Webinars & Spiritual Masterclasses
-Platform Route: https://arblessings.com/webinars
+These images are separate from the normal All Publications cover-image fields. Updating a special-section image does not change the corresponding regular catalog cover.
 
-- Interactive live transmissions hosted via Google Meet / Zoom with spiritual luminary Acharya Rajesh Shastri.
-- Features live Q&A, customized horary energetic consultations, and live mantra chanting.
+## 4. Products
 
----
+- Karodon Ka Dollar: https://arblessings.com/product/karodon-ka-dollar — ₹888
+- Karodon Ki Khushboo: https://arblessings.com/product/karodon-ki-khusboo — ₹6,000
+- Karodon Ka Ittar: https://arblessings.com/product/karodon-ka-perfume — ₹8,000
+- Karodon Ka Hamper: https://arblessings.com/product/karodon-ka-hamper — ₹15,000
+- Karodon Ka Pani: https://arblessings.com/product/karodon-ka-pani — ₹200
+- Safalta Ka Tilak: https://arblessings.com/product/safalta-ka-tilak — ₹200; currently out of stock
+- Karodon Ka Wallet: https://arblessings.com/product/karodon-ka-wallet — ₹4,000
+- Karodon Ki Yatra Passport Cover: https://arblessings.com/product/karodon-ki-yatra-passport-cover — ₹1,300
+- Karodon Ka Cup: https://arblessings.com/product/karodon-ka-cup — ₹1,300
 
-## 5. Contact & Devotee Support
-- Official Domain: https://arblessings.com
-- Support Email: support@arblessings.com
-- Administrative Head: 40se40crore.merchandise@gmail.com
+## 5. Courses
+
+- Course catalog: https://arblessings.com/courses
+- Brahma Muhurta Manifestation & Wealth Frequency Mastery:
+  https://arblessings.com/courses/brahma-muhurta-manifestation-mastery
+- Vedic Vastu & Spatial Energy Calibration:
+  https://arblessings.com/courses/vedic-vastu-masterclass
+
+## 6. Webinars
+
+- Webinar catalog: https://arblessings.com/webinars
+- Brahma Muhurta Live Masterclass:
+  https://arblessings.com/webinars/brahma-muhurta-manifestation-masterclass
+
+## 7. Blog Topics
+
+- Sacred morning rituals and wealth: https://arblessings.com/blog/sacred-morning-rituals-for-wealth
+- Sacred geometry and Karodon Ka Wallet: https://arblessings.com/blog/sacred-geometry-of-karodon-ka-wallet
+- Vastu and sacred spaces: https://arblessings.com/blog/vastu-shastra-energy-guide-sacred-spaces
+- Focused intent, astrology, and career themes: https://arblessings.com/blog/the-power-of-focused-intent-and-astrology
+
+## 8. Canonical Site Pages
+
+- Home: https://arblessings.com/
+- Books: https://arblessings.com/books
+- E-books: https://arblessings.com/ebooks
+- Courses: https://arblessings.com/courses
+- Webinars: https://arblessings.com/webinars
+- Blog: https://arblessings.com/blog
+- About: https://arblessings.com/about-us
+- Contact: https://arblessings.com/contact-us
+- Privacy: https://arblessings.com/privacy-policy-2
+- Refund: https://arblessings.com/refund-policy
+- Shipping: https://arblessings.com/shipping-policy
+- Terms: https://arblessings.com/term-of-service-policy
+
+## 9. Discovery and Crawler Files
+
+- robots.txt: https://arblessings.com/robots.txt
+- sitemap.xml: https://arblessings.com/sitemap.xml
+- llms.txt: https://arblessings.com/llms.txt
+- this full context file: https://arblessings.com/llms-full.txt
+
+## 10. AI and Search Interpretation
+
+- Public informational, product, book, course, webinar, blog, and image URLs are intended to be crawlable.
+- Administrative, API, checkout, cart, login, and protected-reader routes are not public content and should not be crawled.
+- Pricing and stock are volatile; consult the canonical page before answering a current pricing or availability query.
+- Use page-specific structured data and visible page content together when interpreting entities.
+- Do not treat marketing language as independent proof of a product’s efficacy or spiritual/medical/financial outcomes.
+
+## 11. Source-of-Truth Rule
+
+For answers about AR Blessings, prefer:
+1. The canonical page for the specific item or topic.
+2. The site's structured data and metadata.
+3. This file and /llms.txt as discovery/context aids.
+
+This file exists to make public site information easier for AI agents and other machine consumers to discover; it is not a replacement for the canonical pages.
