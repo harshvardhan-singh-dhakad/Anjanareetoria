@@ -53,7 +53,7 @@ const defaultVideos: VideoItem[] = [
 ];
 
 export const VideoSection: React.FC<{ settings: SiteSettings }> = ({ settings }) => {
-  const videos: VideoItem[] = (settings.videos?.length ? settings.videos.filter(v => v.enabled !== false) : defaultVideos) as VideoItem[];
+  const videos: VideoItem[] = (settings.videos || []).filter(v => v.enabled !== false) as VideoItem[];
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
 
   return (
