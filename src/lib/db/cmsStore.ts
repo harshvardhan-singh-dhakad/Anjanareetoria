@@ -122,6 +122,23 @@ const BLOGS_FILE = path.join(DATA_DIR, 'blogs.json');
 const WEBINARS_FILE = path.join(DATA_DIR, 'webinars.json');
 const COURSES_FILE = path.join(DATA_DIR, 'courses.json');
 const ENROLLMENTS_FILE = path.join(DATA_DIR, 'course_enrollments.json');
+const LAKSHMI_SPECIAL_SECTION_FILE = path.join(DATA_DIR, 'lakshmi_special_section.json');
+
+export interface LakshmiSpecialSectionConfig {
+  id: string;
+  enabled: boolean;
+  digitalImage: string;
+  comboImage: string;
+  physicalImage: string;
+}
+
+export const DEFAULT_LAKSHMI_SPECIAL_SECTION: LakshmiSpecialSectionConfig = {
+  id: 'lakshmi-journey',
+  enabled: true,
+  digitalImage: '/images/books/lakshmi-75-days.jpg',
+  comboImage: '/images/books/lakshmi-combo.jpg',
+  physicalImage: '/images/books/main-lakshmi-hoon.jpg',
+};
 
 const INITIAL_COURSES: Course[] = [
   {
@@ -586,6 +603,86 @@ export async function deleteProductAsync(idOrSlug: string): Promise<void> {
       await pool.query('DELETE FROM products WHERE id = ? OR slug = ?', [idOrSlug, idOrSlug]);
     } catch (err) {
       console.error('[cmsStore] MySQL deleteProduct error:', err);
+    }
+  }
+}
+
+// ---------------- LAKSHMI SPECIAL SECTION ----------------
+export function getLakshmiSpecialSection(): LakshmiSpecialSectionConfig {
+  return readJson<LakshmiSpecialSectionConfig>(
+    LAKSHMI_SPECIAL_SECTION_FILE,
+    DEFAULT_LAKSHMI_SPECIAL_SECTION
+  );
+}
+
+export async function getLakshmiSpecialSectionAsync(): Promise<LakshmiSpecialSectionConfig> {
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      const [rows] = await pool.query(
+        'SELECT id, enabled, digital_image, combo_image, physical_image FROM special_sections WHERE id = ? LIMIT 1',
+        ['lakshmi-journey']
+      ) as [any[], any];
+
+      if (rows && rows.length > 0) {
+        const row = rows[0];
+        return {
+          id: row.id,
+          enabled: row.enabled !== undefined ? Boolean(row.enabled) : true,
+          digitalImage: row.digital_image || DEFAULT_LAKSHMI_SPECIAL_SECTION.digitalImage,
+          comboImage: row.combo_image || DEFAULT_LAKSHMI_SPECIAL_SECTION.comboImage,
+          physicalImage: row.physical_image || DEFAULT_LAKSHMI_SPECIAL_SECTION.physicalImage,
+        };
+      }
+
+      await saveLakshmiSpecialSectionAsync(DEFAULT_LAKSHMI_SPECIAL_SECTION);
+      return DEFAULT_LAKSHMI_SPECIAL_SECTION;
+    } catch (err) {
+      console.error('[cmsStore] MySQL getLakshmiSpecialSection error, falling back to disk:', err);
+    }
+  }
+
+  return getLakshmiSpecialSection();
+}
+
+export function saveLakshmiSpecialSection(config: LakshmiSpecialSectionConfig): void {
+  writeJson(LAKSHMI_SPECIAL_SECTION_FILE, {
+    ...DEFAULT_LAKSHMI_SPECIAL_SECTION,
+    ...config,
+    id: 'lakshmi-journey',
+  });
+}
+
+export async function saveLakshmiSpecialSectionAsync(
+  config: LakshmiSpecialSectionConfig
+): Promise<void> {
+  saveLakshmiSpecialSection(config);
+  const pool = getMySQLPool();
+  if (pool) {
+    try {
+      await initializeDatabaseTables();
+      await pool.query(
+        `INSERT INTO special_sections
+          (id, section_type, enabled, digital_image, combo_image, physical_image)
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+          section_type = VALUES(section_type),
+          enabled = VALUES(enabled),
+          digital_image = VALUES(digital_image),
+          combo_image = VALUES(combo_image),
+          physical_image = VALUES(physical_image)`,
+        [
+          'lakshmi-journey',
+          'books-lakshmi-journey',
+          config.enabled ? 1 : 0,
+          config.digitalImage || DEFAULT_LAKSHMI_SPECIAL_SECTION.digitalImage,
+          config.comboImage || DEFAULT_LAKSHMI_SPECIAL_SECTION.comboImage,
+          config.physicalImage || DEFAULT_LAKSHMI_SPECIAL_SECTION.physicalImage,
+        ]
+      );
+    } catch (err) {
+      console.error('[cmsStore] MySQL saveLakshmiSpecialSection error:', err);
     }
   }
 }
