@@ -35,6 +35,17 @@ export default function AdminBooksPage() {
   const [pdfSuccessMessage, setPdfSuccessMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Lakshmi / Diwali special section state (independent from normal book covers)
+  const [specialConfig, setSpecialConfig] = useState({
+    enabled: true,
+    digitalImage: '/images/books/lakshmi-75-days.jpg',
+    comboImage: '/images/books/lakshmi-combo.jpg',
+    physicalImage: '/images/books/main-lakshmi-hoon.jpg',
+  });
+  const [specialLoading, setSpecialLoading] = useState(true);
+  const [specialSaving, setSpecialSaving] = useState(false);
+  const [specialUploading, setSpecialUploading] = useState<'digitalImage' | 'comboImage' | 'physicalImage' | null>(null);
+
   // Form State
   const [formData, setFormData] = useState({
     id: '',
@@ -80,8 +91,29 @@ export default function AdminBooksPage() {
     }
   };
 
+  const loadSpecialSection = async () => {
+    setSpecialLoading(true);
+    try {
+      const res = await adminFetch('/api/admin/books/special-section');
+      const data = await res.json();
+      if (data.success && data.config) {
+        setSpecialConfig({
+          enabled: data.config.enabled !== false,
+          digitalImage: data.config.digitalImage || '/images/books/lakshmi-75-days.jpg',
+          comboImage: data.config.comboImage || '/images/books/lakshmi-combo.jpg',
+          physicalImage: data.config.physicalImage || '/images/books/main-lakshmi-hoon.jpg',
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load Lakshmi special section:', err);
+    } finally {
+      setSpecialLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadBooks();
+    loadSpecialSection();
   }, []);
 
   const filteredBooks = useMemo(() => {
@@ -187,6 +219,63 @@ export default function AdminBooksPage() {
       alert('Error uploading image');
     } finally {
       setUploadingImage(false);
+    }
+  };
+
+  const handleSpecialImageUpload = async (
+    field: 'digitalImage' | 'comboImage' | 'physicalImage',
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSpecialUploading(field);
+    const fd = new FormData();
+    fd.append('file', file);
+
+    try {
+      const res = await adminFetch('/api/admin/upload-image', {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        setSpecialConfig((prev) => ({ ...prev, [field]: data.url }));
+      } else {
+        alert(data.error || 'Failed to upload image');
+      }
+    } catch {
+      alert('Error uploading special section image');
+    } finally {
+      setSpecialUploading(null);
+      e.target.value = '';
+    }
+  };
+
+  const handleSaveSpecialSection = async () => {
+    setSpecialSaving(true);
+    try {
+      const res = await adminFetch('/api/admin/books/special-section', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(specialConfig),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSpecialConfig({
+          enabled: data.config.enabled !== false,
+          digitalImage: data.config.digitalImage,
+          comboImage: data.config.comboImage,
+          physicalImage: data.config.physicalImage,
+        });
+        alert('Diwali / Lakshmi Special section updated successfully.');
+      } else {
+        alert(data.error || 'Failed to save special section');
+      }
+    } catch {
+      alert('Network error saving special section');
+    } finally {
+      setSpecialSaving(false);
     }
   };
 
@@ -386,6 +475,117 @@ export default function AdminBooksPage() {
               {fmt === 'both' ? 'E-Book & Print' : fmt}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Lakshmi / Diwali Special Section Management */}
+      <div className="bg-white rounded-3xl border border-amber-200/80 shadow-sm overflow-hidden">
+        <div className="p-5 sm:p-6 bg-gradient-to-r from-amber-50 via-orange-50/60 to-amber-50 border-b border-amber-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-amber-800 text-xs font-bold uppercase tracking-wider">
+                <span>✨</span>
+                <span>Special Section</span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-serif font-bold text-slate-900 mt-1">
+                Diwali / Lakshmi Journey Images
+              </h2>
+              <p className="text-xs text-slate-600 mt-1 max-w-2xl">
+                These three images belong only to the special section at the top of <code>/books</code>.
+                Changing them here does not change the normal book cover shown in All Publications.
+              </p>
+            </div>
+
+            <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer whitespace-nowrap">
+              <input
+                type="checkbox"
+                checked={specialConfig.enabled}
+                onChange={(e) => setSpecialConfig((prev) => ({ ...prev, enabled: e.target.checked }))}
+                className="h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+              />
+              Show Special Section
+            </label>
+          </div>
+        </div>
+
+        <div className="p-5 sm:p-6">
+          {specialLoading ? (
+            <div className="py-8 text-center text-xs text-slate-400">Loading special section settings...</div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {([
+                  {
+                    key: 'digitalImage' as const,
+                    label: '75-Day Digital Guide',
+                    alt: '75 Days to Welcome Maa Lakshmi',
+                  },
+                  {
+                    key: 'comboImage' as const,
+                    label: 'Complete Lakshmi Journey Combo',
+                    alt: 'The Complete Lakshmi Journey Combo',
+                  },
+                  {
+                    key: 'physicalImage' as const,
+                    label: 'Main Lakshmi Hoon — Physical Book',
+                    alt: 'Main Lakshmi Hoon Physical Book',
+                  },
+                ]).map((item) => (
+                  <div key={item.key} className="rounded-2xl border border-slate-200 p-4 bg-slate-50/50">
+                    <div className="text-xs font-bold text-slate-800 mb-3">{item.label}</div>
+
+                    <div className="relative h-56 rounded-xl overflow-hidden bg-white border border-slate-200 mb-3">
+                      <Image
+                        src={specialConfig[item.key]}
+                        alt={item.alt}
+                        fill
+                        className="object-contain p-2"
+                        sizes="(max-width: 1024px) 100vw, 33vw"
+                      />
+                    </div>
+
+                    <input
+                      type="text"
+                      value={specialConfig[item.key]}
+                      onChange={(e) =>
+                        setSpecialConfig((prev) => ({ ...prev, [item.key]: e.target.value }))
+                      }
+                      placeholder="/images/books/..."
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                    />
+
+                    <label className="cursor-pointer mt-2 w-full px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center justify-center gap-2 transition">
+                      <UploadCloud size={14} />
+                      <span>
+                        {specialUploading === item.key ? 'Uploading...' : 'Upload Special Image'}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleSpecialImageUpload(item.key, e)}
+                        disabled={specialUploading !== null}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-slate-100 pt-5">
+                <p className="text-[11px] text-slate-500">
+                  The public <code>/books</code> page reads these values from the persistent special-section configuration.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSaveSpecialSection}
+                  disabled={specialSaving}
+                  className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-md transition disabled:opacity-50"
+                >
+                  {specialSaving ? 'Saving Special Section...' : 'Save Special Section'}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
