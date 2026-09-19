@@ -700,52 +700,77 @@ export async function getBooksAsync(): Promise<ExtendedBook[]> {
       const [rows] = await pool.query('SELECT * FROM books ORDER BY created_at DESC') as [any[], any];
       if (rows && rows.length > 0) {
         const dbBooks = rows.map((r) => {
-          const base = initialBooks.find((b) => b.id === r.id || b.slug === r.slug) || initialBooks[0];
-          const desc = r.description || base.description || '';
+          const base = initialBooks.find((b) => b.id === r.id || b.slug === r.slug);
+          const desc = r.description ?? base?.description ?? '';
+          const shortDescription =
+            r.short_description ??
+            base?.shortDescription ??
+            (desc.length > 120 ? desc.slice(0, 117) + '...' : desc);
+
           return {
-            ...base,
+            ...(base || {}),
             id: r.id,
             slug: r.slug,
-            name: r.title || r.name || base.name,
-            title: r.title || r.name || base.name,
-            subtitle: r.subtitle || (base as any).subtitle || '',
+            name: r.title || r.name || base?.name || 'Untitled Book',
+            title: r.title || r.name || base?.name || 'Untitled Book',
+            subtitle: r.subtitle ?? (base as any)?.subtitle ?? '',
             description: desc,
-            shortDescription: desc.length > 120 ? desc.slice(0, 117) + '...' : desc,
-            author: r.author || base.author || 'AR Blessings Council',
-            price: r.price || base.price || 499,
-            ebookPrice: r.ebook_price || base.ebookPrice || r.price || 499,
-            physicalPrice: base.physicalPrice,
-            image: r.cover_image || base.image || '/images/books/karodon-ka-rahasya.svg',
-            coverImage: r.cover_image || base.image || '/images/books/karodon-ka-rahasya.svg',
+            shortDescription,
+            author: r.author || base?.author || 'AR Blessings Council',
+            price: r.price !== null && r.price !== undefined ? Number(r.price) : (base?.price || 499),
+            originalPrice:
+              r.original_price !== null && r.original_price !== undefined
+                ? Number(r.original_price)
+                : base?.originalPrice,
+            discountPercent:
+              r.discount_percent !== null && r.discount_percent !== undefined
+                ? Number(r.discount_percent)
+                : base?.discountPercent,
+            ebookPrice:
+              r.ebook_price !== null && r.ebook_price !== undefined
+                ? Number(r.ebook_price)
+                : (base?.ebookPrice || base?.price || 499),
+            physicalPrice:
+              r.physical_price !== null && r.physical_price !== undefined
+                ? Number(r.physical_price)
+                : base?.physicalPrice,
+            image: r.cover_image || base?.image || '/images/books/karodon-ka-rahasya.svg',
+            coverImage: r.cover_image || base?.image || '/images/books/karodon-ka-rahasya.svg',
             pdfSourceFile: r.pdf_source_file || undefined,
-            rating: r.rating !== undefined && r.rating !== null ? Number(r.rating) : (base.rating || 5.0),
-            reviewCount: r.reviews_count || base.reviewCount || 0,
-            category: r.category || base.category || 'Books & E-Books',
+            rating:
+              r.rating !== undefined && r.rating !== null
+                ? Number(r.rating)
+                : (base?.rating || 5.0),
+            reviewCount:
+              r.reviews_count !== undefined && r.reviews_count !== null
+                ? Number(r.reviews_count)
+                : (base?.reviewCount || 0),
+            category: r.category || base?.category || 'Books & E-Books',
+            formatType: r.format_type || base?.formatType || 'both',
             inStock: r.in_stock !== undefined ? Boolean(r.in_stock) : true,
-            pages: r.pages || base.pages || 100,
-            language: r.language || base.language || 'Hindi & English',
-            formatType: base.formatType || 'both',
-            publishedYear: base.publishedYear || 2024,
-            tableOfContents: base.tableOfContents || [],
-            sampleExcerpt: base.sampleExcerpt || { chapterTitle: 'Introduction', paragraphs: [] },
-            features: base.features || [],
-            previewPages: safeJsonParse(r.preview_pages, []),
-            keyTakeaways: safeJsonParse(r.key_takeaways, []),
+            pages: r.pages !== undefined && r.pages !== null ? Number(r.pages) : (base?.pages || 100),
+            language: r.language || base?.language || 'Hindi & English',
+            publishedYear:
+              r.published_year !== undefined && r.published_year !== null
+                ? Number(r.published_year)
+                : (base?.publishedYear || new Date().getFullYear()),
+            isbn: r.isbn ?? base?.isbn,
+            downloadFormat: r.download_format ?? base?.downloadFormat,
+            badge: r.badge ?? base?.badge,
+            features: safeJsonParse(r.features, base?.features || []),
+            tableOfContents: safeJsonParse(r.table_of_contents, base?.tableOfContents || []),
+            sampleExcerpt: safeJsonParse(
+              r.sample_excerpt,
+              base?.sampleExcerpt || { chapterTitle: 'Introduction', paragraphs: [] }
+            ),
+            previewPages: safeJsonParse(r.preview_pages, base?.previewPages || []),
+            keyTakeaways: safeJsonParse(r.key_takeaways, base?.keyTakeaways || []),
           } as ExtendedBook;
         });
 
-        // Ensure newly added initialBooks (such as Lakshmi journey offerings) are included
-        const missingFromDb = initialBooks.filter(
-          (ib) => !dbBooks.some((db) => db.id === ib.id || db.slug === ib.slug)
-        );
-        if (missingFromDb.length > 0) {
-          for (const m of missingFromDb) {
-            saveBookAsync(m as ExtendedBook).catch((err) =>
-              console.error('[cmsStore] Auto-seeding missing initial book to MySQL:', m.id, err)
-            );
-          }
-          return [...dbBooks, ...(missingFromDb as ExtendedBook[])];
-        }
+        // Once MySQL has been initialized, it is the CMS source of truth.
+        // Do not auto-recreate a book that an admin intentionally deleted.
+        // Fresh databases are seeded below when the table is completely empty.
 
         return dbBooks;
       }
@@ -778,23 +803,42 @@ export async function saveBookAsync(book: ExtendedBook): Promise<void> {
     try {
       await initializeDatabaseTables();
       const query = `
-        INSERT INTO books (id, slug, title, subtitle, description, author, price, ebook_price, cover_image, pdf_source_file, rating, reviews_count, category, in_stock, pages, language, preview_pages, key_takeaways)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO books (
+          id, slug, title, subtitle, description, short_description, author,
+          price, original_price, discount_percent, ebook_price, physical_price,
+          cover_image, pdf_source_file, rating, reviews_count, category, format_type,
+          in_stock, pages, language, published_year, isbn, download_format, badge,
+          features, table_of_contents, sample_excerpt, preview_pages, key_takeaways
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
+          slug = VALUES(slug),
           title = VALUES(title),
           subtitle = VALUES(subtitle),
           description = VALUES(description),
+          short_description = VALUES(short_description),
           author = VALUES(author),
           price = VALUES(price),
+          original_price = VALUES(original_price),
+          discount_percent = VALUES(discount_percent),
           ebook_price = VALUES(ebook_price),
+          physical_price = VALUES(physical_price),
           cover_image = VALUES(cover_image),
           pdf_source_file = VALUES(pdf_source_file),
           rating = VALUES(rating),
           reviews_count = VALUES(reviews_count),
           category = VALUES(category),
+          format_type = VALUES(format_type),
           in_stock = VALUES(in_stock),
           pages = VALUES(pages),
           language = VALUES(language),
+          published_year = VALUES(published_year),
+          isbn = VALUES(isbn),
+          download_format = VALUES(download_format),
+          badge = VALUES(badge),
+          features = VALUES(features),
+          table_of_contents = VALUES(table_of_contents),
+          sample_excerpt = VALUES(sample_excerpt),
           preview_pages = VALUES(preview_pages),
           key_takeaways = VALUES(key_takeaways);
       `;
@@ -807,17 +851,29 @@ export async function saveBookAsync(book: ExtendedBook): Promise<void> {
         title,
         book.subtitle || '',
         book.description || '',
+        book.shortDescription || '',
         author,
-        book.price,
-        book.ebookPrice || book.price,
+        Number(book.price) || 0,
+        book.originalPrice != null ? Number(book.originalPrice) : null,
+        book.discountPercent != null ? Number(book.discountPercent) : null,
+        book.ebookPrice != null ? Number(book.ebookPrice) : (Number(book.price) || 0),
+        book.physicalPrice != null ? Number(book.physicalPrice) : null,
         cover,
         book.pdfSourceFile || null,
-        book.rating || 5.0,
-        book.reviewCount || (book as any).reviewsCount || 0,
+        book.rating != null ? Number(book.rating) : 5.0,
+        book.reviewCount != null ? Number(book.reviewCount) : ((book as any).reviewsCount || 0),
         book.category || 'Books & E-Books',
+        book.formatType || 'both',
         book.inStock ? 1 : 0,
-        book.pages || 100,
+        Number(book.pages) || 100,
         book.language || 'Hindi & English',
+        book.publishedYear != null ? Number(book.publishedYear) : null,
+        book.isbn || null,
+        book.downloadFormat || null,
+        book.badge || null,
+        JSON.stringify(book.features || []),
+        JSON.stringify(book.tableOfContents || []),
+        JSON.stringify(book.sampleExcerpt || null),
         JSON.stringify((book as any).previewPages || []),
         JSON.stringify((book as any).keyTakeaways || []),
       ]);
