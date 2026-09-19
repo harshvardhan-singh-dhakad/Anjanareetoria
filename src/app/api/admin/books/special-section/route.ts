@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized admin access.' }, { status: 401 });
   }
 
-  const config = await getLakshmiSpecialSectionAsync();
+  const config = await getLakshmiSpecialSectionFromMySQLAsync();
   return NextResponse.json({ success: true, config });
 }
 
