@@ -110,6 +110,7 @@ export async function initializeDatabaseTables(): Promise<boolean> {
           sample_excerpt JSON,
           preview_pages JSON,
           key_takeaways JSON,
+          amazon_purchase_url VARCHAR(1000),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -131,6 +132,7 @@ export async function initializeDatabaseTables(): Promise<boolean> {
         features: 'JSON NULL',
         table_of_contents: 'JSON NULL',
         sample_excerpt: 'JSON NULL',
+        amazon_purchase_url: 'VARCHAR(1000) NULL',
       };
       for (const [col, colDef] of Object.entries(bookColDefs)) {
         try {
