@@ -3,14 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import type { SiteSettings } from '@/lib/db/cmsStore';
 
-const testimonials = Array.from({ length: 18 }, (_, i) => ({
-  id: i + 1,
-  src: `/images/testimonials/review-${i + 1}.png`,
-  alt: `Client Review ${i + 1}`,
-}));
-
-export const TestimonialCarousel: React.FC = () => {
+export const TestimonialCarousel: React.FC<{ settings: SiteSettings }> = ({ settings }) => {
+  const testimonials = (settings.testimonials?.length ? settings.testimonials.filter(t => t.enabled !== false) : Array.from({ length: 18 }, (_, i) => ({
+    id: String(i + 1),
+    src: `/images/testimonials/review-${i + 1}.png`,
+    alt: `Client Review ${i + 1}`,
+  })));
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Responsive items per view: 3 desktop, 2 tablet, 1 mobile
@@ -43,10 +43,10 @@ export const TestimonialCarousel: React.FC = () => {
         {/* Headers */}
         <div className="text-center mb-10">
           <h3 className="text-sm font-bold tracking-widest text-[#0008c1] uppercase mb-2">
-            Accomplishment Sagas
+            {settings.testimonialsKicker || 'Accomplishment Sagas'}
           </h3>
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0008c1] font-serif">
-            Success Stories and Clients&apos; Positive Feedback
+            {settings.testimonialsTitle || 'Success Stories and Clients&apos; Positive Feedback'}
           </h2>
         </div>
 
