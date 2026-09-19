@@ -44,7 +44,7 @@ export default async function BookDetailPage({ params }: { params: { slug: strin
     notFound();
   }
 
-  const recommendations = getCrossRecommendations({
+  const recommendations = await getCrossRecommendations({
     currentType: 'book',
     currentSlug: book.slug,
     category: book.category,
