@@ -35,7 +35,7 @@ export async function GET(
     const row = rows[0];
     const data = Buffer.isBuffer(row.data) ? row.data : Buffer.from(row.data);
 
-    return new NextResponse(data as any, {
+    return new NextResponse(new Uint8Array(data), {
       status: 200,
       headers: {
         'Content-Type': row.mime_type || 'application/octet-stream',
