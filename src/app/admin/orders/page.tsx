@@ -29,6 +29,7 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'lakshmi' | 'product' | 'book' | 'webinar'>('all');
   const [selectedOrder, setSelectedOrder] = useState<EbookOrder | null>(null);
+  const [backendError, setBackendError] = useState<string | null>(null);
 
   const isLakshmiOrder = (o: EbookOrder) => {
     const pId = (o.productId || '').toLowerCase();
@@ -44,6 +45,7 @@ export default function AdminOrdersPage() {
 
   const loadOrders = async () => {
     setLoading(true);
+    setBackendError(null);
     try {
       const res = await adminFetch('/api/admin/orders');
       const data = await res.json();
@@ -54,10 +56,12 @@ export default function AdminOrdersPage() {
         setOrders(sorted);
       } else {
         setOrders([]);
+        setBackendError(data.error || 'Failed to load live orders from MySQL.');
       }
     } catch (err) {
       console.error('Failed to load orders:', err);
       setOrders([]);
+      setBackendError('Live order backend is unavailable. Check MySQL/Razorpay configuration.');
     } finally {
       setLoading(false);
     }
@@ -188,6 +192,12 @@ export default function AdminOrdersPage() {
           <span>Refresh Feed</span>
         </button>
       </div>
+
+      {backendError && (
+        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-sm text-rose-800">
+          <strong>Live backend error:</strong> {backendError}
+        </div>
+      )}
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
