@@ -46,7 +46,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     notFound();
   }
 
-  const recommendations = getCrossRecommendations({
+  const recommendations = await getCrossRecommendations({
     currentType: 'blog',
     currentSlug: post.slug,
     category: post.category,
