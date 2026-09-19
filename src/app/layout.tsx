@@ -77,6 +77,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={poppins.className}>
+      <head>
+        <link rel="describedby" href="/llms.txt" />
+      </head>
       <body className="min-h-screen flex flex-col bg-white text-[#2b2b2b]">
         <OrganizationSchema />
         <WebSiteSchema />
