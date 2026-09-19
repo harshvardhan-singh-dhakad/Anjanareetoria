@@ -639,7 +639,8 @@ export async function getLakshmiSpecialSectionAsync(): Promise<LakshmiSpecialSec
       await saveLakshmiSpecialSectionAsync(DEFAULT_LAKSHMI_SPECIAL_SECTION);
       return DEFAULT_LAKSHMI_SPECIAL_SECTION;
     } catch (err) {
-      console.error('[cmsStore] MySQL getLakshmiSpecialSection error, falling back to disk:', err);
+      console.error('[cmsStore] MySQL getLakshmiSpecialSection error:', err);
+      throw err;
     }
   }
 
@@ -862,7 +863,8 @@ export async function getBooksAsync(): Promise<ExtendedBook[]> {
       );
       return initialBooks as ExtendedBook[];
     } catch (err) {
-      console.error('[cmsStore] MySQL getBooks error, falling back to disk:', err);
+      console.error('[cmsStore] MySQL getBooks error:', err);
+      throw err;
     }
   }
   return getBooks();
