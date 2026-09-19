@@ -66,6 +66,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Webhook payment data is incomplete.' }, { status: 400 });
     }
 
+    // Idempotency: Razorpay can retry the same webhook. Return success without
+    // creating another order when this payment has already been recorded.
+    const { getMySQLPool, initializeDatabaseTables } = await import('@/lib/db/database');
+    const pool = getMySQLPool();
+    if (!pool) throw new Error('MYSQL_NOT_CONFIGURED');
+    if (!(await initializeDatabaseTables())) throw new Error('MYSQL_INITIALIZATION_FAILED');
+
+    const [existingRows] = await pool.query(
+      'SELECT order_id, payment_id, status FROM orders WHERE payment_id = ? LIMIT 1',
+      [paymentId]
+    ) as [any[], any];
+
+    if (existingRows && existingRows.length > 0) {
+      return NextResponse.json({
+        success: true,
+        duplicate: true,
+        message: 'Webhook already processed.',
+        orderId: existingRows[0].order_id,
+        paymentId: existingRows[0].payment_id,
+      });
+    }
+
     const newOrder = {
       orderId,
       buyerPhone,
