@@ -132,6 +132,73 @@ export interface LakshmiSpecialSectionConfig {
   physicalImage: string;
 }
 
+export interface SiteVideoItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  poster: string;
+  sources: string[];
+  enabled?: boolean;
+}
+
+export interface SiteTestimonialItem {
+  id: string;
+  src: string;
+  alt: string;
+  enabled?: boolean;
+}
+
+export interface SiteSettings {
+  topbarText: string;
+  logoUrl: string;
+  heroImage: string;
+  heroLink: string;
+  heroAlt: string;
+  productsKicker: string;
+  productsTitle: string;
+  booksKicker: string;
+  booksTitle: string;
+  booksDescription: string;
+  videosKicker: string;
+  videosTitle: string;
+  testimonialsKicker: string;
+  testimonialsTitle: string;
+  footerDescription: string;
+  instagramUrl: string;
+  videos: SiteVideoItem[];
+  testimonials: SiteTestimonialItem[];
+}
+
+export const DEFAULT_SITE_SETTINGS: SiteSettings = {
+  topbarText: '✨ Welcome to AR Blessings — Authentically Blessed Spiritual & Luxury Essentials ✨',
+  logoUrl: '/images/logo.png',
+  heroImage: '/images/banner-karodon-ka-wallet.png',
+  heroLink: '/product/karodon-ka-wallet',
+  heroAlt: 'Karodon Ka Wallet',
+  productsKicker: 'Our Products',
+  productsTitle: 'Uniquely Designed Gems',
+  booksKicker: 'Sacred Literature',
+  booksTitle: 'Books & Instant E-Books',
+  booksDescription: 'Authentic Vedic prosperity guidebooks, manifestation journals, and Vastu blueprints available in instant digital and keepsake print editions.',
+  videosKicker: 'Visualized Insights',
+  videosTitle: 'Understanding Concepts and Ideas through Video Explanations',
+  testimonialsKicker: 'Accomplishment Sagas',
+  testimonialsTitle: 'Success Stories and Clients\' Positive Feedback',
+  footerDescription: 'Connect with us for sacred updates, astrological guidance, and auspicious additions.',
+  instagramUrl: 'https://www.instagram.com/ar_blessings_',
+  videos: [
+    { id: '1', title: 'Karodon Ki Yatra', subtitle: 'Passport Cover Spiritual Consecration', poster: '/images/products/passport.jpg', sources: ['/videos/Passport.mp4'], enabled: true },
+    { id: '2', title: 'Karodon Ka Wallet', subtitle: 'Divine Blessing & Sacred Geometry', poster: '/images/products/wallet.jpg', sources: ['/videos/WALLET-BLESSED-.mp4'], enabled: true },
+    { id: '3', title: 'Karodon Ka Cup', subtitle: 'Mindful Rituals for Abundance', poster: '/images/products/cup.jpg', sources: ['/videos/Cup-1.mp4'], enabled: true },
+  ],
+  testimonials: Array.from({ length: 18 }, (_, i) => ({
+    id: String(i + 1),
+    src: `/images/testimonials/review-${i + 1}.png`,
+    alt: `Client Review ${i + 1}`,
+    enabled: true,
+  })),
+};
+
 export const DEFAULT_LAKSHMI_SPECIAL_SECTION: LakshmiSpecialSectionConfig = {
   id: 'lakshmi-journey',
   enabled: true,
@@ -1786,4 +1853,98 @@ export async function updateLessonProgressAsync(
   }
 
   return { progressPercentage, completedLessonIds };
+}
+
+
+export async function getSiteSettingsAsync(): Promise<SiteSettings> {
+  const pool = getMySQLPool();
+  if (!pool) return DEFAULT_SITE_SETTINGS;
+
+  const initialized = await initializeDatabaseTables();
+  if (!initialized) throw new Error('MYSQL_INITIALIZATION_FAILED');
+
+  const [rows] = await pool.query(
+    'SELECT setting_key, setting_value FROM site_settings ORDER BY setting_key ASC'
+  ) as [any[], any];
+
+  const merged: any = JSON.parse(JSON.stringify(DEFAULT_SITE_SETTINGS));
+  for (const row of rows || []) {
+    if (!row?.setting_key) continue;
+    try {
+      merged[row.setting_key] = JSON.parse(row.setting_value);
+    } catch {
+      merged[row.setting_key] = row.setting_value;
+    }
+  }
+
+  // First production read seeds the settings table once. After that, an empty/changed
+  // value remains authoritative in MySQL and is never replaced by source-code defaults.
+  if (!rows || rows.length === 0) {
+    await saveSiteSettingsToMySQLAsync(DEFAULT_SITE_SETTINGS);
+    return DEFAULT_SITE_SETTINGS;
+  }
+
+  return {
+    ...DEFAULT_SITE_SETTINGS,
+    ...merged,
+    videos: Array.isArray(merged.videos) ? merged.videos : DEFAULT_SITE_SETTINGS.videos,
+    testimonials: Array.isArray(merged.testimonials) ? merged.testimonials : DEFAULT_SITE_SETTINGS.testimonials,
+  };
+}
+
+export async function getSiteSettingsFromMySQLAsync(): Promise<SiteSettings> {
+  const pool = getMySQLPool();
+  if (!pool) throw new Error('MYSQL_NOT_CONFIGURED');
+  const initialized = await initializeDatabaseTables();
+  if (!initialized) throw new Error('MYSQL_INITIALIZATION_FAILED');
+  const [rows] = await pool.query(
+    'SELECT setting_key, setting_value FROM site_settings ORDER BY setting_key ASC'
+  ) as [any[], any];
+  if (!rows || rows.length === 0) return DEFAULT_SITE_SETTINGS;
+  const merged: any = JSON.parse(JSON.stringify(DEFAULT_SITE_SETTINGS));
+  for (const row of rows) {
+    if (!row?.setting_key) continue;
+    try { merged[row.setting_key] = JSON.parse(row.setting_value); }
+    catch { merged[row.setting_key] = row.setting_value; }
+  }
+  return {
+    ...DEFAULT_SITE_SETTINGS,
+    ...merged,
+    videos: Array.isArray(merged.videos) ? merged.videos : DEFAULT_SITE_SETTINGS.videos,
+    testimonials: Array.isArray(merged.testimonials) ? merged.testimonials : DEFAULT_SITE_SETTINGS.testimonials,
+  };
+}
+
+export async function saveSiteSettingsToMySQLAsync(settings: SiteSettings): Promise<SiteSettings> {
+  const pool = getMySQLPool();
+  if (!pool) throw new Error('MYSQL_NOT_CONFIGURED');
+  const initialized = await initializeDatabaseTables();
+  if (!initialized) throw new Error('MYSQL_INITIALIZATION_FAILED');
+
+  const normalized: SiteSettings = {
+    ...DEFAULT_SITE_SETTINGS,
+    ...settings,
+    videos: Array.isArray(settings.videos) ? settings.videos : [],
+    testimonials: Array.isArray(settings.testimonials) ? settings.testimonials : [],
+  };
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    for (const [key, value] of Object.entries(normalized)) {
+      await connection.query(
+        `INSERT INTO site_settings (setting_key, setting_value)
+         VALUES (?, ?)
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+        [key, typeof value === 'string' ? value : JSON.stringify(value)]
+      );
+    }
+    await connection.commit();
+  } catch (err) {
+    await connection.rollback();
+    throw err;
+  } finally {
+    connection.release();
+  }
+  return getSiteSettingsFromMySQLAsync();
 }
