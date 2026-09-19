@@ -7,8 +7,10 @@ import { usePathname } from 'next/navigation';
 import { ShoppingBag, Search, User, Menu, X, LogOut, MapPin, BookOpen } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import type { SiteSettings } from '@/lib/db/cmsStore';
 
-export const Header: React.FC = () => {
+export const Header: React.FC<{ settings?: SiteSettings }> = ({ settings }) => {
+  const site = settings;
   const pathname = usePathname();
   const { totalCount, setIsCartOpen } = useCart();
   const { user, isLoggedIn, openAuthModal, logout } = useAuth();
@@ -25,7 +27,7 @@ export const Header: React.FC = () => {
     <header className="w-full bg-white sticky top-0 z-40 border-b border-gray-100 shadow-sm transition-all">
       {/* Topbar */}
       <div className="bg-[#0008c1] text-white py-1.5 px-4 text-center text-xs tracking-wider font-medium">
-        <span>✨ Welcome to AR Blessings — Authentically Blessed Spiritual & Luxury Essentials ✨</span>
+        <span>{site?.topbarText || '✨ Welcome to AR Blessings — Authentically Blessed Spiritual & Luxury Essentials ✨'}</span>
       </div>
 
       {/* Main Navigation Bar */}
@@ -42,7 +44,7 @@ export const Header: React.FC = () => {
         {/* Brand Logo */}
         <Link href="/" className="flex items-center">
           <Image
-            src="/images/logo.png"
+            src={site?.logoUrl || "/images/logo.png"}
             alt="AR Blessings"
             width={180}
             height={70}
