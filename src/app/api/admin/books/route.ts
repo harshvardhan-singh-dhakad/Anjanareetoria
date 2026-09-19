@@ -73,7 +73,22 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: unknown) {
     console.error('[admin/books] Error:', err);
-    return NextResponse.json({ error: 'Failed to save book.' }, { status: 500 });
+    const code = err instanceof Error ? err.message : 'UNKNOWN_ERROR';
+    const safeCode = [
+      'MYSQL_NOT_CONFIGURED',
+      'MYSQL_INITIALIZATION_FAILED',
+      'BOOK_SAVE_VERIFICATION_FAILED',
+    ].includes(code)
+      ? code
+      : 'MYSQL_WRITE_FAILED';
+
+    return NextResponse.json(
+      {
+        error: 'Book could not be saved to the live MySQL CMS.',
+        code: safeCode,
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -95,16 +110,33 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
   }
 
-  await deleteBookFromMySQLAsync(id);
+  try {
+    await deleteBookFromMySQLAsync(id);
 
-  const after = await getBooksFromMySQLAsync();
-  const stillExists = after.some((b) => b.id === id || b.slug === id);
-  if (stillExists) {
+    const after = await getBooksFromMySQLAsync();
+    const stillExists = after.some((b) => b.id === id || b.slug === id);
+    if (stillExists) {
+      return NextResponse.json(
+        { error: 'Book delete was not persisted.', code: 'BOOK_DELETE_VERIFICATION_FAILED' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Book deleted from MySQL.',
+      deletedId: target.id,
+      storage: 'mysql',
+    });
+  } catch (err: unknown) {
+    console.error('[admin/books] Delete error:', err);
+    const code = err instanceof Error ? err.message : 'UNKNOWN_ERROR';
+    const safeCode = ['MYSQL_NOT_CONFIGURED', 'MYSQL_INITIALIZATION_FAILED', 'BOOK_NOT_FOUND', 'BOOK_DELETE_VERIFICATION_FAILED'].includes(code)
+      ? code
+      : 'MYSQL_DELETE_FAILED';
     return NextResponse.json(
-      { error: 'Book delete was not persisted. Please check the database connection.' },
+      { error: 'Book could not be deleted from the live MySQL CMS.', code: safeCode },
       { status: 500 }
     );
   }
-
-  return NextResponse.json({ success: true, message: 'Book deleted.', deletedId: target.id });
 }
