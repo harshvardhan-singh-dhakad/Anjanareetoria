@@ -3,8 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { SiteSettings } from '@/lib/db/cmsStore';
 
-export const Footer: React.FC = () => {
+export const Footer: React.FC<{ settings?: SiteSettings }> = ({ settings }) => {
   const pathname = usePathname();
 
   if (pathname?.startsWith('/admin')) {
@@ -98,11 +99,11 @@ export const Footer: React.FC = () => {
               Stay Connected
             </h4>
             <p className="text-xs sm:text-sm text-blue-50 mb-4 leading-relaxed">
-              Connect with us for sacred updates, astrological guidance, and auspicious additions.
+              {settings?.footerDescription || 'Connect with us for sacred updates, astrological guidance, and auspicious additions.'}
             </p>
             <div className="flex items-center space-x-3">
               <a
-                href="https://www.instagram.com/ar_blessings_"
+                href={settings?.instagramUrl || "https://www.instagram.com/ar_blessings_"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full border border-white flex items-center justify-center text-white hover:bg-white hover:text-[#1778f2] transition"
