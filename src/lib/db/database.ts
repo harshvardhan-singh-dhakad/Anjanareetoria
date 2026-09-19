@@ -98,6 +98,19 @@ export async function initializeDatabaseTables(): Promise<boolean> {
       `);
 
       await connection.query(`
+        CREATE TABLE IF NOT EXISTS special_sections (
+          id VARCHAR(100) PRIMARY KEY,
+          section_type VARCHAR(100) NOT NULL,
+          enabled BOOLEAN DEFAULT TRUE,
+          digital_image VARCHAR(500),
+          combo_image VARCHAR(500),
+          physical_image VARCHAR(500),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
+      await connection.query(`
         CREATE TABLE IF NOT EXISTS webinars (
           id VARCHAR(100) PRIMARY KEY,
           slug VARCHAR(191) UNIQUE NOT NULL,
