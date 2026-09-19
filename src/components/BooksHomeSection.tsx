@@ -23,7 +23,7 @@ export const BooksHomeSection: React.FC<{ initialBooks?: Book[]; settings?: Site
               <span>{settings?.booksKicker || 'Sacred Literature'}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0008c1] font-serif">
-              Books &amp; Instant E-Books
+              {settings?.booksTitle || 'Books & Instant E-Books'}
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 mt-2 max-w-xl">
               {settings?.booksDescription || 'Authentic Vedic prosperity guidebooks, manifestation journals, and Vastu blueprints available in instant digital and keepsake print editions.'}
