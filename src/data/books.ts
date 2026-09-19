@@ -25,6 +25,9 @@ export interface Book extends Product {
   };
   downloadFormat?: string;
   badge?: string;
+  // Optional CMS-managed enhancements loaded from MySQL.
+  previewPages?: string[];
+  keyTakeaways?: string[];
 }
 
 export const books: Book[] = [
