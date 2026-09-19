@@ -646,6 +646,64 @@ export async function getLakshmiSpecialSectionAsync(): Promise<LakshmiSpecialSec
   return getLakshmiSpecialSection();
 }
 
+export async function getLakshmiSpecialSectionFromMySQLAsync(): Promise<LakshmiSpecialSectionConfig> {
+  const pool = getMySQLPool();
+  if (!pool) throw new Error('MYSQL_NOT_CONFIGURED');
+
+  const initialized = await initializeDatabaseTables();
+  if (!initialized) throw new Error('MYSQL_INITIALIZATION_FAILED');
+
+  const [rows] = await pool.query(
+    'SELECT id, enabled, digital_image, combo_image, physical_image FROM special_sections WHERE id = ? LIMIT 1',
+    ['lakshmi-journey']
+  ) as [any[], any];
+
+  if (!rows || rows.length === 0) {
+    return DEFAULT_LAKSHMI_SPECIAL_SECTION;
+  }
+
+  const row = rows[0];
+  return {
+    id: row.id,
+    enabled: row.enabled !== undefined ? Boolean(row.enabled) : true,
+    digitalImage: row.digital_image || DEFAULT_LAKSHMI_SPECIAL_SECTION.digitalImage,
+    comboImage: row.combo_image || DEFAULT_LAKSHMI_SPECIAL_SECTION.comboImage,
+    physicalImage: row.physical_image || DEFAULT_LAKSHMI_SPECIAL_SECTION.physicalImage,
+  };
+}
+
+export async function saveLakshmiSpecialSectionToMySQLAsync(
+  config: LakshmiSpecialSectionConfig
+): Promise<LakshmiSpecialSectionConfig> {
+  const pool = getMySQLPool();
+  if (!pool) throw new Error('MYSQL_NOT_CONFIGURED');
+
+  const initialized = await initializeDatabaseTables();
+  if (!initialized) throw new Error('MYSQL_INITIALIZATION_FAILED');
+
+  await pool.query(
+    `INSERT INTO special_sections
+      (id, section_type, enabled, digital_image, combo_image, physical_image)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE
+      section_type = VALUES(section_type),
+      enabled = VALUES(enabled),
+      digital_image = VALUES(digital_image),
+      combo_image = VALUES(combo_image),
+      physical_image = VALUES(physical_image)`,
+    [
+      'lakshmi-journey',
+      'books-lakshmi-journey',
+      config.enabled ? 1 : 0,
+      config.digitalImage || DEFAULT_LAKSHMI_SPECIAL_SECTION.digitalImage,
+      config.comboImage || DEFAULT_LAKSHMI_SPECIAL_SECTION.comboImage,
+      config.physicalImage || DEFAULT_LAKSHMI_SPECIAL_SECTION.physicalImage,
+    ]
+  );
+
+  return await getLakshmiSpecialSectionFromMySQLAsync();
+}
+
 export function saveLakshmiSpecialSection(config: LakshmiSpecialSectionConfig): void {
   writeJson(LAKSHMI_SPECIAL_SECTION_FILE, {
     ...DEFAULT_LAKSHMI_SPECIAL_SECTION,
