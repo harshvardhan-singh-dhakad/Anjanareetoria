@@ -17,7 +17,8 @@ import {
   Sparkles,
   Video,
   ShieldCheck,
-  PlusCircle
+  PlusCircle,
+  UploadCloud
 } from 'lucide-react';
 import type { Course, CourseModule, CourseLesson } from '@/lib/db/cmsStore';
 import { adminFetch } from '@/lib/admin/adminClient';
