@@ -41,6 +41,7 @@ export default function AdminProductsPage() {
     discountPercent: 0,
     category: 'General',
     image: '',
+    hoverImage: '',
     inStock: true,
     shortDescription: '',
     description: '',
@@ -106,6 +107,7 @@ export default function AdminProductsPage() {
       discountPercent: 33,
       category: 'General',
       image: '/images/products/dollar.jpg',
+      hoverImage: '/images/products/dollar.jpg',
       inStock: true,
       shortDescription: '',
       description: '',
@@ -126,6 +128,7 @@ export default function AdminProductsPage() {
       discountPercent: p.discountPercent || 0,
       category: p.category || 'General',
       image: p.image || '',
+      hoverImage: p.hoverImage || '',
       inStock: p.inStock ?? true,
       shortDescription: p.shortDescription || '',
       description: p.description || '',
@@ -135,7 +138,10 @@ export default function AdminProductsPage() {
     setIsModalOpen(true);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: 'image' | 'hoverImage' = 'image'
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -150,7 +156,7 @@ export default function AdminProductsPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setFormData(prev => ({ ...prev, image: data.url }));
+        setFormData(prev => ({ ...prev, [field]: data.url }));
       } else {
         alert(data.error || 'Failed to upload image');
       }
@@ -181,6 +187,7 @@ export default function AdminProductsPage() {
       discountPercent: Number(formData.discountPercent) || undefined,
       category: formData.category,
       image: formData.image,
+      hoverImage: formData.hoverImage || undefined,
       inStock: formData.inStock,
       shortDescription: formData.shortDescription,
       description: formData.description,
@@ -549,6 +556,39 @@ export default function AdminProductsPage() {
                     <span className="text-[11px] text-slate-400">Preview:</span>
                     <div className="w-8 h-8 rounded-lg overflow-hidden relative border border-slate-200">
                       <Image src={formData.image} alt="Preview" fill className="object-cover" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Hover Image */}
+              <div className="space-y-2">
+                <label className="font-semibold text-slate-700">Hover / Secondary Product Image</label>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="text"
+                    value={formData.hoverImage}
+                    onChange={(e) => setFormData({ ...formData, hoverImage: e.target.value })}
+                    placeholder="/images/products/dollar-hover.jpg or https://..."
+                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1346af]"
+                  />
+                  <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center space-x-1.5 transition">
+                    <UploadCloud size={16} />
+                    <span>{uploadingImage ? 'Uploading...' : 'Upload File'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'hoverImage')}
+                      disabled={uploadingImage}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                {formData.hoverImage && (
+                  <div className="flex items-center space-x-2 pt-1">
+                    <span className="text-[11px] text-slate-400">Preview:</span>
+                    <div className="w-8 h-8 rounded-lg overflow-hidden relative border border-slate-200">
+                      <Image src={formData.hoverImage} alt="Hover preview" fill className="object-cover" />
                     </div>
                   </div>
                 )}
