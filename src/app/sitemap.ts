@@ -1,11 +1,11 @@
 import type { MetadataRoute } from 'next';
-import { products } from '@/data/products';
-import { books } from '@/data/books';
-import { blogs } from '@/data/blogs';
+import { getProductsAsync, getBooksAsync, getBlogsAsync } from '@/lib/db/cmsStore';
 
 const BASE_URL = 'https://arblessings.com';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const dynamic = 'force-dynamic';
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const coreRoutes = [
     '/',
     '/books',
@@ -20,6 +20,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/shipping-policy',
     '/term-of-service-policy',
   ];
+
+  const [products, books, blogs] = await Promise.all([
+    getProductsAsync(),
+    getBooksAsync(),
+    getBlogsAsync(),
+  ]);
 
   const routes: MetadataRoute.Sitemap = coreRoutes.map((path) => ({
     url: BASE_URL + path,
