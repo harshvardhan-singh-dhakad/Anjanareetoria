@@ -42,7 +42,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
     notFound();
   }
 
-  const recommendations = getCrossRecommendations({
+  const recommendations = await getCrossRecommendations({
     currentType: 'product',
     currentSlug: product.slug,
     category: product.category,
