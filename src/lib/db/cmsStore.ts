@@ -606,7 +606,7 @@ export async function getProductsAsync(): Promise<Product[]> {
       await initializeDatabaseTables();
       const [rows] = await pool.query('SELECT * FROM products ORDER BY created_at DESC') as [any[], any];
       if (rows && rows.length > 0) {
-        return rows.map((r) => {
+        const mapped = rows.map((r) => {
           const desc = r.description || '';
           return {
             id: r.id,
@@ -628,8 +628,8 @@ export async function getProductsAsync(): Promise<Product[]> {
             specifications: safeJsonParse(r.specifications, {}),
           } as Product;
         });
-      }
         await markMySQLResourceSeeded('products');
+        return mapped;
       }
       const didSeed = await seedMySQLResourceOnce(
         'products',
@@ -1320,7 +1320,7 @@ export async function getBlogsAsync(): Promise<ExtendedBlogPost[]> {
       await initializeDatabaseTables();
       const [rows] = await pool.query('SELECT * FROM blogs ORDER BY created_at DESC') as [any[], any];
       if (rows && rows.length > 0) {
-        return rows.map((r) => {
+        const mapped = rows.map((r) => {
           const base = initialBlogs.find((b) => b.id === r.id || b.slug === r.slug) || initialBlogs[0];
           const authorName = typeof r.author === 'string' ? r.author : base.author.name;
           return {
@@ -1342,8 +1342,8 @@ export async function getBlogsAsync(): Promise<ExtendedBlogPost[]> {
             relatedBookSlugs: safeJsonParse(r.related_book_slugs, base.relatedBookSlugs || []),
           } as ExtendedBlogPost;
         });
-      }
         await markMySQLResourceSeeded('blogs');
+        return mapped;
       }
       const didSeed = await seedMySQLResourceOnce(
         'blogs',
@@ -1487,9 +1487,8 @@ export async function getWebinarsAsync(): Promise<Webinar[]> {
             reviews,
           });
         }
-        return webinars;
-      }
         await markMySQLResourceSeeded('webinars');
+        return webinars;
       }
       const didSeed = await seedMySQLResourceOnce(
         'webinars',
@@ -1631,7 +1630,7 @@ export async function getCoursesAsync(): Promise<Course[]> {
       await initializeDatabaseTables();
       const [rows] = await pool.query('SELECT * FROM courses ORDER BY created_at DESC') as [any[], any];
       if (rows && rows.length > 0) {
-        return rows.map((r) => ({
+        const mapped = rows.map((r) => ({
           id: r.id,
           slug: r.slug,
           title: r.title,
@@ -1659,8 +1658,8 @@ export async function getCoursesAsync(): Promise<Course[]> {
           status: r.status || 'published',
           modules: safeJsonParse(r.modules, []),
         }));
-      }
         await markMySQLResourceSeeded('courses');
+        return mapped;
       }
       const didSeed = await seedMySQLResourceOnce(
         'courses',
